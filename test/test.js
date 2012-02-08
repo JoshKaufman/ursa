@@ -9,9 +9,9 @@
  */
 
 var assert = require('assert');
-var fs     = require('fs'),
+var fs     = require('fs');
 
-var rsab = require('../rsab');
+var rsab = require('../lib/rsab');
 
 
 /*
