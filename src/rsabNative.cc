@@ -24,6 +24,13 @@ void init(Handle<Object> target) {
 NODE_MODULE(rsabNative, init)
 
 /**
+ * Helper for prototype binding.
+ */
+#define BIND(proto, highName, lowName) \
+    (proto)->Set(String::NewSymbol(#highName), \
+        FunctionTemplate::New(lowName)->GetFunction())
+
+/**
  * Initialize the bindings for this class.
  */
 void RsaWrap::InitClass(Handle<Object> target) {
@@ -36,8 +43,8 @@ void RsaWrap::InitClass(Handle<Object> target) {
 
     // Prototype method bindings
     Local<ObjectTemplate> proto = tpl->PrototypeTemplate();
-    proto->Set(String::NewSymbol("hello"),
-	       FunctionTemplate::New(Hello)->GetFunction());
+    BIND(proto, setPrivateKeyPem, SetPrivateKeyPem);
+    BIND(proto, setPublicKeyPem, SetPublicKeyPem);
 
     // Store the constructor in the target bindings.
     target->Set(className, Persistent<Function>::New(tpl->GetFunction()));
@@ -71,8 +78,14 @@ Handle<Value> RsaWrap::New(const Arguments& args) {
     return args.This();
 }
 
-// FIXME: Temporary!
-Handle<Value> RsaWrap::Hello(const Arguments& args) {
+// FIXME: Need real implementation.
+Handle<Value> RsaWrap::SetPrivateKeyPem(const Arguments& args) {
+    HandleScope scope;
+    return scope.Close(String::New("world"));
+}
+
+// FIXME: Need real implementation.
+Handle<Value> RsaWrap::SetPublicKeyPem(const Arguments& args) {
     HandleScope scope;
     return scope.Close(String::New("world"));
 }

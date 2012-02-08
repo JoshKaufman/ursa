@@ -19,7 +19,8 @@ class RsaWrap : node::ObjectWrap {
     ~RsaWrap();
 
     static v8::Handle<v8::Value> New(const v8::Arguments& args);
-    static v8::Handle<v8::Value> Hello(const v8::Arguments& args);
+    static v8::Handle<v8::Value> SetPrivateKeyPem(const v8::Arguments& args);
+    static v8::Handle<v8::Value> SetPublicKeyPem(const v8::Arguments& args);
 
   private:
     RSA *rsa;
