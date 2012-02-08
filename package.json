@@ -1,0 +1,31 @@
+{
+    "name": "rsab",
+    "version": "0.0.1",
+    "keywords": ["crypto", "key", "openssl", "private", "public", "rsa"],
+    "description":
+        "RSA public/private key crypto, using Buffer objects near-ubiquitously",
+    "homepage": "https://github.com/Obvious/rsab",
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/Obvious/rsab.git"
+    },
+    "licenses": [ {
+        "type": "Apache 2.0",
+        "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    } ],
+    "maintainers": [ {
+        "name": "Dan Bornstein",
+        "email": "danfuzz@obvious.com",
+        "web": "http://www.milk.com/"
+    } ],
+    "private": true,
+
+    "main": "lib/rsab.js",
+    "engine": {
+        "node": ">=0.6.0"
+    }
+
+    "scripts": {
+        "install": "node-waf configure build"
+    },
+}

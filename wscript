@@ -2,7 +2,8 @@
 # from node-rsa
 
 import Options
-from os import unlink, symlink
+import shutil
+from os import chmod, mkdir
 from os.path import exists
 
 srcdir = '.'
@@ -22,11 +23,17 @@ def build(bld):
     obj.source = 'rsabNative.cc'
 
 def shutdown():
+    dir = 'bin'
     target = 'rsabNative.node'
+    dirTarget = dir + '/' + target
     if Options.commands['clean']:
-        if exists(target): unlink(target)
+        if exists(dir): shutil.rmtree(dir)
+        if exists('build'): shutil.rmtree('build')
     if Options.commands['build']:
-        if exists('build/default/' + target) and not exists(target):
-            symlink('build/default/' + target, target)
-        if exists('build/Release/' + target) and not exists(target):
-            symlink('build/Release/' + target, target)
+        if not exists(dir): mkdir(dir)
+        if exists('build/default/' + target) and not exists(dirTarget):
+            shutil.copyfile('build/default/' + target, dirTarget)
+        if exists('build/Release/' + target) and not exists(dirTarget):
+            shutil.copyfile('build/Release/' + target, dirTarget)
+        if exists(dirTarget):
+            chmod(dirTarget, 0755)
