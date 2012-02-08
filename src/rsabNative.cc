@@ -43,22 +43,28 @@ void RsaWrap::InitClass(Handle<Object> target) {
     target->Set(className, Persistent<Function>::New(tpl->GetFunction()));
 }
 
+/**
+ * Straightforward constructor. Nothing much to initialize, other than
+ * to ensure that our one instance variable is sanely NULLed.
+ */
 RsaWrap::RsaWrap() {
     rsa = NULL;
 }
 
+/**
+ * Destructor, which is called automatically via the ObjectWrap mechanism
+ * when the corresponding high-level object gets gc'ed.
+ */
 RsaWrap::~RsaWrap() {
     if (rsa != NULL) {
 	RSA_free(rsa);
     }
-    printf("~~~ DESTRUCTOR CALLED\n");
 }
 
+/**
+ * Construct an empty instance.
+ */
 Handle<Value> RsaWrap::New(const Arguments& args) {
-    HandleScope scope;
-
-    printf("~~~ ALLOC\n");
-
     RsaWrap *obj = new RsaWrap();
     obj->Wrap(args.This());
 
