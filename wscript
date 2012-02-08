@@ -31,9 +31,9 @@ def shutdown():
         if exists('build'): shutil.rmtree('build')
     if Options.commands['build']:
         if not exists(dir): mkdir(dir)
-        if exists('build/default/' + target) and not exists(dirTarget):
+        if exists('build/default/' + target):
             shutil.copyfile('build/default/' + target, dirTarget)
-        if exists('build/Release/' + target) and not exists(dirTarget):
+        if exists('build/Release/' + target):
             shutil.copyfile('build/Release/' + target, dirTarget)
         if exists(dirTarget):
             chmod(dirTarget, 0755)
