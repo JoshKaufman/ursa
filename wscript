@@ -20,7 +20,7 @@ def configure(conf):
 def build(bld):
     obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
     obj.target = 'rsabNative'
-    obj.source = 'rsabNative.cc'
+    obj.source = 'src/rsabNative.cc'
 
 def shutdown():
     dir = 'bin'
