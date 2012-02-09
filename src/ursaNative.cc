@@ -345,7 +345,8 @@ Handle<Value> RsaWrap::GetModulus(const Arguments& args) {
 /**
  * Get the private key of the underlying RSA object as a file
  * in PEM format. The return value is a Buffer containing the
- * file contents (in ASCII / UTF8).
+ * file contents (in ASCII / UTF8). Note: This does not do any
+ * encryption of the results.
  */
 Handle<Value> RsaWrap::GetPrivateKeyPem(const Arguments& args) {
     HandleScope scope;
@@ -369,15 +370,30 @@ Handle<Value> RsaWrap::GetPrivateKeyPem(const Arguments& args) {
     return bioToBuffer(bio);
 }
 
-// FIXME: Need documentation.
+/**
+ * Get the public key of the underlying RSA object as a file
+ * in PEM format. The return value is a Buffer containing the
+ * file contents (in ASCII / UTF8).
+ */
 Handle<Value> RsaWrap::GetPublicKeyPem(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) { return Undefined(); }
 
-    // FIXME: Need real implementation.
-    return scope.Close(String::New("world"));
+    BIO *bio = BIO_new(BIO_s_mem());
+    if (bio == NULL) {
+        scheduleSslException();
+        return Undefined();
+    }
+
+    if (!PEM_write_bio_RSA_PUBKEY(bio, obj->rsa)) {
+        scheduleSslException();
+        BIO_vfree(bio);
+        return Undefined();
+    }
+
+    return bioToBuffer(bio);
 }
 
 // FIXME: Need documentation.

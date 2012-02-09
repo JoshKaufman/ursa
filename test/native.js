@@ -172,7 +172,7 @@ function test_fail_getPrivateKeyPem() {
 }
 
 function test_getPublicKeyPem() {
-    var keyStr = fixture.PRIVATE_KEY.toString(fixture.UTF8);
+    var keyStr = fixture.PUBLIC_KEY.toString(fixture.UTF8);
 
     var rsa = new RsaWrap();
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
