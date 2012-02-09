@@ -8,39 +8,26 @@
  * Modules used
  */
 
-var assert = require('assert');
-var fs     = require('fs');
+var assert = require("assert");
 
-var ursa = require('../lib/ursa');
+var fixture = require("./fixture");
+var ursa =    fixture.ursa;
 
-
-/*
- * Variable definitions
- */
-
-var PUBKEY_FILE_NAME       = __dirname + "/blort.pub";
-var PRIVKEY_FILE_NAME      = __dirname + "/blort.pem";
-var PASS_PRIVKEY_FILE_NAME = __dirname + "/blort-pass.pem";
-
-var PASSWORD = "biscuits";
 
 /*
  * Helper functions
  */
 
 function createPublicKey() {
-    var file = fs.readFileSync(PUBKEY_FILE_NAME);
-    return ursa.pemToPublicKey(file);
+    return ursa.pemToPublicKey(fixture.PUBLIC_KEY);
 }
 
 function createPrivateKey() {
-    var file = fs.readFileSync(PRIVKEY_FILE_NAME);
-    return ursa.pemToPrivateKey(file);
+    return ursa.pemToPrivateKey(fixture.PRIVATE_KEY);
 }
 
 function createPassPrivateKey() {
-    var file = fs.readFileSync(PRIVKEY_FILE_NAME);
-    return ursa.pemToPrivateKey(file, PASSWORD);
+    return ursa.pemToPrivateKey(fixture.PRIVATE_KEY, fixture.PASSWORD);
 }
 
 
@@ -57,6 +44,9 @@ function testBasics() {
 /*
  * Main test script
  */
+
+// Test the native code (reasonably) directly.
+require("./native").test();
 
 testBasics();
 
