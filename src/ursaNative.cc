@@ -410,7 +410,11 @@ Handle<Value> RsaWrap::GetPublicKeyPem(const Arguments& args) {
     return bioToBuffer(bio);
 }
 
-// FIXME: Need documentation.
+/**
+ * Perform decryption on the given buffer using the RSA key, which
+ * must be a private key. This always uses the padding mode
+ * RSA_PKCS1_OAEP_PADDING.
+ */
 Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
     HandleScope scope;
 
@@ -421,8 +425,26 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
     void *data = getArg0DataAndLength(args, &length);
     if (data == NULL) { return Undefined(); }
 
-    // FIXME: Need real implementation.
-    return scope.Close(String::New("world"));
+    int rsaLength = RSA_size(obj->rsa);
+    unsigned char buf[rsaLength];
+
+    int bufLength = RSA_private_decrypt(length, (unsigned char *) data,
+                                        buf, obj->rsa, RSA_PKCS1_OAEP_PADDING);
+
+    if (bufLength < 0) {
+        scheduleSslException();
+        return Undefined();
+    }
+
+    node::Buffer *result = node::Buffer::New(bufLength);
+
+    if (result == NULL) {
+        scheduleAllocException();
+        return Undefined();
+    }
+
+    memcpy(node::Buffer::Data(result), buf, bufLength);
+    return result->handle_;
 }
 
 // FIXME: Need documentation.

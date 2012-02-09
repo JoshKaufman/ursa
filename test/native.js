@@ -216,28 +216,28 @@ function test_fail_privateDecrypt() {
     function f2() {
         rsa.privateDecrypt("x");
     }
-    assert.throws(f2, /arg mumble FIXME/);
+    assert.throws(f2, /Expected a Buffer in args\[0]\./);
 
     function f3() {
         rsa.privateDecrypt(new Buffer("x"));
     }
-    assert.throws(f3, /mumble FIXME/);
+    assert.throws(f3, /decoding error/);
 }
 
 function test_publicEncrypt() {
     // No other reasonable way to test this than to do a round trip.
     var plainBuf = new Buffer(fixture.PLAINTEXT, fixture.UTF8);
+    var priv = new RsaWrap();
+    priv.setPrivateKeyPem(fixture.PRIVATE_KEY);
 
     var rsa = new RsaWrap();
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
     var encoded = rsa.publicEncrypt(plainBuf);
-    var decoded = rsa.privateDecrypt(encoded).toString(fixture.UTF8);
+    var decoded = priv.privateDecrypt(encoded).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 
-    rsa = new RsaWrap();
-    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
-    encoded = rsa.publicEncrypt(plainBuf);
-    decoded = rsa.privateDecrypt(encoded).toString(fixture.UTF8);
+    encoded = priv.publicEncrypt(plainBuf);
+    decoded = priv.privateDecrypt(encoded).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 }
 
@@ -285,6 +285,8 @@ function test() {
     test_fail_getPrivateKeyPem();
     test_getPublicKeyPem();
     test_fail_getPublicKeyPem();
+
+    test_publicEncrypt(); // remove!
 
     test_privateDecrypt();
     test_fail_privateDecrypt();
