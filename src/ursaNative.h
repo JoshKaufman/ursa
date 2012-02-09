@@ -31,7 +31,6 @@ class RsaWrap : node::ObjectWrap {
     static v8::Handle<v8::Value> SetPublicKeyPem(const v8::Arguments& args);
 
   private:
-    static BIO *getArg0Buffer(const v8::Arguments& args);
     static RsaWrap *unwrapExpectPrivateKey(const v8::Arguments& args);
     static RsaWrap *unwrapExpectSet(const v8::Arguments& args);
     static RsaWrap *unwrapExpectUnset(const v8::Arguments& args);

@@ -2,6 +2,8 @@
 
 #include "ursaNative.h"
 #include <node_buffer.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 // FIXME: Do we need all of these?
 #include <openssl/ssl.h>
@@ -81,6 +83,73 @@ static void scheduleSslException() {
     ThrowException(exception);
 }
 
+/**
+ * Check that the given argument index exists and is a Buffer. Returns
+ * true if so. Schedules an exception and returns false if not.
+ */
+static bool isBuffer(const Arguments& args, int index) {
+    if (args.Length() <= index) {
+	char *message = NULL;
+	asprintf(&message, "Missing args[%d].", index);
+	ThrowException(Exception::TypeError(String::New(message)));
+	free(message);
+	return false;
+    }
+
+    if (!node::Buffer::HasInstance(args[index])) {
+	char *message = NULL;
+	asprintf(&message, "Expected a Buffer in args[%d].", index);
+	ThrowException(Exception::TypeError(String::New(message)));
+	free(message);
+	return false;
+    }
+
+    return true;
+}
+
+/**
+ * Get a Buffer out of the args[0], converted to a freshly-allocated
+ * memory BIO. Returns a non-null pointer on success. On failure,
+ * schedules an exception and returns NULL.
+ */
+static BIO *getArg0Buffer(const Arguments& args) {
+    if (!isBuffer(args, 0)) { return NULL; }
+
+    Local<Object> buf = args[0]->ToObject();
+    char *data = node::Buffer::Data(buf);
+    ssize_t length = node::Buffer::Length(buf);
+    BIO *bp = BIO_new_mem_buf(data, length);
+
+    if (bp == NULL) { scheduleSslException(); }
+
+    return bp;
+}
+
+/**
+ * Get a Buffer out of args[1], converted to a freshly-allocated (char
+ * *). Returns a non-null pointer on success. On failure, schedules an
+ * exception and returns NULL.
+ */
+static char *getArg1String(const Arguments& args) {
+    if (!isBuffer(args, 1)) { return NULL; }
+
+    Local<Object> buf = args[0]->ToObject();
+    char *data = node::Buffer::Data(buf);
+    ssize_t length = node::Buffer::Length(buf);
+    char *result = (char *) malloc(length + 1);
+
+    if (result == NULL) {
+	// Given that a failed allocation got us here, the following
+	// is probably futile, but we'll give it a go anyway.
+	ThrowException(Exception::Error(String::New("Allocation failed.")));
+	return NULL;
+    }
+
+    memcpy(result, data, length);
+    result[length] = '\0';
+    return result;
+}
+
 /*
  * RsaWrap implementation
  */
@@ -101,36 +170,6 @@ RsaWrap::~RsaWrap() {
     if (rsa != NULL) {
 	RSA_free(rsa);
     }
-}
-
-/**
- * Get a Buffer out of the zeroth argument. Returns a non-null pointer
- * on success. On failure, schedules an exception and returns NULL.
- */
-BIO *RsaWrap::getArg0Buffer(const Arguments& args) {
-    if (args.Length() < 1) {
-	ThrowException(Exception::TypeError(String::New(
-            "Missing Buffer argument.")));
-	return NULL;
-    }
-
-    if (!node::Buffer::HasInstance(args[0])) {
-	ThrowException(Exception::TypeError(String::New(
-            "First argument is not a Buffer.")));
-	return NULL;
-    }
-
-    Local<Object> buf = args[0]->ToObject();
-    char *data = node::Buffer::Data(buf);
-    ssize_t length = node::Buffer::Length(buf);
-
-    BIO *bp = BIO_new_mem_buf(data, length);
-
-    if (bp == NULL) {
-	scheduleSslException();
-    }
-
-    return bp;
 }
 
 /**
@@ -298,12 +337,31 @@ Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
 // FIXME: Need documentation.
 Handle<Value> RsaWrap::SetPrivateKeyPem(const Arguments& args) {
     HandleScope scope;
+    bool ok = true;
 
     RsaWrap *obj = unwrapExpectUnset(args);
-    if (obj == NULL) { return Undefined(); }
+    ok &= (obj != NULL);
 
-    // FIXME: Need real implementation.
-    return scope.Close(String::New("world"));
+    BIO *bp = NULL;
+    if (ok) {
+	bp = getArg0Buffer(args);
+	ok &= (bp != NULL);
+    }
+
+    char *password = NULL;
+    if (ok && (args.Length() >= 2)) {
+	password = getArg1String(args);
+	ok &= (password != NULL);
+    }
+
+    if (ok) {
+	obj->rsa = PEM_read_bio_RSAPrivateKey(bp, NULL, 0, password);
+	if (obj->rsa == NULL) { scheduleSslException(); }
+    }
+
+    if (bp != NULL) { BIO_free(bp); }
+    free(password);
+    return Undefined();
 }
 
 /**
@@ -322,9 +380,7 @@ Handle<Value> RsaWrap::SetPublicKeyPem(const Arguments& args) {
 
     obj->rsa = PEM_read_bio_RSA_PUBKEY(bp, NULL, NULL, NULL);
 
-    if (obj->rsa == NULL) {
-	scheduleSslException();
-    }
+    if (obj->rsa == NULL) { scheduleSslException(); }
 
     BIO_free(bp);
     return Undefined();
