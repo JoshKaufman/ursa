@@ -186,7 +186,7 @@ RsaWrap *RsaWrap::unwrapExpectPrivateKey(const Arguments& args) {
     }
 
     Local<Value> exception =
-        Exception::Error(String::New("Rsa not a private key."));
+        Exception::Error(String::New("Expected a private key."));
     ThrowException(exception);
     return NULL;
 }
@@ -203,7 +203,7 @@ RsaWrap *RsaWrap::unwrapExpectSet(const Arguments& args) {
         return obj;
     }
 
-    Local<Value> exception = Exception::Error(String::New("Rsa not yet set."));
+    Local<Value> exception = Exception::Error(String::New("Key not yet set."));
     ThrowException(exception);
     return NULL;
 }
@@ -220,7 +220,7 @@ RsaWrap *RsaWrap::unwrapExpectUnset(const Arguments& args) {
         return obj;
     }
 
-    Local<Value> exception = Exception::Error(String::New("Rsa already set."));
+    Local<Value> exception = Exception::Error(String::New("Key already set."));
     ThrowException(exception);
     return NULL;
 }
