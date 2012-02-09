@@ -19,12 +19,12 @@ def configure(conf):
 
 def build(bld):
     obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
-    obj.target = 'rsabNative'
-    obj.source = 'src/rsabNative.cc'
+    obj.target = 'ursaNative'
+    obj.source = 'src/ursaNative.cc'
 
 def shutdown():
     dir = 'bin'
-    target = 'rsabNative.node'
+    target = 'ursaNative.node'
     dirTarget = dir + '/' + target
     if Options.commands['clean']:
         if exists(dir): shutil.rmtree(dir)

@@ -1,7 +1,7 @@
 // Copyright 2012 The Obvious Corporation.
 
-#ifndef RSAB_NATIVE_H
-#define RSAB_NATIVE_H
+#ifndef URSA_NATIVE_H
+#define URSA_NATIVE_H
 
 #define BUILDING_NODE_EXTENSION
 #include <node.h>
@@ -39,4 +39,4 @@ class RsaWrap : node::ObjectWrap {
     RSA *rsa;
 };
 
-#endif // def RSAB_NATIV_H
+#endif // def URSA_NATIVE_H

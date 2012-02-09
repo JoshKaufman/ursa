@@ -1,7 +1,7 @@
 // Copyright 2012 The Obvious Corporation.
 
 /*
- * Tests of rsab
+ * Tests of ursa
  */
 
 /*
@@ -11,7 +11,7 @@
 var assert = require('assert');
 var fs     = require('fs');
 
-var rsab = require('../lib/rsab');
+var ursa = require('../lib/ursa');
 
 
 /*
@@ -30,17 +30,17 @@ var PASSWORD = "biscuits";
 
 function createPublicKey() {
     var file = fs.readFileSync(PUBKEY_FILE_NAME);
-    return rsab.pemToPublicKey(file);
+    return ursa.pemToPublicKey(file);
 }
 
 function createPrivateKey() {
     var file = fs.readFileSync(PRIVKEY_FILE_NAME);
-    return rsab.pemToPrivateKey(file);
+    return ursa.pemToPrivateKey(file);
 }
 
 function createPassPrivateKey() {
     var file = fs.readFileSync(PRIVKEY_FILE_NAME);
-    return rsab.pemToPrivateKey(file, PASSWORD);
+    return ursa.pemToPrivateKey(file, PASSWORD);
 }
 
 

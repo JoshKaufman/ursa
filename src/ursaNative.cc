@@ -1,6 +1,6 @@
 // Copyright 2012 The Obvious Corporation.
 
-#include "rsabNative.h"
+#include "ursaNative.h"
 #include <node_buffer.h>
 
 // FIXME: Do we need all of these?
@@ -27,7 +27,7 @@ void init(Handle<Object> target) {
     RsaWrap::InitClass(target);
 }
 
-NODE_MODULE(rsabNative, init)
+NODE_MODULE(ursaNative, init)
 
 /**
  * Helper for prototype binding.

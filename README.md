@@ -1,4 +1,4 @@
-rsab
+ursa
 ====
 
 This Node module provides wrappers for the RSA public/private key
@@ -13,7 +13,7 @@ Installing
 ----------
 
 ```shell
-npm install rsab
+npm install ursa
 ```
 
 Or grab the source and
