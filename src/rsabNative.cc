@@ -1,7 +1,9 @@
 // Copyright 2012 The Obvious Corporation.
 
 #include "rsabNative.h"
+#include <node_buffer.h>
 
+// FIXME: Do we need all of these?
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -294,6 +296,39 @@ Handle<Value> RsaWrap::SetPublicKeyPem(const Arguments& args) {
 	return Handle<Value>();
     }
 
-    // FIXME: Need real implementation.
-    return scope.Close(String::New("world"));
+    if (args.Length() < 1) {
+	return ThrowException(Exception::TypeError(String::New(
+            "Missing argument")));
+    }
+
+    if (!node::Buffer::HasInstance(args[0])) {
+	return ThrowException(Exception::TypeError(String::New(
+            "First argument is not a Buffer")));
+    }
+
+    Local<Object> buf = args[0]->ToObject();
+    char *data = node::Buffer::Data(buf);
+    ssize_t length = node::Buffer::Length(buf);
+
+    BIO *bp = BIO_new_mem_buf(data, length);
+
+    if (bp == NULL) {
+	char *err = ERR_error_string(ERR_get_error(), NULL);
+	Local<Value> exception = Exception::Error(String::New(err));
+	return ThrowException(exception);
+    }
+
+    RSA *rsa = PEM_read_bio_RSA_PUBKEY(bp, NULL, NULL, NULL);
+
+    if (rsa == NULL) {
+	BIO_free(bp);
+	char *err = ERR_error_string(ERR_get_error(), NULL);
+	Local<Value> exception = Exception::Error(String::New(err));
+	return ThrowException(exception);
+    }
+
+    obj->rsa = rsa;
+    BIO_free(bp);
+
+    return Undefined();
 }

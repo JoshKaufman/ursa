@@ -5,7 +5,6 @@
 
 #define BUILDING_NODE_EXTENSION
 #include <node.h>
-#include <node_object_wrap.h>
 #include <v8.h>
 
 #include <openssl/rsa.h>
