@@ -19,6 +19,15 @@ class RsaWrap : node::ObjectWrap {
     ~RsaWrap();
 
     static v8::Handle<v8::Value> New(const v8::Arguments& args);
+    static v8::Handle<v8::Value> GeneratePrivateKey(const v8::Arguments& args);
+    static v8::Handle<v8::Value> GetExponent(const v8::Arguments& args);
+    static v8::Handle<v8::Value> GetModulus(const v8::Arguments& args);
+    static v8::Handle<v8::Value> GetPrivateKeyPem(const v8::Arguments& args);
+    static v8::Handle<v8::Value> GetPublicKeyPem(const v8::Arguments& args);
+    static v8::Handle<v8::Value> PrivateDecrypt(const v8::Arguments& args);
+    static v8::Handle<v8::Value> PrivateEncrypt(const v8::Arguments& args);
+    static v8::Handle<v8::Value> PublicDecrypt(const v8::Arguments& args);
+    static v8::Handle<v8::Value> PublicEncrypt(const v8::Arguments& args);
     static v8::Handle<v8::Value> SetPrivateKeyPem(const v8::Arguments& args);
     static v8::Handle<v8::Value> SetPublicKeyPem(const v8::Arguments& args);
 

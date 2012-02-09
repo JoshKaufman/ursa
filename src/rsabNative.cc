@@ -38,13 +38,24 @@ void RsaWrap::InitClass(Handle<Object> target) {
 
     // Basic instance setup
     Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
+
     tpl->SetClassName(className);
     tpl->InstanceTemplate()->SetInternalFieldCount(1); // required by ObjectWrap
 
     // Prototype method bindings
     Local<ObjectTemplate> proto = tpl->PrototypeTemplate();
-    BIND(proto, setPrivateKeyPem, SetPrivateKeyPem);
-    BIND(proto, setPublicKeyPem, SetPublicKeyPem);
+
+    BIND(proto, generatePrivateKey, GeneratePrivateKey);
+    BIND(proto, getExponent,        GetExponent);
+    BIND(proto, getModulus,         GetModulus);
+    BIND(proto, getPrivateKeyPem,   GetPrivateKeyPem);
+    BIND(proto, getPublicKeyPem,    GetPublicKeyPem);
+    BIND(proto, privateDecrypt,     PrivateDecrypt);
+    BIND(proto, privateEncrypt,     PrivateEncrypt);
+    BIND(proto, publicDecrypt,      PublicDecrypt);
+    BIND(proto, publicEncrypt,      PublicEncrypt);
+    BIND(proto, setPrivateKeyPem,   SetPrivateKeyPem);
+    BIND(proto, setPublicKeyPem,    SetPublicKeyPem);
 
     // Store the constructor in the target bindings.
     target->Set(className, Persistent<Function>::New(tpl->GetFunction()));
@@ -76,6 +87,60 @@ Handle<Value> RsaWrap::New(const Arguments& args) {
     obj->Wrap(args.This());
 
     return args.This();
+}
+
+// FIXME: Need real implementation.
+Handle<Value> RsaWrap::GeneratePrivateKey(const Arguments& args) {
+    HandleScope scope;
+    return scope.Close(String::New("world"));
+}
+
+// FIXME: Need real implementation.
+Handle<Value> RsaWrap::GetExponent(const Arguments& args) {
+    HandleScope scope;
+    return scope.Close(String::New("world"));
+}
+
+// FIXME: Need real implementation.
+Handle<Value> RsaWrap::GetModulus(const Arguments& args) {
+    HandleScope scope;
+    return scope.Close(String::New("world"));
+}
+
+// FIXME: Need real implementation.
+Handle<Value> RsaWrap::GetPrivateKeyPem(const Arguments& args) {
+    HandleScope scope;
+    return scope.Close(String::New("world"));
+}
+
+// FIXME: Need real implementation.
+Handle<Value> RsaWrap::GetPublicKeyPem(const Arguments& args) {
+    HandleScope scope;
+    return scope.Close(String::New("world"));
+}
+
+// FIXME: Need real implementation.
+Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
+    HandleScope scope;
+    return scope.Close(String::New("world"));
+}
+
+// FIXME: Need real implementation.
+Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
+    HandleScope scope;
+    return scope.Close(String::New("world"));
+}
+
+// FIXME: Need real implementation.
+Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
+    HandleScope scope;
+    return scope.Close(String::New("world"));
+}
+
+// FIXME: Need real implementation.
+Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
+    HandleScope scope;
+    return scope.Close(String::New("world"));
 }
 
 // FIXME: Need real implementation.
