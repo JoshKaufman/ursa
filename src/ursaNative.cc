@@ -133,7 +133,7 @@ static BIO *getArg0Buffer(const Arguments& args) {
 static char *getArg1String(const Arguments& args) {
     if (!isBuffer(args, 1)) { return NULL; }
 
-    Local<Object> buf = args[0]->ToObject();
+    Local<Object> buf = args[1]->ToObject();
     char *data = node::Buffer::Data(buf);
     ssize_t length = node::Buffer::Length(buf);
     char *result = (char *) malloc(length + 1);
