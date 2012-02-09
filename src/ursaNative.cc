@@ -80,6 +80,8 @@ void RsaWrap::InitClass(Handle<Object> target) {
 static void scheduleSslException() {
     char *err = ERR_error_string(ERR_get_error(), NULL);
     Local<Value> exception = Exception::Error(String::New(err));
+
+    ERR_clear_error();
     ThrowException(exception);
 }
 
