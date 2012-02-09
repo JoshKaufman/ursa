@@ -150,10 +150,11 @@ function test_fail_getModulus() {
 }
 
 function test_getPrivateKeyPem() {
+    var keyStr = fixture.PRIVATE_KEY.toString(fixture.UTF8);
+
     var rsa = new RsaWrap();
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
 
-    var keyStr = fixture.PRIVATE_KEY.toString(fixture.UTF8);
     var pem = rsa.getPrivateKeyPem().toString(fixture.UTF8);
     assert.equal(pem, keyStr);
 }
@@ -169,6 +170,32 @@ function test_fail_getPrivateKeyPem() {
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
     assert.throws(f1, /Expected a private key\./);
 }
+
+function test_getPublicKeyPem() {
+    var keyStr = fixture.PRIVATE_KEY.toString(fixture.UTF8);
+
+    var rsa = new RsaWrap();
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+
+    var pem = rsa.getPublicKeyPem().toString(fixture.UTF8);
+    assert.equal(pem, keyStr);
+
+    rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+
+    pem = rsa.getPublicKeyPem().toString(fixture.UTF8);
+    assert.equal(pem, keyStr);
+}
+
+function test_fail_getPublicKeyPem() {
+    var rsa = new RsaWrap();
+
+    function f1() {
+        rsa.getPublicKeyPem();
+    }
+    assert.throws(f1, /Key not yet set\./);
+}
+
 
 /*
  * Main test script
@@ -188,7 +215,8 @@ function test() {
     test_fail_getModulus();
     test_getPrivateKeyPem();
     test_fail_getPrivateKeyPem();
-    // test_getPublicKeyPem();
+    test_getPublicKeyPem();
+    test_fail_getPublicKeyPem();
 
     // test_generatePrivateKey();
 

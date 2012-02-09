@@ -5,9 +5,9 @@ This Node module provides wrappers for the RSA public/private key
 crypto functionality of OpenSSL.
 
 This module was inspired by
-[node-rsa](https://github.com/chrisa/node-rsa) by Chris Andrews,
-though I (danfuzz) don't think there's any code remaining from that
-implementation other than a few lines in the `wscript` build file.
+[node-rsa](https://github.com/chrisa/node-rsa) by Chris Andrews.  To
+be clear, there are a few lines that I (danfuzz) used from its
+`wscript` build file, but other than that this code is new.
 
 Installing
 ----------
