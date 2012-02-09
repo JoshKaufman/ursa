@@ -149,6 +149,27 @@ function test_fail_getModulus() {
     assert.throws(f1, /Key not yet set\./);
 }
 
+function test_getPrivateKeyPem() {
+    var rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+
+    var keyStr = fixture.PRIVATE_KEY.toString(fixture.UTF8);
+    var pem = rsa.getPrivateKeyPem().toString(fixture.UTF8);
+    assert.equal(pem, keyStr);
+}
+
+function test_fail_getPrivateKeyPem() {
+    var rsa = new RsaWrap();
+
+    function f1() {
+        rsa.getGetPrivateKeyPem();
+    }
+
+    assert.throws(f1, /Key not yet set\./);
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+    assert.throws(f1, /blorch/);
+}
+
 /*
  * Main test script
  */
@@ -165,7 +186,8 @@ function test() {
     test_fail_getExponent();
     test_getModulus();
     test_fail_getModulus();
-    // test_getPrivateKeyPem();
+    test_getPrivateKeyPem();
+    test_fail_getPrivateKeyPem();
     // test_getPublicKeyPem();
 
     // test_generatePrivateKey();
