@@ -201,9 +201,7 @@ Handle<Value> RsaWrap::GeneratePrivateKey(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectUnset(args);
-    if (obj == NULL) {
-	return Undefined();
-    }
+    if (obj == NULL) { return Undefined(); }
 
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
@@ -214,9 +212,7 @@ Handle<Value> RsaWrap::GetExponent(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) {
-	return Undefined();
-    }
+    if (obj == NULL) { return Undefined(); }
 
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
@@ -227,9 +223,7 @@ Handle<Value> RsaWrap::GetModulus(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) {
-	return Undefined();
-    }
+    if (obj == NULL) { return Undefined(); }
 
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
@@ -240,9 +234,7 @@ Handle<Value> RsaWrap::GetPrivateKeyPem(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectPrivateKey(args);
-    if (obj == NULL) {
-	return Undefined();
-    }
+    if (obj == NULL) { return Undefined(); }
 
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
@@ -253,9 +245,7 @@ Handle<Value> RsaWrap::GetPublicKeyPem(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) {
-	return Undefined();
-    }
+    if (obj == NULL) { return Undefined(); }
 
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
@@ -266,9 +256,7 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectPrivateKey(args);
-    if (obj == NULL) {
-	return Undefined();
-    }
+    if (obj == NULL) { return Undefined(); }
 
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
@@ -279,9 +267,7 @@ Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectPrivateKey(args);
-    if (obj == NULL) {
-	return Undefined();
-    }
+    if (obj == NULL) { return Undefined(); }
 
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
@@ -292,9 +278,7 @@ Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) {
-	return Undefined();
-    }
+    if (obj == NULL) { return Undefined(); }
 
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
@@ -305,9 +289,7 @@ Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) {
-	return Undefined();
-    }
+    if (obj == NULL) { return Undefined(); }
 
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
@@ -318,9 +300,7 @@ Handle<Value> RsaWrap::SetPrivateKeyPem(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectUnset(args);
-    if (obj == NULL) {
-	return Undefined();
-    }
+    if (obj == NULL) { return Undefined(); }
 
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
@@ -335,14 +315,10 @@ Handle<Value> RsaWrap::SetPublicKeyPem(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectUnset(args);
-    if (obj == NULL) {
-	return Undefined();
-    }
+    if (obj == NULL) { return Undefined(); }
 
     BIO *bp = getArg0Buffer(args);
-    if (bp == NULL) {
-	return Undefined();
-    }
+    if (bp == NULL) { return Undefined(); }
 
     obj->rsa = PEM_read_bio_RSA_PUBKEY(bp, NULL, NULL, NULL);
 
