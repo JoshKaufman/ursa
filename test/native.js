@@ -103,6 +103,31 @@ function test_fail_setPublicKeyPem() {
     assert.throws(f4, /Key already set\./);
 }
 
+// FIXME
+function test_getExponent() {
+    var rsa = new RsaWrap();
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+
+    var value = rsa.getExponent().toString(fixture.HEX);
+    assert.equal(value, "123");
+
+    rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+
+    value = rsa.getExponent().toString(fixture.HEX);
+    assert.equal(value, "123");
+}
+
+// FIXME
+function test_fail_getExponent() {
+    var rsa = new RsaWrap();
+
+    function f1() {
+        rsa.getExponent();
+    }
+    assert.throws(f1, /123/);
+}
+
 
 /*
  * Main test script
@@ -116,12 +141,13 @@ function test() {
     test_setPublicKeyPem();
     test_fail_setPublicKeyPem();
 
-    // test_generatePrivateKey();
-
-    // test_getExponent();
+    test_getExponent();
+    test_fail_getExponent();
     // test_getModulus();
     // test_getPrivateKeyPem();
     // test_getPublicKeyPem();
+
+    // test_generatePrivateKey();
 
     // test_privateDecrypt()
     // test_privateEncrypt()

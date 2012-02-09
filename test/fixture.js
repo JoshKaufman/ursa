@@ -29,6 +29,8 @@ var PUBLIC_KEY = fs.readFileSync(__dirname + "/blort.pub");
 
 var PASSWORD = new Buffer("biscuits", UTF8);
 
+var EXPONENT_HEX = "123"; // FIXME
+var MODULUS_HEX = "123"; // FIXME
 
 /*
  * Exported bindings
