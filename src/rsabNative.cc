@@ -69,6 +69,19 @@ void RsaWrap::InitClass(Handle<Object> target) {
 
 
 /*
+ * Helper functions
+ */
+
+/**
+ * Schedule the current SSL error as a higher-level exception.
+ */
+static void scheduleSslException() {
+    char *err = ERR_error_string(ERR_get_error(), NULL);
+    Local<Value> exception = Exception::Error(String::New(err));
+    ThrowException(exception);
+}
+
+/*
  * RsaWrap implementation
  */
 
@@ -114,10 +127,7 @@ BIO *RsaWrap::getArg0Buffer(const Arguments& args) {
     BIO *bp = BIO_new_mem_buf(data, length);
 
     if (bp == NULL) {
-	char *err = ERR_error_string(ERR_get_error(), NULL);
-	Local<Value> exception = Exception::Error(String::New(err));
-	ThrowException(exception);
-	return NULL;
+	scheduleSslException();
     }
 
     return bp;
@@ -334,17 +344,12 @@ Handle<Value> RsaWrap::SetPublicKeyPem(const Arguments& args) {
 	return Undefined();
     }
 
-    RSA *rsa = PEM_read_bio_RSA_PUBKEY(bp, NULL, NULL, NULL);
+    obj->rsa = PEM_read_bio_RSA_PUBKEY(bp, NULL, NULL, NULL);
 
-    if (rsa == NULL) {
-	char *err = ERR_error_string(ERR_get_error(), NULL);
-	Local<Value> exception = Exception::Error(String::New(err));
-	BIO_free(bp);
-	return ThrowException(exception);
+    if (obj->rsa == NULL) {
+	scheduleSslException();
     }
 
-    obj->rsa = rsa;
     BIO_free(bp);
-
     return Undefined();
 }
