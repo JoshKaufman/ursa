@@ -245,7 +245,7 @@ function test_fail_publicEncrypt() {
     var rsa = new RsaWrap();
 
     function f1() {
-        rsa.privateDecrypt();
+        rsa.publicEncrypt();
     }
 
     assert.throws(f1, /Key not yet set\./);
@@ -262,6 +262,78 @@ function test_fail_publicEncrypt() {
         rsa.publicEncrypt(new Buffer(2048));
     }
     assert.throws(f3, /too large/);
+}
+
+function test_privateEncrypt() {
+    var rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+
+    var plainBuf = new Buffer(fixture.PLAINTEXT, fixture.UTF8);
+    var encoded = rsa.privateEncrypt(plainBuf).toString(fixture.HEX);
+
+    assert.equal(encoded, fixture.PUBLIC_CIPHERTEXT_HEX);
+}
+
+function test_fail_privateEncrypt() {
+    var rsa = new RsaWrap();
+
+    function f1() {
+        rsa.privateEncrypt();
+    }
+
+    assert.throws(f1, /Key not yet set\./);
+
+    rsa = new RsaWrap();
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+    assert.throws(f1, /Expected a private key\./);
+
+    rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+
+    function f2() {
+        rsa.privateEncrypt("x");
+    }
+    assert.throws(f2, /Expected a Buffer in args\[0]\./);
+
+    function f3() {
+        rsa.privateEncrypt(new Buffer(2048));
+    }
+    assert.throws(f3, /too large/);
+}
+
+function test_publicDecrypt() {
+    var rsa = new RsaWrap();
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+    var encoded = new Buffer(fixture.PUBLIC_CIPHERTEXT_HEX, fixture.HEX);
+    var decoded = rsa.publicDecrypt(encoded).toString(fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
+
+    rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+    encoded = new Buffer(fixture.PUBLIC_CIPHERTEXT_HEX, fixture.HEX);
+    decoded = rsa.publicDecrypt(encoded).toString(fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
+}
+
+function test_fail_publicDecrypt() {
+    var rsa = new RsaWrap();
+
+    function f1() {
+        rsa.publicDecrypt();
+    }
+
+    assert.throws(f1, /Key not yet set\./);
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+
+    function f2() {
+        rsa.publicDecrypt("x");
+    }
+    assert.throws(f2, /Expected a Buffer in args\[0]\./);
+
+    function f3() {
+        rsa.publicDecrypt(new Buffer("x"));
+    }
+    assert.throws(f3, /padding_check/);
 }
 
 
@@ -286,15 +358,15 @@ function test() {
     test_getPublicKeyPem();
     test_fail_getPublicKeyPem();
 
-    test_publicEncrypt(); // remove!
-
     test_privateDecrypt();
     test_fail_privateDecrypt();
     test_publicEncrypt();
     test_fail_publicEncrypt();
 
-    // test_privateEncrypt();
-    // test_publicDecrypt();
+    test_privateEncrypt();
+    test_fail_privateEncrypt();
+    test_publicDecrypt();
+    test_fail_publicDecrypt();
 
     // test_generatePrivateKey();
 }

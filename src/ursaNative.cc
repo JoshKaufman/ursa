@@ -447,7 +447,11 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
     return result->handle_;
 }
 
-// FIXME: Need documentation.
+/**
+ * Perform encryption on the given buffer using the RSA key, which
+ * must be private. This always uses the padding mode
+ * RSA_PKCS1_PADDING.
+ */
 Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
     HandleScope scope;
 
@@ -458,11 +462,30 @@ Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
     void *data = getArg0DataAndLength(args, &length);
     if (data == NULL) { return Undefined(); }
 
-    // FIXME: Need real implementation.
-    return scope.Close(String::New("world"));
+    int rsaLength = RSA_size(obj->rsa);
+    node::Buffer *result = node::Buffer::New(rsaLength);
+
+    if (result == NULL) {
+        scheduleAllocException();
+        return Undefined();
+    }
+
+    int ret = RSA_private_encrypt(length, (unsigned char *) data, 
+                                  (unsigned char *) node::Buffer::Data(result),
+                                  obj->rsa, RSA_PKCS1_PADDING);
+
+    if (ret < 0) {
+        scheduleSslException();
+        return Undefined();
+    }
+
+    return result->handle_;
 }
 
-// FIXME: Need documentation.
+/**
+ * Perform decryption on the given buffer using the (public aspect of
+ * the) RSA key. This always uses the padding mode RSA_PKCS1_PADDING.
+ */
 Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
     HandleScope scope;
 
@@ -473,8 +496,26 @@ Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
     void *data = getArg0DataAndLength(args, &length);
     if (data == NULL) { return Undefined(); }
 
-    // FIXME: Need real implementation.
-    return scope.Close(String::New("world"));
+    int rsaLength = RSA_size(obj->rsa);
+    unsigned char buf[rsaLength];
+
+    int bufLength = RSA_public_decrypt(length, (unsigned char *) data,
+                                       buf, obj->rsa, RSA_PKCS1_PADDING);
+
+    if (bufLength < 0) {
+        scheduleSslException();
+        return Undefined();
+    }
+
+    node::Buffer *result = node::Buffer::New(bufLength);
+
+    if (result == NULL) {
+        scheduleAllocException();
+        return Undefined();
+    }
+
+    memcpy(node::Buffer::Data(result), buf, bufLength);
+    return result->handle_;
 }
 
 /**
