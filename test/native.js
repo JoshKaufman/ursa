@@ -62,7 +62,7 @@ function test_fail_setPrivateKeyPem() {
         rsa.setPrivateKeyPem(fixture.PASS_PRIVATE_KEY,
                              new Buffer("INCORRECT PASS"));
     }
-    assert.throws(f6, /FIXME NOT YET WORKING/);
+    assert.throws(f6, /bad decrypt/);
 
     // Check for "set once."
     function f7() {
