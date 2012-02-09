@@ -91,6 +91,39 @@ RsaWrap::~RsaWrap() {
 }
 
 /**
+ * Get a Buffer out of the zeroth argument. Returns a non-null pointer
+ * on success. On failure, schedules an exception and returns NULL.
+ */
+BIO *RsaWrap::getArg0Buffer(const Arguments& args) {
+    if (args.Length() < 1) {
+	ThrowException(Exception::TypeError(String::New(
+            "Missing Buffer argument.")));
+	return NULL;
+    }
+
+    if (!node::Buffer::HasInstance(args[0])) {
+	ThrowException(Exception::TypeError(String::New(
+            "First argument is not a Buffer.")));
+	return NULL;
+    }
+
+    Local<Object> buf = args[0]->ToObject();
+    char *data = node::Buffer::Data(buf);
+    ssize_t length = node::Buffer::Length(buf);
+
+    BIO *bp = BIO_new_mem_buf(data, length);
+
+    if (bp == NULL) {
+	char *err = ERR_error_string(ERR_get_error(), NULL);
+	Local<Value> exception = Exception::Error(String::New(err));
+	ThrowException(exception);
+	return NULL;
+    }
+
+    return bp;
+}
+
+/**
  * Get an (RsaWrap *) out of the given arguments, expecting the
  * underlying (RSA *) to be non-null and more specifically a private
  * key. Returns a non-null pointer on success. On failure, schedules
@@ -159,7 +192,7 @@ Handle<Value> RsaWrap::GeneratePrivateKey(const Arguments& args) {
 
     RsaWrap *obj = unwrapExpectUnset(args);
     if (obj == NULL) {
-	return Handle<Value>();
+	return Undefined();
     }
 
     // FIXME: Need real implementation.
@@ -172,7 +205,7 @@ Handle<Value> RsaWrap::GetExponent(const Arguments& args) {
 
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) {
-	return Handle<Value>();
+	return Undefined();
     }
 
     // FIXME: Need real implementation.
@@ -185,7 +218,7 @@ Handle<Value> RsaWrap::GetModulus(const Arguments& args) {
 
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) {
-	return Handle<Value>();
+	return Undefined();
     }
 
     // FIXME: Need real implementation.
@@ -198,7 +231,7 @@ Handle<Value> RsaWrap::GetPrivateKeyPem(const Arguments& args) {
 
     RsaWrap *obj = unwrapExpectPrivateKey(args);
     if (obj == NULL) {
-	return Handle<Value>();
+	return Undefined();
     }
 
     // FIXME: Need real implementation.
@@ -211,7 +244,7 @@ Handle<Value> RsaWrap::GetPublicKeyPem(const Arguments& args) {
 
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) {
-	return Handle<Value>();
+	return Undefined();
     }
 
     // FIXME: Need real implementation.
@@ -224,7 +257,7 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
 
     RsaWrap *obj = unwrapExpectPrivateKey(args);
     if (obj == NULL) {
-	return Handle<Value>();
+	return Undefined();
     }
 
     // FIXME: Need real implementation.
@@ -237,7 +270,7 @@ Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
 
     RsaWrap *obj = unwrapExpectPrivateKey(args);
     if (obj == NULL) {
-	return Handle<Value>();
+	return Undefined();
     }
 
     // FIXME: Need real implementation.
@@ -250,7 +283,7 @@ Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
 
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) {
-	return Handle<Value>();
+	return Undefined();
     }
 
     // FIXME: Need real implementation.
@@ -263,7 +296,7 @@ Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
 
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) {
-	return Handle<Value>();
+	return Undefined();
     }
 
     // FIXME: Need real implementation.
@@ -276,7 +309,7 @@ Handle<Value> RsaWrap::SetPrivateKeyPem(const Arguments& args) {
 
     RsaWrap *obj = unwrapExpectUnset(args);
     if (obj == NULL) {
-	return Handle<Value>();
+	return Undefined();
     }
 
     // FIXME: Need real implementation.
@@ -293,37 +326,20 @@ Handle<Value> RsaWrap::SetPublicKeyPem(const Arguments& args) {
 
     RsaWrap *obj = unwrapExpectUnset(args);
     if (obj == NULL) {
-	return Handle<Value>();
+	return Undefined();
     }
 
-    if (args.Length() < 1) {
-	return ThrowException(Exception::TypeError(String::New(
-            "Missing argument")));
-    }
-
-    if (!node::Buffer::HasInstance(args[0])) {
-	return ThrowException(Exception::TypeError(String::New(
-            "First argument is not a Buffer")));
-    }
-
-    Local<Object> buf = args[0]->ToObject();
-    char *data = node::Buffer::Data(buf);
-    ssize_t length = node::Buffer::Length(buf);
-
-    BIO *bp = BIO_new_mem_buf(data, length);
-
+    BIO *bp = getArg0Buffer(args);
     if (bp == NULL) {
-	char *err = ERR_error_string(ERR_get_error(), NULL);
-	Local<Value> exception = Exception::Error(String::New(err));
-	return ThrowException(exception);
+	return Undefined();
     }
 
     RSA *rsa = PEM_read_bio_RSA_PUBKEY(bp, NULL, NULL, NULL);
 
     if (rsa == NULL) {
-	BIO_free(bp);
 	char *err = ERR_error_string(ERR_get_error(), NULL);
 	Local<Value> exception = Exception::Error(String::New(err));
+	BIO_free(bp);
 	return ThrowException(exception);
     }
 
