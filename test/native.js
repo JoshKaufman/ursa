@@ -103,16 +103,30 @@ function test_fail_setPublicKeyPem() {
     assert.throws(f4, /Key already set\./);
 }
 
+
 /*
  * Main test script
  */
 
 function test() {
     test_new();
+
     test_setPrivateKeyPem();
     test_fail_setPrivateKeyPem();
     test_setPublicKeyPem();
     test_fail_setPublicKeyPem();
+
+    // test_generatePrivateKey();
+
+    // test_getExponent();
+    // test_getModulus();
+    // test_getPrivateKeyPem();
+    // test_getPublicKeyPem();
+
+    // test_privateDecrypt()
+    // test_privateEncrypt()
+    // test_publicDecrypt()
+    // test_publicEncrypt()
 }
 
 module.exports = {
