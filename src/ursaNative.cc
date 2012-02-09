@@ -95,6 +95,29 @@ static void scheduleAllocException() {
 }
 
 /**
+ * Convert the given (BIGNUM *) to a Buffer of unsigned big-endian
+ * contents. Returns a non-null pointer on success. Schedules an
+ * exception and returns NULL on failure.
+ */
+static node::Buffer *bignumToBuffer(BIGNUM *number) {
+    int length = BN_num_bytes(number);
+    node::Buffer *result = node::Buffer::New(length);
+
+    if (result == NULL) {
+        scheduleAllocException();
+        return NULL;
+    }
+
+    if (BN_bn2bin(number, (unsigned char *) node::Buffer::Data(result)) < 0) {
+        scheduleSslException();
+        delete result;
+        return NULL;
+    }
+
+    return result;
+}
+
+/**
  * Check that the given argument index exists and is a Buffer. Returns
  * true if so. Schedules an exception and returns false if not.
  */
@@ -266,33 +289,27 @@ Handle<Value> RsaWrap::GetExponent(const Arguments& args) {
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) { return Undefined(); }
 
-    BIGNUM *number = obj->rsa->e; // Note: Modulus is target->n.
-    int length = BN_num_bytes(number);
-    node::Buffer *result = node::Buffer::New(length);
-
-    if (result == NULL) {
-        scheduleAllocException();
-        return Undefined();
-    }
-
-    if (BN_bn2bin(number, (unsigned char *) node::Buffer::Data(result)) < 0) {
-        scheduleSslException();
-        delete result;
-        return Undefined();
-    }
+    node::Buffer *result = bignumToBuffer(obj->rsa->e);
+    if (result == NULL) { return Undefined(); }
 
     return result->handle_;
 }
 
-// FIXME: Need documentation.
+/**
+ * Get the public modulus of the underlying RSA object. The return
+ * value is a Buffer containing the unsigned number in big-endian
+ * order.
+ */
 Handle<Value> RsaWrap::GetModulus(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) { return Undefined(); }
 
-    // FIXME: Need real implementation.
-    return scope.Close(String::New("world"));
+    node::Buffer *result = bignumToBuffer(obj->rsa->n);
+    if (result == NULL) { return Undefined(); }
+
+    return result->handle_;
 }
 
 // FIXME: Need documentation.
