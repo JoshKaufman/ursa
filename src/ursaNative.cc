@@ -96,25 +96,59 @@ static void scheduleAllocException() {
 
 /**
  * Convert the given (BIGNUM *) to a Buffer of unsigned big-endian
- * contents. Returns a non-null pointer on success. Schedules an
- * exception and returns NULL on failure.
+ * contents. Returns a Buffer-containing handle on success. Schedules an
+ * exception and returns Undefined() on failure.
  */
-static node::Buffer *bignumToBuffer(BIGNUM *number) {
+static Handle<Value> bignumToBuffer(BIGNUM *number) {
     int length = BN_num_bytes(number);
     node::Buffer *result = node::Buffer::New(length);
 
     if (result == NULL) {
         scheduleAllocException();
-        return NULL;
+        return Undefined();
     }
 
     if (BN_bn2bin(number, (unsigned char *) node::Buffer::Data(result)) < 0) {
         scheduleSslException();
         delete result;
-        return NULL;
+        return Undefined();
     }
 
-    return result;
+    // TODO: Is there a more idiomatic way of getting a handle from
+    // a Buffer?
+    return result->handle_;
+}
+
+/**
+ * Convert the given memory-based (BIO *) to a Buffer of its contents.
+ * Returns a Buffer-containing handle on success. Schedules an
+ * exception and returns Undefined() on failure. In either case, the
+ * BIO is freed by the time this function returns.
+ *
+ * As a special case to help with error handling, if given a NULL
+ * argument, this simply returns Undefined().
+ */
+static Handle<Value> bioToBuffer(BIO *bio) {
+    if (bio == NULL) {
+        return Undefined();
+    }
+
+    char *data;
+    long length = BIO_get_mem_data(bio, &data);
+    node::Buffer *result = node::Buffer::New(length);
+
+    if (result == NULL) {
+        scheduleAllocException();
+        BIO_vfree(bio);
+        return Undefined();
+    }
+
+    memcpy(node::Buffer::Data(result), data, length);
+    BIO_vfree(bio);
+
+    // TODO: Is there a more idiomatic way of getting a handle from
+    // a Buffer?
+    return result->handle_;
 }
 
 /**
@@ -152,11 +186,11 @@ static BIO *getArg0Buffer(const Arguments& args) {
     Local<Object> buf = args[0]->ToObject();
     char *data = node::Buffer::Data(buf);
     ssize_t length = node::Buffer::Length(buf);
-    BIO *bp = BIO_new_mem_buf(data, length);
+    BIO *bio = BIO_new_mem_buf(data, length);
 
-    if (bp == NULL) { scheduleSslException(); }
+    if (bio == NULL) { scheduleSslException(); }
 
-    return bp;
+    return bio;
 }
 
 /**
@@ -213,7 +247,9 @@ RsaWrap::~RsaWrap() {
 RsaWrap *RsaWrap::unwrapExpectPrivateKey(const Arguments& args) {
     RsaWrap *obj = unwrapExpectSet(args);
 
-    if ((obj != NULL) && (obj->rsa->d != NULL)) {
+    // The "d" field should always be set on a private key and never
+    // set on a public key.
+    if ((obj == NULL) || (obj->rsa->d != NULL)) {
         return obj;
     }
 
@@ -289,10 +325,7 @@ Handle<Value> RsaWrap::GetExponent(const Arguments& args) {
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) { return Undefined(); }
 
-    node::Buffer *result = bignumToBuffer(obj->rsa->e);
-    if (result == NULL) { return Undefined(); }
-
-    return result->handle_;
+    return bignumToBuffer(obj->rsa->e);
 }
 
 /**
@@ -306,21 +339,34 @@ Handle<Value> RsaWrap::GetModulus(const Arguments& args) {
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) { return Undefined(); }
 
-    node::Buffer *result = bignumToBuffer(obj->rsa->n);
-    if (result == NULL) { return Undefined(); }
-
-    return result->handle_;
+    return bignumToBuffer(obj->rsa->n);
 }
 
-// FIXME: Need documentation.
+/**
+ * Get the private key of the underlying RSA object as a file
+ * in PEM format. The return value is a Buffer containing the
+ * file contents (in ASCII / UTF8).
+ */
 Handle<Value> RsaWrap::GetPrivateKeyPem(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectPrivateKey(args);
     if (obj == NULL) { return Undefined(); }
 
-    // FIXME: Need real implementation.
-    return scope.Close(String::New("world"));
+    BIO *bio = BIO_new(BIO_s_mem());
+    if (bio == NULL) {
+        scheduleSslException();
+        return Undefined();
+    }
+
+    if (!PEM_write_bio_RSAPrivateKey(bio, obj->rsa,
+                                     NULL, NULL, 0, NULL, NULL)) {
+        scheduleSslException();
+        BIO_vfree(bio);
+        return Undefined();
+    }
+
+    return bioToBuffer(bio);
 }
 
 // FIXME: Need documentation.
@@ -378,7 +424,11 @@ Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
     return scope.Close(String::New("world"));
 }
 
-// FIXME: Need documentation.
+/**
+ * Sets the underlying RSA object to correspond to the given
+ * private key (a Buffer of PEM format data). This throws an
+ * exception if the underlying RSA had previously been set.
+ */
 Handle<Value> RsaWrap::SetPrivateKeyPem(const Arguments& args) {
     HandleScope scope;
     bool ok = true;
@@ -386,10 +436,10 @@ Handle<Value> RsaWrap::SetPrivateKeyPem(const Arguments& args) {
     RsaWrap *obj = unwrapExpectUnset(args);
     ok &= (obj != NULL);
 
-    BIO *bp = NULL;
+    BIO *bio = NULL;
     if (ok) {
-        bp = getArg0Buffer(args);
-        ok &= (bp != NULL);
+        bio = getArg0Buffer(args);
+        ok &= (bio != NULL);
     }
 
     char *password = NULL;
@@ -399,11 +449,11 @@ Handle<Value> RsaWrap::SetPrivateKeyPem(const Arguments& args) {
     }
 
     if (ok) {
-        obj->rsa = PEM_read_bio_RSAPrivateKey(bp, NULL, 0, password);
+        obj->rsa = PEM_read_bio_RSAPrivateKey(bio, NULL, 0, password);
         if (obj->rsa == NULL) { scheduleSslException(); }
     }
 
-    if (bp != NULL) { BIO_free(bp); }
+    if (bio != NULL) { BIO_vfree(bio); }
     free(password);
     return Undefined();
 }
@@ -419,13 +469,13 @@ Handle<Value> RsaWrap::SetPublicKeyPem(const Arguments& args) {
     RsaWrap *obj = unwrapExpectUnset(args);
     if (obj == NULL) { return Undefined(); }
 
-    BIO *bp = getArg0Buffer(args);
-    if (bp == NULL) { return Undefined(); }
+    BIO *bio = getArg0Buffer(args);
+    if (bio == NULL) { return Undefined(); }
 
-    obj->rsa = PEM_read_bio_RSA_PUBKEY(bp, NULL, NULL, NULL);
+    obj->rsa = PEM_read_bio_RSA_PUBKEY(bio, NULL, NULL, NULL);
 
     if (obj->rsa == NULL) { scheduleSslException(); }
 
-    BIO_free(bp);
+    BIO_vfree(bio);
     return Undefined();
 }

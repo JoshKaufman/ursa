@@ -162,12 +162,12 @@ function test_fail_getPrivateKeyPem() {
     var rsa = new RsaWrap();
 
     function f1() {
-        rsa.getGetPrivateKeyPem();
+        rsa.getPrivateKeyPem();
     }
 
     assert.throws(f1, /Key not yet set\./);
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
-    assert.throws(f1, /blorch/);
+    assert.throws(f1, /Expected a private key\./);
 }
 
 /*
