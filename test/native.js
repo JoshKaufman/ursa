@@ -225,17 +225,20 @@ function test_fail_privateDecrypt() {
 }
 
 function test_publicEncrypt() {
+    // No other reasonable way to test this than to do a round trip.
     var plainBuf = new Buffer(fixture.PLAINTEXT, fixture.UTF8);
 
     var rsa = new RsaWrap();
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
-    var encoded = rsa.publicEncrypt(encoded).toString(fixture.Hex);
-    assert.equal(encoded, fixture.PRIVATE_CIPHERTEXT_HEX);
+    var encoded = rsa.publicEncrypt(plainBuf);
+    var decoded = rsa.privateDecrypt(encoded).toString(fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
 
     rsa = new RsaWrap();
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
-    encoded = rsa.publicEncrypt(encoded).toString(fixture.Hex);
-    assert.equal(encoded, fixture.PRIVATE_CIPHERTEXT_HEX);
+    encoded = rsa.publicEncrypt(plainBuf);
+    decoded = rsa.privateDecrypt(encoded).toString(fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
 }
 
 function test_fail_publicEncrypt() {
@@ -253,7 +256,12 @@ function test_fail_publicEncrypt() {
     function f2() {
         rsa.publicEncrypt("x");
     }
-    assert.throws(f2, /arg mumble FIXME/);
+    assert.throws(f2, /Expected a Buffer in args\[0]\./);
+
+    function f3() {
+        rsa.publicEncrypt(new Buffer(2048));
+    }
+    assert.throws(f3, /too large/);
 }
 
 

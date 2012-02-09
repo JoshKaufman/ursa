@@ -176,11 +176,11 @@ static bool isBuffer(const Arguments& args, int index) {
 }
 
 /**
- * Get a Buffer out of the args[0], converted to a freshly-allocated
+ * Get a Buffer out of args[0], converted to a freshly-allocated
  * memory BIO. Returns a non-null pointer on success. On failure,
  * schedules an exception and returns NULL.
  */
-static BIO *getArg0Buffer(const Arguments& args) {
+static BIO *getArg0Bio(const Arguments& args) {
     if (!isBuffer(args, 0)) { return NULL; }
 
     Local<Object> buf = args[0]->ToObject();
@@ -191,6 +191,20 @@ static BIO *getArg0Buffer(const Arguments& args) {
     if (bio == NULL) { scheduleSslException(); }
 
     return bio;
+}
+
+/**
+ * Get a Buffer out of args[0], yielding a data pointer and length.
+ * Returns a non-null pointer on success and sets the given length
+ * pointer. On failure, schedules an exception and returns NULL.
+ */
+static void *getArg0DataAndLength(const Arguments& args, int *lengthPtr) {
+    if (!isBuffer(args, 0)) { return NULL; }
+
+    Local<Object> buf = args[0]->ToObject();
+
+    *lengthPtr = node::Buffer::Length(buf);
+    return node::Buffer::Data(buf);
 }
 
 /**
@@ -403,6 +417,10 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
     RsaWrap *obj = unwrapExpectPrivateKey(args);
     if (obj == NULL) { return Undefined(); }
 
+    int length;
+    void *data = getArg0DataAndLength(args, &length);
+    if (data == NULL) { return Undefined(); }
+
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
 }
@@ -413,6 +431,10 @@ Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
 
     RsaWrap *obj = unwrapExpectPrivateKey(args);
     if (obj == NULL) { return Undefined(); }
+
+    int length;
+    void *data = getArg0DataAndLength(args, &length);
+    if (data == NULL) { return Undefined(); }
 
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
@@ -425,19 +447,46 @@ Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) { return Undefined(); }
 
+    int length;
+    void *data = getArg0DataAndLength(args, &length);
+    if (data == NULL) { return Undefined(); }
+
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
 }
 
-// FIXME: Need documentation.
+/**
+ * Perform encryption on the given buffer using the public (aspect of the)
+ * RSA key. This always uses the padding mode RSA_PKCS1_OAEP_PADDING.
+ */
 Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) { return Undefined(); }
 
-    // FIXME: Need real implementation.
-    return scope.Close(String::New("world"));
+    int length;
+    void *data = getArg0DataAndLength(args, &length);
+    if (data == NULL) { return Undefined(); }
+
+    int rsaLength = RSA_size(obj->rsa);
+    node::Buffer *result = node::Buffer::New(rsaLength);
+
+    if (result == NULL) {
+        scheduleAllocException();
+        return Undefined();
+    }
+
+    int ret = RSA_public_encrypt(length, (unsigned char *) data, 
+                                 (unsigned char *) node::Buffer::Data(result),
+                                 obj->rsa, RSA_PKCS1_OAEP_PADDING);
+
+    if (ret < 0) {
+        scheduleSslException();
+        return Undefined();
+    }
+
+    return result->handle_;
 }
 
 /**
@@ -454,7 +503,7 @@ Handle<Value> RsaWrap::SetPrivateKeyPem(const Arguments& args) {
 
     BIO *bio = NULL;
     if (ok) {
-        bio = getArg0Buffer(args);
+        bio = getArg0Bio(args);
         ok &= (bio != NULL);
     }
 
@@ -485,7 +534,7 @@ Handle<Value> RsaWrap::SetPublicKeyPem(const Arguments& args) {
     RsaWrap *obj = unwrapExpectUnset(args);
     if (obj == NULL) { return Undefined(); }
 
-    BIO *bio = getArg0Buffer(args);
+    BIO *bio = getArg0Bio(args);
     if (bio == NULL) { return Undefined(); }
 
     obj->rsa = PEM_read_bio_RSA_PUBKEY(bio, NULL, NULL, NULL);
