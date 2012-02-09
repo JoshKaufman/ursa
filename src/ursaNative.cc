@@ -89,19 +89,19 @@ static void scheduleSslException() {
  */
 static bool isBuffer(const Arguments& args, int index) {
     if (args.Length() <= index) {
-	char *message = NULL;
-	asprintf(&message, "Missing args[%d].", index);
-	ThrowException(Exception::TypeError(String::New(message)));
-	free(message);
-	return false;
+        char *message = NULL;
+        asprintf(&message, "Missing args[%d].", index);
+        ThrowException(Exception::TypeError(String::New(message)));
+        free(message);
+        return false;
     }
 
     if (!node::Buffer::HasInstance(args[index])) {
-	char *message = NULL;
-	asprintf(&message, "Expected a Buffer in args[%d].", index);
-	ThrowException(Exception::TypeError(String::New(message)));
-	free(message);
-	return false;
+        char *message = NULL;
+        asprintf(&message, "Expected a Buffer in args[%d].", index);
+        ThrowException(Exception::TypeError(String::New(message)));
+        free(message);
+        return false;
     }
 
     return true;
@@ -139,10 +139,10 @@ static char *getArg1String(const Arguments& args) {
     char *result = (char *) malloc(length + 1);
 
     if (result == NULL) {
-	// Given that a failed allocation got us here, the following
-	// is probably futile, but we'll give it a go anyway.
-	ThrowException(Exception::Error(String::New("Allocation failed.")));
-	return NULL;
+        // Given that a failed allocation got us here, the following
+        // is probably futile, but we'll give it a go anyway.
+        ThrowException(Exception::Error(String::New("Allocation failed.")));
+        return NULL;
     }
 
     memcpy(result, data, length);
@@ -168,7 +168,7 @@ RsaWrap::RsaWrap() {
  */
 RsaWrap::~RsaWrap() {
     if (rsa != NULL) {
-	RSA_free(rsa);
+        RSA_free(rsa);
     }
 }
 
@@ -182,11 +182,11 @@ RsaWrap *RsaWrap::unwrapExpectPrivateKey(const Arguments& args) {
     RsaWrap *obj = unwrapExpectSet(args);
 
     if ((obj != NULL) && (obj->rsa->d != NULL)) {
-	return obj;
+        return obj;
     }
 
     Local<Value> exception =
-	Exception::Error(String::New("Rsa not a private key."));
+        Exception::Error(String::New("Rsa not a private key."));
     ThrowException(exception);
     return NULL;
 }
@@ -200,7 +200,7 @@ RsaWrap *RsaWrap::unwrapExpectSet(const Arguments& args) {
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
 
     if (obj->rsa != NULL) {
-	return obj;
+        return obj;
     }
 
     Local<Value> exception = Exception::Error(String::New("Rsa not yet set."));
@@ -217,7 +217,7 @@ RsaWrap *RsaWrap::unwrapExpectUnset(const Arguments& args) {
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
 
     if (obj->rsa == NULL) {
-	return obj;
+        return obj;
     }
 
     Local<Value> exception = Exception::Error(String::New("Rsa already set."));
@@ -344,19 +344,19 @@ Handle<Value> RsaWrap::SetPrivateKeyPem(const Arguments& args) {
 
     BIO *bp = NULL;
     if (ok) {
-	bp = getArg0Buffer(args);
-	ok &= (bp != NULL);
+        bp = getArg0Buffer(args);
+        ok &= (bp != NULL);
     }
 
     char *password = NULL;
     if (ok && (args.Length() >= 2)) {
-	password = getArg1String(args);
-	ok &= (password != NULL);
+        password = getArg1String(args);
+        ok &= (password != NULL);
     }
 
     if (ok) {
-	obj->rsa = PEM_read_bio_RSAPrivateKey(bp, NULL, 0, password);
-	if (obj->rsa == NULL) { scheduleSslException(); }
+        obj->rsa = PEM_read_bio_RSAPrivateKey(bp, NULL, 0, password);
+        if (obj->rsa == NULL) { scheduleSslException(); }
     }
 
     if (bp != NULL) { BIO_free(bp); }
