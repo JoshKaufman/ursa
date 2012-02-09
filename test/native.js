@@ -106,13 +106,11 @@ function test_fail_setPublicKeyPem() {
 function test_getExponent() {
     var rsa = new RsaWrap();
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
-
     var value = rsa.getExponent().toString(fixture.HEX);
     assert.equal(value, fixture.EXPONENT_HEX);
 
     rsa = new RsaWrap();
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
-
     value = rsa.getExponent().toString(fixture.HEX);
     assert.equal(value, fixture.EXPONENT_HEX);
 }
@@ -129,13 +127,11 @@ function test_fail_getExponent() {
 function test_getModulus() {
     var rsa = new RsaWrap();
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
-
     var value = rsa.getModulus().toString(fixture.HEX);
     assert.equal(value, fixture.MODULUS_HEX);
 
     rsa = new RsaWrap();
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
-
     value = rsa.getModulus().toString(fixture.HEX);
     assert.equal(value, fixture.MODULUS_HEX);
 }
@@ -176,13 +172,11 @@ function test_getPublicKeyPem() {
 
     var rsa = new RsaWrap();
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
-
     var pem = rsa.getPublicKeyPem().toString(fixture.UTF8);
     assert.equal(pem, keyStr);
 
     rsa = new RsaWrap();
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
-
     pem = rsa.getPublicKeyPem().toString(fixture.UTF8);
     assert.equal(pem, keyStr);
 }
@@ -194,6 +188,72 @@ function test_fail_getPublicKeyPem() {
         rsa.getPublicKeyPem();
     }
     assert.throws(f1, /Key not yet set\./);
+}
+
+function test_privateDecrypt() {
+    var rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+
+    var encoded = new Buffer(fixture.PRIVATE_CIPHERTEXT_HEX, fixture.HEX);
+    var decoded = rsa.privateDecrypt(encoded).toString(fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
+}
+
+function test_fail_privateDecrypt() {
+    var rsa = new RsaWrap();
+
+    function f1() {
+        rsa.privateDecrypt();
+    }
+
+    assert.throws(f1, /Key not yet set\./);
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+    assert.throws(f1, /Expected a private key\./);
+
+    rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+
+    function f2() {
+        rsa.privateDecrypt("x");
+    }
+    assert.throws(f2, /arg mumble FIXME/);
+
+    function f3() {
+        rsa.privateDecrypt(new Buffer("x"));
+    }
+    assert.throws(f3, /mumble FIXME/);
+}
+
+function test_publicEncrypt() {
+    var plainBuf = new Buffer(fixture.PLAINTEXT, fixture.UTF8);
+
+    var rsa = new RsaWrap();
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+    var encoded = rsa.publicEncrypt(encoded).toString(fixture.Hex);
+    assert.equal(encoded, fixture.PRIVATE_CIPHERTEXT_HEX);
+
+    rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+    encoded = rsa.publicEncrypt(encoded).toString(fixture.Hex);
+    assert.equal(encoded, fixture.PRIVATE_CIPHERTEXT_HEX);
+}
+
+function test_fail_publicEncrypt() {
+    var rsa = new RsaWrap();
+
+    function f1() {
+        rsa.privateDecrypt();
+    }
+
+    assert.throws(f1, /Key not yet set\./);
+
+    rsa = new RsaWrap();
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+
+    function f2() {
+        rsa.publicEncrypt("x");
+    }
+    assert.throws(f2, /arg mumble FIXME/);
 }
 
 
@@ -218,12 +278,15 @@ function test() {
     test_getPublicKeyPem();
     test_fail_getPublicKeyPem();
 
-    // test_generatePrivateKey();
+    test_privateDecrypt();
+    test_fail_privateDecrypt();
+    test_publicEncrypt();
+    test_fail_publicEncrypt();
 
-    // test_privateDecrypt()
-    // test_privateEncrypt()
-    // test_publicDecrypt()
-    // test_publicEncrypt()
+    // test_privateEncrypt();
+    // test_publicDecrypt();
+
+    // test_generatePrivateKey();
 }
 
 module.exports = {

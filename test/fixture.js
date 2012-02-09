@@ -40,6 +40,10 @@ var MODULUS_HEX =
     "424d7f3620d0b8424c6ebab771f0e5974b1cb2755e734770214358f546acc6b6" +
     "cfa70934d1c7b9e2e5a3c1897fb10f803af2998495db24511f2b2162f1fd8475";
 
+var PLAINTEXT = "Muffins are tasty.";
+var PRIVATE_CIPHERTEXT_HEX = "1234"; // FIXME
+var PUBLIC_CIPHERTEXT_HEX = "1234"; // FIXME
+
 /*
  * Exported bindings
  */
@@ -50,12 +54,15 @@ module.exports = {
     HEX:    HEX,
     UTF8:   UTF8,
     
-    EXPONENT_HEX:     EXPONENT_HEX,
-    MODULUS_HEX:      MODULUS_HEX,
-    PASSWORD:         PASSWORD,
-    PASS_PRIVATE_KEY: PASS_PRIVATE_KEY,
-    PRIVATE_KEY:      PRIVATE_KEY,
-    PUBLIC_KEY:       PUBLIC_KEY,
+    EXPONENT_HEX:           EXPONENT_HEX,
+    MODULUS_HEX:            MODULUS_HEX,
+    PASSWORD:               PASSWORD,
+    PASS_PRIVATE_KEY:       PASS_PRIVATE_KEY,
+    PLAINTEXT:              PLAINTEXT,
+    PRIVATE_CIPHERTEXT_HEX: PRIVATE_CIPHERTEXT_HEX,
+    PRIVATE_KEY:            PRIVATE_KEY,
+    PUBLIC_CIPHERTEXT_HEX:  PUBLIC_CIPHERTEXT_HEX,
+    PUBLIC_KEY:             PUBLIC_KEY,
 
     RsaWrap: ursaNative.RsaWrap,
 
