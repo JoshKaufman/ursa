@@ -103,19 +103,18 @@ function test_fail_setPublicKeyPem() {
     assert.throws(f4, /Key already set\./);
 }
 
-// FIXME
 function test_getExponent() {
     var rsa = new RsaWrap();
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
 
     var value = rsa.getExponent().toString(fixture.HEX);
-    assert.equal(value, "123");
+    assert.equal(value, fixture.EXPONENT_HEX);
 
     rsa = new RsaWrap();
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
 
     value = rsa.getExponent().toString(fixture.HEX);
-    assert.equal(value, "123");
+    assert.equal(value, fixture.EXPONENT_HEX);
 }
 
 // FIXME
@@ -125,7 +124,7 @@ function test_fail_getExponent() {
     function f1() {
         rsa.getExponent();
     }
-    assert.throws(f1, /123/);
+    assert.throws(f1, /Key not yet set\./);
 }
 
 

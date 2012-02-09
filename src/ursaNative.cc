@@ -86,6 +86,15 @@ static void scheduleSslException() {
 }
 
 /**
+ * Schedule an "allocation failed" exception. This (tries) to allocate
+ * as well, which very well could (probably will) fail too, but it's the
+ * best we can do in a bad situation.
+ */
+static void scheduleAllocException() {
+    ThrowException(Exception::Error(String::New("Allocation failed.")));
+}
+
+/**
  * Check that the given argument index exists and is a Buffer. Returns
  * true if so. Schedules an exception and returns false if not.
  */
@@ -141,9 +150,7 @@ static char *getArg1String(const Arguments& args) {
     char *result = (char *) malloc(length + 1);
 
     if (result == NULL) {
-        // Given that a failed allocation got us here, the following
-        // is probably futile, but we'll give it a go anyway.
-        ThrowException(Exception::Error(String::New("Allocation failed.")));
+        scheduleAllocException();
         return NULL;
     }
 
@@ -248,15 +255,33 @@ Handle<Value> RsaWrap::GeneratePrivateKey(const Arguments& args) {
     return scope.Close(String::New("world"));
 }
 
-// FIXME: Need documentation.
+/**
+ * Get the public exponent of the underlying RSA object. The return
+ * value is a Buffer containing the unsigned number in big-endian
+ * order.
+ */
 Handle<Value> RsaWrap::GetExponent(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) { return Undefined(); }
 
-    // FIXME: Need real implementation.
-    return scope.Close(String::New("world"));
+    BIGNUM *number = obj->rsa->e; // Note: Modulus is target->n.
+    int length = BN_num_bytes(number);
+    node::Buffer *result = node::Buffer::New(length);
+
+    if (result == NULL) {
+        scheduleAllocException();
+        return Undefined();
+    }
+
+    if (BN_bn2bin(number, (unsigned char *) node::Buffer::Data(result)) < 0) {
+        scheduleSslException();
+        delete result;
+        return Undefined();
+    }
+
+    return result->handle_;
 }
 
 // FIXME: Need documentation.
