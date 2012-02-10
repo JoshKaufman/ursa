@@ -19,15 +19,15 @@ var ursa =    fixture.ursa;
  */
 
 function createPublicKey() {
-    return ursa.pemToPublicKey(fixture.PUBLIC_KEY);
+    return ursa.createPublicKey(fixture.PUBLIC_KEY);
 }
 
 function createPrivateKey() {
-    return ursa.pemToPrivateKey(fixture.PRIVATE_KEY);
+    return ursa.createPrivateKey(fixture.PRIVATE_KEY);
 }
 
 function createPassPrivateKey() {
-    return ursa.pemToPrivateKey(fixture.PRIVATE_KEY, fixture.PASSWORD);
+    return ursa.createPrivateKey(fixture.PRIVATE_KEY, fixture.PASSWORD);
 }
 
 
