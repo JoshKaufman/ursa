@@ -1,6 +1,6 @@
 {
     "name": "ursa",
-    "version": "0.4.9",
+    "version": "0.4.10",
     "keywords": ["crypto", "key", "openssl", "private", "public", "rsa"],
     "description":
         "RSA public/private key crypto",
@@ -22,7 +22,7 @@
     "main": "lib/ursa.js",
     "engine": {
         "node": ">=0.6.0"
-    }
+    },
 
     "scripts": {
         "install": "node-waf configure build"
