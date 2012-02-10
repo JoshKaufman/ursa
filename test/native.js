@@ -362,12 +362,34 @@ function test_generatePrivateKey() {
 
 function test_fail_generatePrivateKey() {
     var rsa = new RsaWrap();
-    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
 
     function f1() {
         rsa.generatePrivateKey();
     }
-    f1();
+    assert.throws(f1, /Missing args\[0]\./);
+
+    function f2() {
+        rsa.generatePrivateKey("x");
+    }
+    assert.throws(f2, /Expected a 32-bit integer in args\[0]\./);
+
+    function f3() {
+        rsa.generatePrivateKey(10);
+    }
+    assert.throws(f3, /Missing args\[1]\./);
+
+    function f4() {
+        rsa.generatePrivateKey(20, "x");
+    }
+    assert.throws(f4, /Expected a 32-bit integer in args\[1]\./);
+
+    function f5() {
+        rsa.generatePrivateKey(0, 0);
+    }
+    assert.throws(f5, /fixme/);
+
+    // Use the original f1(), above, for this test.
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
     assert.throws(f1, /Key already set\./);
 }
 
@@ -403,8 +425,8 @@ function test() {
     test_publicDecrypt();
     test_fail_publicDecrypt();
 
-    test_generatePrivateKey();
     test_fail_generatePrivateKey();
+    test_generatePrivateKey();
 }
 
 module.exports = {

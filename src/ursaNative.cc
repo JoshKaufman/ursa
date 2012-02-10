@@ -152,17 +152,27 @@ static Handle<Value> bioToBuffer(BIO *bio) {
 }
 
 /**
+ * Check that the given argument index exists. Returns true if so.
+ * Schedules an exception and returns false if not.
+ */
+static bool hasArgument(const Arguments& args, int index) {
+    if (args.Length() > index) {
+        return true;
+    }
+
+    char *message = NULL;
+    asprintf(&message, "Missing args[%d].", index);
+    ThrowException(Exception::TypeError(String::New(message)));
+    free(message);
+    return false;
+}
+
+/**
  * Check that the given argument index exists and is a Buffer. Returns
  * true if so. Schedules an exception and returns false if not.
  */
 static bool isBuffer(const Arguments& args, int index) {
-    if (args.Length() <= index) {
-        char *message = NULL;
-        asprintf(&message, "Missing args[%d].", index);
-        ThrowException(Exception::TypeError(String::New(message)));
-        free(message);
-        return false;
-    }
+    if (!hasArgument(args, index)) { return false; }
 
     if (!node::Buffer::HasInstance(args[index])) {
         char *message = NULL;
@@ -228,6 +238,28 @@ static char *getArg1String(const Arguments& args) {
     memcpy(result, data, length);
     result[length] = '\0';
     return result;
+}
+
+/**
+ * Get an int out of args at the given index, storing it into the
+ * given pointer. Returns true on success. Schedules an exception and
+ * returns false on failure.
+ */
+static bool getArgInt(const Arguments& args, int index, int *resultPtr) {
+    if (!hasArgument(args, index)) { return false; }
+
+    Local<Value> arg = args[index];
+
+    if (! arg->IsInt32()) {
+        char *message = NULL;
+        asprintf(&message, "Expected a 32-bit integer in args[%d].", index);
+        ThrowException(Exception::TypeError(String::New(message)));
+        free(message);
+        return false;
+    }
+
+    *resultPtr = (int) arg->ToInt32()->Value();
+    return true;
 }
 
 /*
@@ -317,12 +349,22 @@ Handle<Value> RsaWrap::New(const Arguments& args) {
     return args.This();
 }
 
-// FIXME: Need documentation.
+/**
+ * Set the underlying RSA struct to a newly-generated key pair.
+ */
 Handle<Value> RsaWrap::GeneratePrivateKey(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectUnset(args);
     if (obj == NULL) { return Undefined(); }
+
+    int modulusBits = 0;
+    int exponent = 0;
+
+    if (! (getArgInt(args, 0, &modulusBits) &&
+           getArgInt(args, 1, &exponent))) {
+        return Undefined();
+    }
 
     // FIXME: Need real implementation.
     return scope.Close(String::New("world"));
