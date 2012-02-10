@@ -102,7 +102,7 @@ for exponent 65537, or for exponent 3 with the additional option
 
 Return the SSH-style public key fingerprint of the given SSH-format
 public key (which was, perhaps, the result of a call to
-`toPublicSsh()` on a key object.
+`toPublicSsh()` on a key object).
 
 This is no more and no less than an MD5 hash of the given SSH-format
 public key. This function doesn't actually check to see if the given
