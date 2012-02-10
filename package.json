@@ -26,5 +26,5 @@
 
     "scripts": {
         "install": "node-waf configure build"
-    },
+    }
 }
