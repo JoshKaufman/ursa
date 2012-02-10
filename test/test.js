@@ -61,6 +61,23 @@ function test_toPublicPem(key) {
     assert.equal(result, keyString);
 }
 
+function test_toPublicSsh(key) {
+    var keyString = fixture.SSH_PUBLIC_KEY.toString(fixture.BASE64);
+    var result = key.toPublicSsh().toString(fixture.BASE64);
+    assert.equal(result, keyString);
+
+    result = key.toPublicSsh(fixture.BASE64);
+    assert.equal(result, keyString);
+}
+
+function test_toPublicSshFingerprint(key) {
+    var result = key.toPublicSshFingerprint().toString(fixture.HEX);
+    assert.equal(result, fixture.SSH_PUBLIC_KEY_FINGERPRINT_HEX);
+
+    result = key.toPublicSshFingerprint(fixture.HEX);
+    assert.equal(result, fixture.SSH_PUBLIC_KEY_FINGERPRINT_HEX);
+}
+
 function test_encrypt(key) {
     // The sanest way to test this is to do a round trip.
     var privKey = ursa.createPrivateKey(fixture.PRIVATE_KEY)
@@ -91,6 +108,8 @@ function testPublicKeyMethods(key) {
     test_getExponent(key);
     test_getModulus(key);
     test_toPublicPem(key);
+    test_toPublicSsh(key);
+    test_toPublicSshFingerprint(key);
     test_encrypt(key);
     test_publicDecrypt(key);
 }
