@@ -336,6 +336,41 @@ function test_fail_publicDecrypt() {
     assert.throws(f3, /padding_check/);
 }
 
+function test_generatePrivateKey() {
+    var rsa = new RsaWrap();
+    rsa.generatePrivateKey();
+
+    // Do a round trip check.
+    var plainBuf = new Buffer(fixture.PLAINTEXT, fixture.UTF8);
+    var encoded = rsa.publicEncrypt(plainBuf);
+    var decoded = rsa.privateDecrypt(encoded).toString(fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
+
+    // Extract the public key, and try using it for a round trip.
+    var pubKey = new RsaWrap();
+    pubKey.setPublicKeyPem(rsa.getPublicKeyPem());
+    encoded = pubKey.publicEncrypt(plainBuf);
+    decoded = rsa.privateDecrypt(encoded).toString(fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
+    
+    // Similarly, try decoding with an extracted private key.
+    var privKey = new RsaWrap();
+    privKey.setPrivateKeyPem(rsa.getPrivateKeyPem());
+    decoded = privKey.privateDecrypt(encoded).toString(fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
+}
+
+function test_fail_generatePrivateKey() {
+    var rsa = new RsaWrap();
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+
+    function f1() {
+        rsa.generatePrivateKey();
+    }
+    f1();
+    assert.throws(f1, /Key already set\./);
+}
+
 
 /*
  * Main test script
@@ -368,7 +403,8 @@ function test() {
     test_publicDecrypt();
     test_fail_publicDecrypt();
 
-    // test_generatePrivateKey();
+    test_generatePrivateKey();
+    test_fail_generatePrivateKey();
 }
 
 module.exports = {
