@@ -143,10 +143,11 @@ This converts the public key data into a PEM-format file.
 ### toPublicSsh(encoding)
 
 This converts the public key data into an SSH-format file. This is the
-file format one finds in SSH's `authorized_key` and `known_hosts` files.
+file format one finds in SSH's `authorized_keys` and `known_hosts` files.
 When used in such files, the contents are base64-encoded and prefixed with
 the label `ssh-rsa`. Depending on context, the line a key appears on may
-also have a host name (in `known_hosts`) or comment (in `authorized_key`).
+also have a host name prefix (in `known_hosts`) or comment suffix
+(in `authorized_keys`).
 
 Using the command-line `ssh-keygen` tool, this operation is equivalent to:
 
