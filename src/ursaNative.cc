@@ -5,15 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// FIXME: Do we need all of these?
 #include <openssl/ssl.h>
 #include <openssl/err.h>
-#include <openssl/evp.h>
 #include <openssl/pem.h>
-#include <openssl/x509.h>
-#include <openssl/hmac.h>
-#include <openssl/engine.h>
-#include <openssl/rand.h>
 
 using namespace v8;
 
