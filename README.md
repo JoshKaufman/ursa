@@ -190,8 +190,6 @@ Author
 ([personal website](http://www.milk.com/)), supported by
 [The Obvious Corporation](http://obvious.com/).
 
-[node-rsa](https://github.com/chrisa/node-rsa) by Chris Andrews.  To
-
 License
 -------
 
