@@ -71,6 +71,10 @@ function test_encrypt(key) {
     encoded = key.encrypt(fixture.PLAINTEXT, fixture.UTF8, fixture.BASE64);
     decoded = privKey.decrypt(encoded, fixture.BASE64, fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
+
+    encoded = key.encrypt(fixture.PLAINTEXT, undefined, fixture.HEX);
+    decoded = privKey.decrypt(encoded, fixture.HEX, fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
 }
 
 function test_publicDecrypt(key) {
@@ -117,6 +121,9 @@ function test_privateEncrypt(key) {
 
     encoded = key.privateEncrypt(fixture.PLAINTEXT, fixture.UTF8, fixture.HEX);
     assert.equal(encoded, fixture.PUBLIC_CIPHERTEXT_HEX);
+
+    encoded = key.privateEncrypt(fixture.PLAINTEXT, undefined, fixture.HEX);
+    assert.equal(encoded, fixture.PUBLIC_CIPHERTEXT_HEX);
 }
 
 function testPrivateKeyMethods(key) {
@@ -133,8 +140,12 @@ function testPrivateKeyMethods(key) {
 function testBasics() {
     ursa.createPublicKey(fixture.PUBLIC_KEY);
     ursa.createPrivateKey(fixture.PRIVATE_KEY);
-    ursa.createPrivateKey(fixture.PRIVATE_KEY, fixture.PASSWORD);
+    ursa.createPrivateKey(fixture.PASS_PRIVATE_KEY, fixture.PASSWORD);
     ursa.generatePrivateKey(512);
+
+    ursa.createPublicKey(fixture.PUBLIC_KEY.toString(fixture.UTF8));
+    ursa.createPrivateKey(fixture.PRIVATE_KEY.toString(fixture.BASE64),
+                          undefined, fixture.BASE64);
 }
 
 function testPublicKey() {
