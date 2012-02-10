@@ -26,6 +26,7 @@ var UTF8   = "utf8";
 var PASS_PRIVATE_KEY = fs.readFileSync(__dirname + "/blort-pass.pem");
 var PRIVATE_KEY = fs.readFileSync(__dirname + "/blort.pem");
 var PUBLIC_KEY = fs.readFileSync(__dirname + "/blort.pub");
+var SSH_PUBLIC_KEY_FILE = fs.readFileSync(__dirname + "/blort.sshpub");
 
 var PASSWORD = new Buffer("biscuits", UTF8);
 
@@ -60,6 +61,11 @@ var PUBLIC_CIPHERTEXT_HEX =
     "65bc54fed2b45317713f7caa98cbd28a14c4c7fabe8689e735985e3fa6bd7ca8" +
     "bda58bee1b3cba48cb0d1508c79c23d48413b3dc296aabf5291288783ff037ef";
 
+var SSH_PUBLIC_KEY = 
+    new Buffer(SSH_PUBLIC_KEY_FILE.toString(UTF8).slice(8), BASE64);
+var SSH_PUBLIC_KEY_FINGERPRINT_HEX = "e7738e886aaf6f0301d62d459a892dc3";
+
+
 /*
  * Exported bindings
  */
@@ -79,6 +85,8 @@ module.exports = {
     PRIVATE_KEY:            PRIVATE_KEY,
     PUBLIC_CIPHERTEXT_HEX:  PUBLIC_CIPHERTEXT_HEX,
     PUBLIC_KEY:             PUBLIC_KEY,
+    SSH_PUBLIC_KEY:         SSH_PUBLIC_KEY,
+    SSH_PUBLIC_KEY_FINGERPRINT_HEX: SSH_PUBLIC_KEY_FINGERPRINT_HEX,
 
     RsaWrap: ursaNative.RsaWrap,
 

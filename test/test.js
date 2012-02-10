@@ -168,6 +168,21 @@ function testGeneratedKey() {
     assert.equal(decoded, fixture.PLAINTEXT);
 }
 
+function testSshFingerprint() {
+    var key = fixture.SSH_PUBLIC_KEY;
+    var finger = ursa.sshFingerprint(fixture.SSH_PUBLIC_KEY);
+    assert.equal(finger.toString(fixture.HEX),
+                 fixture.SSH_PUBLIC_KEY_FINGERPRINT_HEX);
+
+    finger = ursa.sshFingerprint(fixture.SSH_PUBLIC_KEY, undefined,
+                                 fixture.HEX);
+    assert.equal(finger, fixture.SSH_PUBLIC_KEY_FINGERPRINT_HEX);
+
+    finger = ursa.sshFingerprint(
+        fixture.SSH_PUBLIC_KEY.toString(fixture.BASE64), 
+        fixture.BASE64, fixture.HEX);
+    assert.equal(finger, fixture.SSH_PUBLIC_KEY_FINGERPRINT_HEX);
+}
 
 /*
  * Main test script
@@ -180,5 +195,6 @@ testBasics();
 testPublicKey();
 testPrivateKey();
 testGeneratedKey();
+testSshFingerprint();
 
 console.log("All tests pass!");
