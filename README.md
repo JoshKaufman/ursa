@@ -80,4 +80,4 @@ Create and return a freshly-generated private key.
 License
 -------
 
-Apache 2. See the top-leve file `LICENSE.txt`.
+Apache 2. See the top-level file `LICENSE.txt`.
