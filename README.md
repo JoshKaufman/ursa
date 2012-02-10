@@ -9,6 +9,11 @@ This module was inspired by
 be clear, there are a few lines that I (danfuzz) used from its
 `wscript` build file, but other than that this code is new.
 
+License
+-------
+
+Apache 2. See the top-level file `LICENSE.txt`.
+
 Installing
 ----------
 
@@ -211,8 +216,3 @@ The outEncoding argument specifies the desired output encoding. If it
 is undefined, then this method returns a Buffer. Otherwise, this
 converts the (would-be Buffer) value into a string using the specified
 encoding.
-
-License
--------
-
-Apache 2. See the top-level file `LICENSE.txt`.
