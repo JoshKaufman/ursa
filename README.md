@@ -88,7 +88,7 @@ the exponent value, which must be odd (65537 is the typical value; 3
 and 17 are also common).  Both arguments are optional and default to
 2048 and 65537 (respectively).
 
-USing the command-line `openssl` tool, this operation is
+Using the command-line `openssl` tool, this operation is
 equivalent to:
 
 ```shell
