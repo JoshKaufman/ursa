@@ -69,8 +69,9 @@ Top-Level Exports
 
 ### ursa.createPrivateKey(pem, password, encoding)
 
-Create and return a private key read in from the given PEM-format file.
-If defined, the given password is used to decrypt the PEM file.
+Create and return a private key (aka a keypair) read in from the given
+PEM-format file.  If defined, the given password is used to decrypt
+the PEM file.
 
 The encoding, if specified, applies to both other arguments.
 
@@ -80,7 +81,22 @@ Create and return a public key read in from the given PEM-format file.
 
 ### ursa.generatePrivateKey(modulusBits, exponent)
 
-Create and return a freshly-generated private key.
+Create and return a freshly-generated private key (aka a keypair).
+The first argument indicates the number of bits in the modulus (1024
+or more is generally considered secure). The second argument indicates
+the exponent value, which must be odd (65537 is the typical value; 3
+and 17 are also common).  Both arguments are optional and default to
+2048 and 65537 (respectively).
+
+USing the command-line `openssl` tool, this operation is
+equivalent to:
+
+```shell
+openssl genrsa -out key-name.pem <modulusBits>
+```
+
+for exponent 65537, or for exponent 3 with the additional option
+`-3`. (That tool doesn't support other exponents.)
 
 ### ursa.sshFingerprint(sshKey, sshEncoding, outEncoding)
 
@@ -92,6 +108,18 @@ This is no more and no less than an MD5 hash of the given SSH-format
 public key. This function doesn't actually check to see if the given
 key is valid (garbage in, garbage out).
 
+Using the command-line `ssh-keygen` tool, this operation is
+equivalent to:
+
+```shell
+ssh-keygen -l -f key-name.sshpub
+```
+
+This operation is also equivalent to this:
+
+```shell
+cat key-name.sshpub | awk '{print $2}' | base64 --decode | md5
+```
 
 Public Key Methods
 ------------------
@@ -120,9 +148,16 @@ When used in such files, the contents are base64-encoded and prefixed with
 the label `ssh-rsa`. Depending on context, the line a key appears on may
 also have a host name (in `known_hosts`) or comment (in `authorized_key`).
 
+Using the command-line `ssh-keygen` tool, this operation is equivalent to:
+
+```shell
+ssh-keygen -y -f key-name.pem > key-name.sshpub
+```
+
 ### toPublicSshFingerprint(encoding)
 
-Return the SSH-style public key fingerprint of this key.
+Return the SSH-style public key fingerprint of this key. See
+`ursa.sshFingerprint()`, above, for more details.
 
 ### encrypt(buf, bufEncoding, outEncoding)
 
@@ -134,6 +169,9 @@ then the result of this operation will be 2048 bits, aka 256 bytes.)
 The input buffer is limited to be no larger than the key size
 minus 41 bytes.
 
+This operation is always performed using padding mode
+`RSA_PKCS1_OAEP_PADDING`.
+
 ### publicDecrypt(buf, bufEncoding, outEncoding)
 
 This performs the "public decrypt" operation on the given buffer. The
@@ -141,6 +179,9 @@ result is always a byte sequence that is no more than the size of the
 key associated with the instance. (For example, if the key is 2048
 bits, then the result of this operation will be no more than 2048
 bits, aka 256 bytes.)
+
+This operation is always performed using padding mode
+`RSA_PKCS1_PADDING`.
 
 Private Key Methods
 -------------------
@@ -163,6 +204,9 @@ key associated with the instance. (For example, if the key is 2048
 bits, then the result of this operation will be no more than 2048
 bits, aka 256 bytes.)
 
+This operation is always performed using padding mode
+`RSA_PKCS1_OAEP_PADDING`.
+
 ### privateEncrypt(buf, bufEncoding, outEncoding)
 
 This performs the "private encrypt" operation on the given buffer. The
@@ -172,6 +216,9 @@ then the result of this operation will be 2048 bits, aka 256 bytes.)
 
 The input buffer is limited to be no larger than the key size
 minus 12 bytes.
+
+This operation is always performed using padding mode
+`RSA_PKCS1_PADDING`.
 
 Contributing
 ------------
