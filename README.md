@@ -9,11 +9,6 @@ This module was inspired by
 be clear, there are a few lines that I (danfuzz) used from its
 `wscript` build file, but other than that this code is new.
 
-License
--------
-
-Apache 2. See the top-level file `LICENSE.txt`.
-
 Installing
 ----------
 
@@ -177,3 +172,32 @@ then the result of this operation will be 2048 bits, aka 256 bytes.)
 
 The input buffer is limited to be no larger than the key size
 minus 12 bytes.
+
+Contributing
+------------
+
+Questions, comments, bug reports, and pull requests are all welcome.
+Submit them at [the project on GitHub](https://github.com/Obvious/ursa/).
+
+Bug reports that include steps-to-reproduce (including code) are the
+best. Even better, make them in the form of pull requests that update
+the test suite. Thanks!
+
+Author
+------
+
+[Dan Bornstein](https://github.com/danfuzz)
+([personal website](http://www.milk.com/)), supported by
+[The Obvious Corporation](http://obvious.com/).
+
+[node-rsa](https://github.com/chrisa/node-rsa) by Chris Andrews.  To
+
+License
+-------
+
+Copyright 2012 [The Obvious Corporation](http://obvious.com/).
+
+Licensed under the Apache License, Version 2.0. 
+See the top-level file `LICENSE.txt` and
+(http://www.apache.org/licenses/LICENSE-2.0).
+
