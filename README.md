@@ -93,6 +93,10 @@ Return the SSH-style public key fingerprint of the given SSH-format
 public key (which was, perhaps, the result of a call to
 `toPublicSsh()` on a key object.
 
+This is no more and no less than an MD5 hash of the given SSH-format
+public key. This function doesn't actually check to see if the given
+key is valid (garbage in, garbage out).
+
 
 Public Key Methods
 ------------------
@@ -120,6 +124,10 @@ file format one finds in SSH's `authorized_key` and `known_hosts` files.
 When used in such files, the contents are base64-encoded and prefixed with
 the label `ssh-rsa`. Depending on context, the line a key appears on may
 also have a host name (in `known_hosts`) or comment (in `authorized_key`).
+
+### toPublicSshFingerprint(encoding)
+
+Return the SSH-style public key fingerprint of this key.
 
 ### encrypt(buf, bufEncoding, outEncoding)
 
