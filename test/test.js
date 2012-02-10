@@ -91,11 +91,38 @@ function testPublicKeyMethods(key) {
     test_publicDecrypt(key);
 }
 
+function test_toPrivatePem(key) {
+    var keyString = fixture.PRIVATE_KEY.toString(fixture.UTF8);
+    var result = key.toPrivatePem().toString(fixture.UTF8);
+    assert.equal(result, keyString);
+
+    result = key.toPrivatePem(fixture.UTF8);
+    assert.equal(result, keyString);
+}
+
+function test_decrypt(key) {
+    var encoded = new Buffer(fixture.PRIVATE_CIPHERTEXT_HEX, fixture.HEX);
+    var decoded = key.decrypt(encoded).toString(fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
+
+    decoded = key.decrypt(fixture.PRIVATE_CIPHERTEXT_HEX, fixture.HEX,
+                          fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
+}
+
+function test_privateEncrypt(key) {
+    var encoded = key.privateEncrypt(
+        new Buffer(fixture.PLAINTEXT, fixture.UTF8)).toString(fixture.HEX);
+    assert.equal(encoded, fixture.PUBLIC_CIPHERTEXT_HEX);
+
+    encoded = key.privateEncrypt(fixture.PLAINTEXT, fixture.UTF8, fixture.HEX);
+    assert.equal(encoded, fixture.PUBLIC_CIPHERTEXT_HEX);
+}
+
 function testPrivateKeyMethods(key) {
-    // FIXME
-    // test_toPrivatePem(key);
-    // test_decrypt(key);
-    // test_privateEncrypt(key);
+    test_toPrivatePem(key);
+    test_decrypt(key);
+    test_privateEncrypt(key);
 }
 
 
