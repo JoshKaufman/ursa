@@ -525,6 +525,7 @@ Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
                                   obj->rsa, RSA_PKCS1_PADDING);
 
     if (ret < 0) {
+        // TODO: Will this leak the result buffer? Is it going to be gc'ed?
         scheduleSslException();
         return Undefined();
     }
@@ -595,6 +596,7 @@ Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
                                  obj->rsa, RSA_PKCS1_OAEP_PADDING);
 
     if (ret < 0) {
+        // TODO: Will this leak the result buffer? Is it going to be gc'ed?
         scheduleSslException();
         return Undefined();
     }
