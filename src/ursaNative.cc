@@ -366,8 +366,22 @@ Handle<Value> RsaWrap::GeneratePrivateKey(const Arguments& args) {
         return Undefined();
     }
 
-    // FIXME: Need real implementation.
-    return scope.Close(String::New("world"));
+    // Sanity-check the exponent, since (as of this writing) it looks like
+    // OpenSSL doesn't check it. It's required to be odd.
+    if ((exponent & 1) == 0) {
+        Local<String> message = String::New("Expected odd exponent.");
+        ThrowException(Exception::TypeError(message));
+        return Undefined();
+    }
+
+    obj->rsa =
+        RSA_generate_key(modulusBits, (unsigned long) exponent, NULL, NULL);
+
+    if (obj->rsa == NULL) {
+        scheduleSslException();
+    }
+
+    return Undefined();
 }
 
 /**
