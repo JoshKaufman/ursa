@@ -1,6 +1,6 @@
 {
     "name": "ursa",
-    "version": "0.4.10",
+    "version": "0.4.11",
     "keywords": ["crypto", "key", "openssl", "private", "public", "rsa"],
     "description":
         "RSA public/private key crypto",
