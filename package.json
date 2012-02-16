@@ -13,6 +13,7 @@
         "type": "Apache 2.0",
         "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
     } ],
+    "author": "Dan Bornstein <danfuzz@milk.com>",
     "maintainers": [ {
         "name": "Dan Bornstein",
         "email": "danfuzz@obvious.com",
