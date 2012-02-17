@@ -216,13 +216,6 @@ Private Key Methods
 These are the methods available on private keys, above and beyond
 what is available for public keys.
 
-### toPrivatePem(encoding)
-
-This converts the private key data into a PEM-format file. The result
-is not encrypted, so it behooves the user of this method to take care
-with the result if the key is sensitive from a security standpoint,
-which is often the case with such things. (YMMV of course.)
-
 ### decrypt(buf, bufEncoding, outEncoding)
 
 This performs the "private decrypt" operation on the given buffer. The
@@ -233,6 +226,13 @@ bits, aka 256 bytes.)
 
 This operation is always performed using padding mode
 `RSA_PKCS1_OAEP_PADDING`.
+
+### toPrivatePem(encoding)
+
+This converts the private key data into a PEM-format file. The result
+is not encrypted, so it behooves the user of this method to take care
+with the result if the key is sensitive from a security standpoint,
+which is often the case with such things. (YMMV of course.)
 
 ### privateEncrypt(buf, bufEncoding, outEncoding)
 
