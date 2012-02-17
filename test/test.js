@@ -167,6 +167,30 @@ function testBasics() {
                           undefined, fixture.BASE64);
 }
 
+function testTypes() {
+    var pub = ursa.createPublicKey(fixture.PUBLIC_KEY);
+    var priv = ursa.createPrivateKey(fixture.PRIVATE_KEY);
+    var msg;
+    
+    msg = "Problem with isKey()";
+    assert.equal(ursa.isKey(pub),       true,  msg);
+    assert.equal(ursa.isKey(priv),      true,  msg);
+    assert.equal(ursa.isKey(undefined), false, msg);
+    assert.equal(ursa.isKey("x"),       false, msg);
+
+    msg = "Problem with isPublicKey()";
+    assert.equal(ursa.isPublicKey(pub),       true,  msg);
+    assert.equal(ursa.isPublicKey(priv),      false, msg);
+    assert.equal(ursa.isPublicKey(undefined), false, msg);
+    assert.equal(ursa.isPublicKey("x"),       false, msg);
+
+    msg = "Problem with isPrivateKey()";
+    assert.equal(ursa.isPrivateKey(pub),       false, msg);
+    assert.equal(ursa.isPrivateKey(priv),      true,  msg);
+    assert.equal(ursa.isPrivateKey(undefined), false, msg);
+    assert.equal(ursa.isPrivateKey("x"),       false, msg);
+}
+
 function test_fail_createPublicKey() {
     // This is mostly tested at the native level. This just tests the
     // extra failures added at the high level.
@@ -229,6 +253,7 @@ function testSshFingerprint() {
 require("./native").test();
 
 testBasics();
+testTypes();
 test_fail_createPublicKey();
 test_fail_createPrivateKey();
 testPublicKey();

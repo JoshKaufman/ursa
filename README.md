@@ -98,6 +98,25 @@ openssl genrsa -out key-name.pem <modulusBits>
 for exponent 65537, or for exponent 3 with the additional option
 `-3`. (That tool doesn't support other exponents.)
 
+### ursa.isKey(obj)
+
+Return `true` if the given object is a key object (public or private) that
+was created by this module. Return `false` if not.
+
+### ursa.isPrivateKey(obj)
+
+Return `true` if the given object is a private key object that
+was created by this module. Return `false` if not.
+
+### ursa.isPublicKey(obj)
+
+Return `true` if the given object is a public key object that
+was created by this module. Return `false` if not.
+
+Note that, even though all the public key operations work on private
+keys, this function only returns true if the given object is a
+public key, per se.
+
 ### ursa.sshFingerprint(sshKey, sshEncoding, outEncoding)
 
 Return the SSH-style public key fingerprint of the given SSH-format
@@ -127,6 +146,19 @@ Public Key Methods
 These are all the methods available on public keys. These methods are
 *also* available on private keys (since private keys have all the
 underlying data necessary to perform the public-side operations).
+
+### encrypt(buf, bufEncoding, outEncoding)
+
+This performs the "public encrypt" operation on the given buffer. The
+result is always a byte sequence that is the same size as the key
+associated with the instance. (For example, if the key is 2048 bits,
+then the result of this operation will be 2048 bits, aka 256 bytes.)
+
+The input buffer is limited to be no larger than the key size
+minus 41 bytes.
+
+This operation is always performed using padding mode
+`RSA_PKCS1_OAEP_PADDING`.
 
 ### getExponent(encoding)
 
@@ -160,19 +192,6 @@ ssh-keygen -y -f key-name.pem > key-name.sshpub
 Return the SSH-style public key fingerprint of this key. See
 `ursa.sshFingerprint()`, above, for more details.
 
-### encrypt(buf, bufEncoding, outEncoding)
-
-This performs the "public encrypt" operation on the given buffer. The
-result is always a byte sequence that is the same size as the key
-associated with the instance. (For example, if the key is 2048 bits,
-then the result of this operation will be 2048 bits, aka 256 bytes.)
-
-The input buffer is limited to be no larger than the key size
-minus 41 bytes.
-
-This operation is always performed using padding mode
-`RSA_PKCS1_OAEP_PADDING`.
-
 ### publicDecrypt(buf, bufEncoding, outEncoding)
 
 This performs the "public decrypt" operation on the given buffer. The
@@ -183,6 +202,13 @@ bits, aka 256 bytes.)
 
 This operation is always performed using padding mode
 `RSA_PKCS1_PADDING`.
+
+### unbox(unboxer)
+
+This is an internal method that is used in the implementation of
+`ursa.isKey()` `ursa.isPrivateKey()` and `ursa.isPublicKey()`. When
+called externally, it should always return `undefined`.
+
 
 Private Key Methods
 -------------------
