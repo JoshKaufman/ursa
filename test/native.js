@@ -12,6 +12,7 @@ var assert = require("assert");
 
 var fixture = require("./fixture");
 var RsaWrap = fixture.RsaWrap;
+var textToNid = fixture.ursaNative.textToNid;
 
 
 /*
@@ -403,7 +404,40 @@ function test_sign() {
 }
 
 function test_fail_sign() {
-    // FIXME: Stuff goes here.
+    var rsa = new RsaWrap();
+
+    function f1() {
+        rsa.sign();
+    }
+
+    assert.throws(f1, /Key not yet set\./);
+
+    rsa = new RsaWrap();
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+    assert.throws(f1, /Expected a private key\./);
+
+    rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+
+    function f2() {
+        rsa.sign("x");
+    }
+    assert.throws(f2, /Expected a 32-bit integer in args\[0]\./);
+
+    function f3() {
+        rsa.sign(1, "x");
+    }
+    assert.throws(f3, /Expected a Buffer in args\[1]\./);
+
+    function f4() {
+        rsa.sign(1, new Buffer(2048));
+    }
+    assert.throws(f4, /too big/);
+
+    function f5() {
+        rsa.sign(99999, new Buffer(16));
+    }
+    assert.throws(f5, /unknown algorithm/);
 }
 
 function test_verify() {
@@ -411,15 +445,91 @@ function test_verify() {
 }
 
 function test_fail_verify() {
-    // FIXME: Stuff goes here.
+    var rsa = new RsaWrap();
+
+    function f1() {
+        rsa.verify();
+    }
+
+    assert.throws(f1, /Key not yet set\./);
+
+    rsa = new RsaWrap();
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+
+    function f2() {
+        rsa.verify("x");
+    }
+    assert.throws(f2, /Expected a 32-bit integer in args\[0]\./);
+
+    function f3() {
+        rsa.verify(1, "x");
+    }
+    assert.throws(f3, /Expected a Buffer in args\[1]\./);
+
+    function f4() {
+        rsa.verify(1, new Buffer(16), "x");
+    }
+    assert.throws(f4, /Expected a Buffer in args\[2]\./);
+
+    function f5() {
+        rsa.verify(1, new Buffer(10), new Buffer(5));
+    }
+    assert.throws(f5, /wrong signature length/);
+
+    function f6() {
+        var buf = new Buffer(256);
+        buf.fill(0);
+        rsa.verify(1, new Buffer(10), buf);
+    }
+    assert.throws(f6, /padding_check/);
+
+    // TODO: Wrong algorithm.
+    // TODO: Signature doesn't match.
 }
 
 function test_textToNid() {
-    // FIXME: Stuff goes here.
+    // I don't think you can count on the return values being anything
+    // other than integer values and that aliases should return equal
+    // values.
+
+    function verifyInt(value) {
+        if (typeof value !== "number") {
+            throw new Exception("Not a number: " + value);
+        }
+
+        if (value !== Math.floor(value)) {
+            throw new Exception("Not an integer: " + value);
+        }
+    }
+
+    verifyInt(textToNid("aes-128-ecb"));
+    verifyInt(textToNid("md5"));
+    verifyInt(textToNid("rsa"));
+    verifyInt(textToNid("sha1"));
+    verifyInt(textToNid("sha256"));
+    verifyInt(textToNid("RSA-SHA256"));
+    verifyInt(textToNid("pkcs7"));
+
+    assert.equal(textToNid("RSA-SHA256"), textToNid("sha256WithRSAEncryption"));
+    assert.equal(textToNid("AES-128-ECB"), textToNid("aes-128-ecb"));
 }
 
 function test_fail_textToNid() {
-    // FIXME: Stuff goes here.
+
+    function f1() {
+        textToNid();
+    }
+    assert.throws(f1, /Missing args\[0\]/);
+
+    function f2() {
+        textToNid(123);
+    }
+    assert.throws(f2, /Expected a string in args\[0\]/);
+
+    function f3() {
+        textToNid("blort");
+    }
+    assert.throws(f3, /asn1/);
 }
 
 
