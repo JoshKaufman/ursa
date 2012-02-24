@@ -90,7 +90,7 @@ for more details.
 
 This function is similar to `crypto.createSign()`, except this function
 takes a hash algorithm name (e.g., `"sha256"`) and not a crypto+hash name
-combination (e.g., `"RSA_SHA256"`).
+combination (e.g., `"RSA-SHA256"`).
 
 ### ursa.createVerifier(algorithm)
 
@@ -100,7 +100,7 @@ for more details.
 
 This function is similar to `crypto.createVerify()`, except this function
 takes a hash algorithm name (e.g., `"sha256"`) and not a crypto+hash name
-combination (e.g., `"RSA_SHA256"`).
+combination (e.g., `"RSA-SHA256"`).
 
 ### ursa.generatePrivateKey(modulusBits, exponent)
 
