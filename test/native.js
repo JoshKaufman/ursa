@@ -457,12 +457,17 @@ function test_verify() {
 
     var hash = new Buffer(fixture.FAKE_SHA256_TO_SIGN, fixture.HEX);
     var sig = new Buffer(fixture.FAKE_SHA256_SIGNATURE, fixture.HEX);
-    rsa.verify(textToNid(fixture.SHA256), hash, sig);
+    assert.equal(rsa.verify(textToNid(fixture.SHA256), hash, sig), true);
 
     // Private keys should be able to verify too.
     hash = new Buffer(fixture.PLAINTEXT_SHA256, fixture.HEX);
     sig = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
-    rsa.verify(textToNid(fixture.SHA256), hash, sig);
+    assert.equal(rsa.verify(textToNid(fixture.SHA256), hash, sig), true);
+
+    // Signature mismatch should return false (and not, e.g., throw).
+    hash = new Buffer(fixture.FAKE_SHA256_TO_SIGN, fixture.HEX);
+    sig = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
+    assert.equal(rsa.verify(textToNid(fixture.SHA256), hash, sig), false);
 }
 
 function test_fail_verify() {
@@ -493,7 +498,11 @@ function test_fail_verify() {
     assert.throws(f4, /Expected a Buffer in args\[2]\./);
 
     function f5() {
-        rsa.verify(1, new Buffer(10), new Buffer(5));
+        var hash = new Buffer(10);
+        var sig = new Buffer(5);
+        hash.fill(0);
+        sig.fill(0);
+        rsa.verify(1, hash, sig);
     }
     assert.throws(f5, /wrong signature length/);
 
@@ -517,13 +526,6 @@ function test_fail_verify() {
         rsa.verify(1234567, hash, sig);
     }
     assert.throws(f8, /algorithm mismatch/);
-
-    function f9() {
-        var hash = new Buffer(fixture.FAKE_SHA256_TO_SIGN, fixture.HEX);
-        var sig = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
-        rsa.verify(textToNid(fixture.SHA256), hash, sig);
-    }
-    assert.throws(f9, /bad signature/);
 }
 
 function test_textToNid() {

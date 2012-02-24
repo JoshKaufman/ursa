@@ -802,7 +802,20 @@ Handle<Value> RsaWrap::Verify(const Arguments& args) {
 
     int ret = RSA_verify(nid, (unsigned char *) data, dataLength,
                          (unsigned char *) sig, sigLength, obj->rsa);
-    if (ret == 0) { scheduleSslException(); }
+    if (ret == 0) {
+        // Something about ERR_REASON(RSA_R_BAD_SIGNATURE).
+        unsigned long err = ERR_peek_error();
+        int lib = ERR_GET_LIB(err);
+        int reason = ERR_GET_REASON(err);
+        if ((lib == ERR_LIB_RSA) && (reason == RSA_R_BAD_SIGNATURE)) {
+            // This just means that the signature didn't match
+            // (as opposed to, say, a more dire failure in the library
+            // warranting an exception throw).
+            ERR_get_error(); // Consume the error (get it off the err stack).
+            return False();
+        }
+        scheduleSslException();
+    }
 
-    return Undefined();
+    return True();
 }
