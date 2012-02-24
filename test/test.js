@@ -104,6 +104,10 @@ function test_publicDecrypt(key) {
     assert.equal(decoded, fixture.PLAINTEXT);
 }
 
+function test_verify(key) {
+    // FIXME: Add tests.
+}
+
 function testPublicKeyMethods(key) {
     test_getExponent(key);
     test_getModulus(key);
@@ -112,6 +116,7 @@ function testPublicKeyMethods(key) {
     test_toPublicSshFingerprint(key);
     test_encrypt(key);
     test_publicDecrypt(key);
+    test_verify(key);
 }
 
 function test_toPrivatePem(key) {
@@ -145,10 +150,15 @@ function test_privateEncrypt(key) {
     assert.equal(encoded, fixture.PUBLIC_CIPHERTEXT_HEX);
 }
 
+function test_sign(key) {
+    // FIXME: Add tests!
+}
+
 function testPrivateKeyMethods(key) {
     test_toPrivatePem(key);
     test_decrypt(key);
     test_privateEncrypt(key);
+    test_sign(key);
 }
 
 
@@ -245,6 +255,14 @@ function testSshFingerprint() {
     assert.equal(finger, fixture.SSH_PUBLIC_KEY_FINGERPRINT_HEX);
 }
 
+function testSigner() {
+    // FIXME: Add tests.
+}
+
+function testVerifier() {
+    // FIXME: Add tests.
+}
+
 /*
  * Main test script
  */
@@ -260,5 +278,7 @@ testPublicKey();
 testPrivateKey();
 testGeneratedKey();
 testSshFingerprint();
+testSigner();
+testVerifier();
 
 console.log("All tests pass!");

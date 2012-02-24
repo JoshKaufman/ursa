@@ -75,9 +75,32 @@ the PEM file.
 
 The encoding, if specified, applies to both other arguments.
 
+See "Public Key Methods" below for more details.
+
 ### ursa.createPublicKey(pem, encoding)
 
 Create and return a public key read in from the given PEM-format file.
+See "Public Key Methods" below for more details.
+
+### ursa.createSigner(algorithm)
+
+Create and return a signer which can sign a hash generated with the named
+algorithm (such as `"sha256"` or `"md5"`). See "Signer Methods" below
+for more details.
+
+This function is similar to `crypto.createSign()`, except this function
+takes a hash algorithm name (e.g., `"sha256"`) and not a crypto+hash name
+combination (e.g., `"RSA_SHA256"`).
+
+### ursa.createVerifier(algorithm)
+
+Create and return a verifier which can verify a hash generated with the
+named algorithm (such as `"sha256"` or `"md5"`). See "Verifier Methods" below
+for more details.
+
+This function is similar to `crypto.createVerify()`, except this function
+takes a hash algorithm name (e.g., `"sha256"`) and not a crypto+hash name
+combination (e.g., `"RSA_SHA256"`).
 
 ### ursa.generatePrivateKey(modulusBits, exponent)
 
@@ -116,6 +139,12 @@ was created by this module. Return `false` if not.
 Note that, even though all the public key operations work on private
 keys, this function only returns true if the given object is a
 public key, per se.
+
+### ursa.createVerifier(algorithm)
+
+Create and return a verifier which can verify a hash generated with the
+named algorithm (such as `"sha256"` or `"md5"`). See "Verifier Methods" below
+for more details.
 
 ### ursa.sshFingerprint(sshKey, sshEncoding, outEncoding)
 
@@ -203,6 +232,23 @@ bits, aka 256 bytes.)
 This operation is always performed using padding mode
 `RSA_PKCS1_PADDING`.
 
+### verify(algorithm, hash, sig, encoding)
+
+This performs an RSA public-verify on the given hash buffer, which
+should be the result of performing the hash operation named by
+the algorithm (such as `"sha256"` or `"md5"`) on some data. The
+signature buffer is checked to see if it contains a private-signed
+statement of the algorithm and hash. The method returns `true` if
+the signature and hash match, or `false` if the signature and hash
+don't match but the signature is at least a valid signature of
+some sort. In any other situation, this throws an exception.
+
+The encoding, if specified, applies to both buffer-like arguments. The
+algorithm must always be a string.
+
+This method is the underlying one used as part of the implementation
+of the higher-level and much friendlier `ursa.createVerifier()`.
+
 ### unbox(unboxer)
 
 This is an internal method that is used in the implementation of
@@ -246,6 +292,57 @@ minus 12 bytes.
 
 This operation is always performed using padding mode
 `RSA_PKCS1_PADDING`.
+
+### sign(algorithm, hash, hashEncoding, outEncoding)
+
+This performs an RSA private-sign on the given hash buffer, which
+should be the result of performing the hash operation named by
+the algorithm (such as `"sha256"` or `"md5"`) on some data. The
+result of this operation may later be passed to `verify()` on the
+corresponding public key.
+
+This method is the underlying one used as part of the implementation
+of the higher-level and much friendlier `ursa.createSigner()`.
+
+Signer Methods
+--------------
+
+These are the methods available on signer objects, which are returned
+by `ursa.createSigner()`. These are similar to the objects returned
+from `crypto.createSign()`.
+
+### update(buf, bufEncoding)
+
+Update the hash in-progress with the given data.
+
+### sign(privateKey, outEncoding)
+
+Get the final hash of the data, and sign it using the private key. The
+return value is the signature, suitable for later verification.
+
+
+Verifier Methods
+----------------
+
+These are the methods available on verifier objects, which are returned
+by `ursa.createVerifier()`. These are similar to the objects returned
+from `crypto.createVerify()`.
+
+### update(buf, bufEncoding)
+
+Update the hash in-progress with the given data.
+
+### verify(publicKey, sig, sigEncoding)
+
+Get the final hash of the data, and verify that the given signature
+both matches it and was produced by the private key corresponding to
+the given public key.
+
+This returns `true` if the signature and hash match appropriately,
+or `false` if the signature appears to be generally valid (e.g.
+structurally) yet doesn't match. This throws an exception in all
+other cases.
+
 
 Contributing
 ------------
