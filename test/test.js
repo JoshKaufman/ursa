@@ -114,6 +114,14 @@ function test_verify(key) {
     assert.equal(key.verify(fixture.SHA256, hash, sig), true);
 }
 
+function test_hashAndVerify(key) {
+    assert.equal(key.hashAndVerify(fixture.SHA256,
+                                   new Buffer(fixture.PLAINTEXT, fixture.UTF8),
+                                   fixture.PLAINTEXT_SHA256_SIGNATURE,
+                                   fixture.HEX),
+                 true);
+}
+
 function testPublicKeyMethods(key) {
     test_getExponent(key);
     test_getModulus(key);
@@ -123,6 +131,7 @@ function testPublicKeyMethods(key) {
     test_encrypt(key);
     test_publicDecrypt(key);
     test_verify(key);
+    test_hashAndVerify(key);
 }
 
 function test_toPrivatePem(key) {
@@ -168,10 +177,17 @@ function test_sign(key) {
     assert.equal(sig, fixture.PLAINTEXT_SHA256_SIGNATURE);
 }
 
+function test_hashAndSign(key) {
+    var sig = key.hashAndSign(fixture.SHA256, fixture.PLAINTEXT,
+                              fixture.UTF8, fixture.HEX);
+    assert.equal(sig, fixture.PLAINTEXT_SHA256_SIGNATURE);
+}
+
 function testPrivateKeyMethods(key) {
     test_toPrivatePem(key);
     test_decrypt(key);
     test_privateEncrypt(key);
+    test_hashAndSign(key);
     test_sign(key);
 }
 

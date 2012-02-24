@@ -197,6 +197,30 @@ Get the public exponent as an unsigned big-endian byte sequence.
 
 Get the public modulus as an unsigned big-endian byte sequence.
 
+### hashAndVerify(algorithm, buf, sig, encoding)
+
+This is a friendly wrapper for verifying signatures. The given buffer
+is hashed using the named algorithm, and the result is verified
+against the given signature. This returns `true` if the hash and
+signature match and the signature was produced by the appropriate
+private key. This returns `false` if the signature is a valid signature
+(structurally) but doesn't match. This throws an exception in other
+cases.
+
+The encoding, if specified, applies to both buffer-like arguments. The
+algorithm must always be a string.
+
+### publicDecrypt(buf, bufEncoding, outEncoding)
+
+This performs the "public decrypt" operation on the given buffer. The
+result is always a byte sequence that is no more than the size of the
+key associated with the instance. (For example, if the key is 2048
+bits, then the result of this operation will be no more than 2048
+bits, aka 256 bytes.)
+
+This operation is always performed using padding mode
+`RSA_PKCS1_PADDING`.
+
 ### toPublicPem(encoding)
 
 This converts the public key data into a PEM-format file.
@@ -221,17 +245,6 @@ ssh-keygen -y -f key-name.pem > key-name.sshpub
 Return the SSH-style public key fingerprint of this key. See
 `ursa.sshFingerprint()`, above, for more details.
 
-### publicDecrypt(buf, bufEncoding, outEncoding)
-
-This performs the "public decrypt" operation on the given buffer. The
-result is always a byte sequence that is no more than the size of the
-key associated with the instance. (For example, if the key is 2048
-bits, then the result of this operation will be no more than 2048
-bits, aka 256 bytes.)
-
-This operation is always performed using padding mode
-`RSA_PKCS1_PADDING`.
-
 ### verify(algorithm, hash, sig, encoding)
 
 This performs an RSA public-verify on the given hash buffer, which
@@ -247,7 +260,8 @@ The encoding, if specified, applies to both buffer-like arguments. The
 algorithm must always be a string.
 
 This method is the underlying one used as part of the implementation
-of the higher-level and much friendlier `ursa.createVerifier()`.
+of the higher-level and much friendlier `ursa.createVerifier()` and
+`hashAndVerify()`.
 
 ### unbox(unboxer)
 
@@ -273,12 +287,12 @@ bits, aka 256 bytes.)
 This operation is always performed using padding mode
 `RSA_PKCS1_OAEP_PADDING`.
 
-### toPrivatePem(encoding)
+### hashAndSign(algorithm, buf, bufEncoding, outEncoding)
 
-This converts the private key data into a PEM-format file. The result
-is not encrypted, so it behooves the user of this method to take care
-with the result if the key is sensitive from a security standpoint,
-which is often the case with such things. (YMMV of course.)
+This is a friendly wrapper for producing signatures. The given buffer
+is hashed using the named algorithm, and the result is signed using
+the private key held by this instance. The return value of this method
+is the signature.
 
 ### privateEncrypt(buf, bufEncoding, outEncoding)
 
@@ -302,7 +316,15 @@ result of this operation may later be passed to `verify()` on the
 corresponding public key.
 
 This method is the underlying one used as part of the implementation
-of the higher-level and much friendlier `ursa.createSigner()`.
+of the higher-level and much friendlier `ursa.createSigner()` and
+`hashAndSign()`.
+
+### toPrivatePem(encoding)
+
+This converts the private key data into a PEM-format file. The result
+is not encrypted, so it behooves the user of this method to take care
+with the result if the key is sensitive from a security standpoint,
+which is often the case with such things. (YMMV of course.)
 
 Signer Methods
 --------------
