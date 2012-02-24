@@ -105,7 +105,13 @@ function test_publicDecrypt(key) {
 }
 
 function test_verify(key) {
-    // FIXME: Add tests.
+    assert.equal(key.verify(fixture.SHA256, fixture.PLAINTEXT_SHA256,
+                            fixture.PLAINTEXT_SHA256_SIGNATURE,
+                            fixture.HEX), true);
+
+    var hash = new Buffer(fixture.PLAINTEXT_SHA256, fixture.HEX);
+    var sig = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
+    assert.equal(key.verify(fixture.SHA256, hash, sig), true);
 }
 
 function testPublicKeyMethods(key) {
@@ -151,7 +157,15 @@ function test_privateEncrypt(key) {
 }
 
 function test_sign(key) {
-    // FIXME: Add tests!
+    var sig = key.sign(fixture.SHA256,
+                       fixture.PLAINTEXT_SHA256, fixture.HEX,
+                       fixture.BASE64);
+    sig = new Buffer(sig, fixture.BASE64);
+    assert.equal(sig.toString(fixture.HEX), fixture.PLAINTEXT_SHA256_SIGNATURE);
+
+    var buf = new Buffer(fixture.PLAINTEXT_SHA256, fixture.HEX);
+    sig = key.sign(fixture.SHA256, buf, undefined, fixture.HEX);
+    assert.equal(sig, fixture.PLAINTEXT_SHA256_SIGNATURE);
 }
 
 function testPrivateKeyMethods(key) {
