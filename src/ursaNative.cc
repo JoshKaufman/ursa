@@ -753,7 +753,7 @@ Handle<Value> RsaWrap::Sign(const Arguments& args) {
     if (!getArgInt(args, 0, &nid)) { return Undefined(); }
 
     int dataLength;
-    void *data = getArgDataAndLength(args, 0, &dataLength);
+    void *data = getArgDataAndLength(args, 1, &dataLength);
     if (data == NULL) { return Undefined(); }
 
     unsigned int sigLength = (unsigned int) RSA_size(obj->rsa);
@@ -793,7 +793,7 @@ Handle<Value> RsaWrap::Verify(const Arguments& args) {
 
     int sigLength;
     void *sig = getArgDataAndLength(args, 2, &sigLength);
-    if (data == NULL) { return Undefined(); }
+    if (sig == NULL) { return Undefined(); }
 
     int ret = RSA_verify(nid, (unsigned char *) data, dataLength,
                          (unsigned char *) sig, sigLength, obj->rsa);
