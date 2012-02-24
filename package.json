@@ -1,7 +1,10 @@
 {
     "name": "ursa",
-    "version": "0.4.13",
-    "keywords": ["crypto", "key", "openssl", "private", "public", "rsa"],
+    "version": "0.6.0",
+    "keywords": [
+        "crypto", "key", "openssl", "private", "public", "rsa", "sign",
+        "signature", "verify", "verification", "hash", "digest"
+    ],
     "description":
         "RSA public/private key crypto",
     "homepage": "https://github.com/Obvious/ursa",
