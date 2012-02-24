@@ -756,18 +756,23 @@ Handle<Value> RsaWrap::Sign(const Arguments& args) {
     void *data = getArgDataAndLength(args, 1, &dataLength);
     if (data == NULL) { return Undefined(); }
 
-    unsigned int sigLength = (unsigned int) RSA_size(obj->rsa);
+    unsigned int rsaSize = (unsigned int) RSA_size(obj->rsa);
+    unsigned int sigLength = rsaSize;
     node::Buffer *result = node::Buffer::New(sigLength);
 
     int ret = RSA_sign(nid, (unsigned char*) data, dataLength, 
                        (unsigned char *) node::Buffer::Data(result),
                        &sigLength, obj->rsa);
 
-    printf("~~~ sigLength %d; RSA_size %d\n", sigLength, RSA_size(obj->rsa));
     if (ret == 0) { 
         // TODO: Will this leak the result buffer? Is it going to be gc'ed?
         scheduleSslException();
         return Undefined();
+    }
+
+    if (rsaSize != sigLength) {
+        // Sanity check. Shouldn't ever happen in practice.
+        ThrowException(Exception::Error(String::New("Shouldn't happen.")));
     }
 
     return result->handle_;
