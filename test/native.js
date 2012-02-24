@@ -400,7 +400,18 @@ function test_fail_generatePrivateKey() {
 }
 
 function test_sign() {
-    // FIXME: Stuff goes here.
+    var rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+
+    var buf = new Buffer(fixture.FAKE_SHA256_TO_SIGN, fixture.HEX);
+    var sig = rsa.sign(textToNid(fixture.SHA256), buf);
+
+    assert.equal(sig.toString(fixture.HEX), fixture.FAKE_SHA256_SIGNATURE);
+
+    buf = new Buffer(fixture.PLAINTEXT_SHA256, fixture.HEX);
+    sig = rsa.sign(textToNid(fixture.SHA256), buf);
+
+    assert.equal(sig.toString(fixture.HEX), fixture.PLAINTEXT_SHA256_SIGNATURE);
 }
 
 function test_fail_sign() {
@@ -441,7 +452,17 @@ function test_fail_sign() {
 }
 
 function test_verify() {
-    // FIXME: Stuff goes here.
+    var rsa = new RsaWrap();
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+
+    var hash = new Buffer(fixture.FAKE_SHA256_TO_SIGN, fixture.HEX);
+    var sig = new Buffer(fixture.FAKE_SHA256_SIGNATURE, fixture.HEX);
+    rsa.verify(textToNid(fixture.SHA256), hash, sig);
+
+    // Private keys should be able to verify too.
+    hash = new Buffer(fixture.PLAINTEXT_SHA256, fixture.HEX);
+    sig = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
+    rsa.verify(textToNid(fixture.SHA256), hash, sig);
 }
 
 function test_fail_verify() {
@@ -483,8 +504,26 @@ function test_fail_verify() {
     }
     assert.throws(f6, /padding_check/);
 
-    // TODO: Wrong algorithm.
-    // TODO: Signature doesn't match.
+    function f7() {
+        var hash = new Buffer(fixture.PLAINTEXT_SHA256, fixture.HEX);
+        var sig = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
+        rsa.verify(textToNid(fixture.SHA1), hash, sig);
+    }
+    assert.throws(f7, /algorithm mismatch/);
+
+    function f8() {
+        var hash = new Buffer(fixture.PLAINTEXT_SHA256, fixture.HEX);
+        var sig = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
+        rsa.verify(1234567, hash, sig);
+    }
+    assert.throws(f8, /algorithm mismatch/);
+
+    function f9() {
+        var hash = new Buffer(fixture.FAKE_SHA256_TO_SIGN, fixture.HEX);
+        var sig = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
+        rsa.verify(textToNid(fixture.SHA256), hash, sig);
+    }
+    assert.throws(f9, /bad signature/);
 }
 
 function test_textToNid() {
