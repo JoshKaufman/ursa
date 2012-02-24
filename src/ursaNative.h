@@ -29,6 +29,9 @@ class RsaWrap : node::ObjectWrap {
     static v8::Handle<v8::Value> PublicEncrypt(const v8::Arguments& args);
     static v8::Handle<v8::Value> SetPrivateKeyPem(const v8::Arguments& args);
     static v8::Handle<v8::Value> SetPublicKeyPem(const v8::Arguments& args);
+    static v8::Handle<v8::Value> Sign(const v8::Arguments& args);
+    static v8::Handle<v8::Value> Verify(const v8::Arguments& args);
+
 
   private:
     static RsaWrap *unwrapExpectPrivateKey(const v8::Arguments& args);
@@ -37,5 +40,7 @@ class RsaWrap : node::ObjectWrap {
 
     RSA *rsa;
 };
+
+v8::Handle<v8::Value> TextToNid(const v8::Arguments& args);
 
 #endif // def URSA_NATIVE_H

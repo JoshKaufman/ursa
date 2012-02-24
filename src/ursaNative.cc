@@ -17,15 +17,6 @@ using namespace v8;
  */
 
 /**
- * Top-level initialization function.
- */
-void init(Handle<Object> target) {
-    RsaWrap::InitClass(target);
-}
-
-NODE_MODULE(ursaNative, init)
-
-/**
  * Helper for prototype binding.
  */
 #define BIND(proto, highName, lowName) \
@@ -33,35 +24,14 @@ NODE_MODULE(ursaNative, init)
         FunctionTemplate::New(lowName)->GetFunction())
 
 /**
- * Initialize the bindings for this class.
+ * Top-level initialization function.
  */
-void RsaWrap::InitClass(Handle<Object> target) {
-    Local<String> className = String::NewSymbol("RsaWrap");
-
-    // Basic instance setup
-    Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
-
-    tpl->SetClassName(className);
-    tpl->InstanceTemplate()->SetInternalFieldCount(1); // required by ObjectWrap
-
-    // Prototype method bindings
-    Local<ObjectTemplate> proto = tpl->PrototypeTemplate();
-
-    BIND(proto, generatePrivateKey, GeneratePrivateKey);
-    BIND(proto, getExponent,        GetExponent);
-    BIND(proto, getModulus,         GetModulus);
-    BIND(proto, getPrivateKeyPem,   GetPrivateKeyPem);
-    BIND(proto, getPublicKeyPem,    GetPublicKeyPem);
-    BIND(proto, privateDecrypt,     PrivateDecrypt);
-    BIND(proto, privateEncrypt,     PrivateEncrypt);
-    BIND(proto, publicDecrypt,      PublicDecrypt);
-    BIND(proto, publicEncrypt,      PublicEncrypt);
-    BIND(proto, setPrivateKeyPem,   SetPrivateKeyPem);
-    BIND(proto, setPublicKeyPem,    SetPublicKeyPem);
-
-    // Store the constructor in the target bindings.
-    target->Set(className, Persistent<Function>::New(tpl->GetFunction()));
+void init(Handle<Object> target) {
+    BIND(target, textToNid, TextToNid);
+    RsaWrap::InitClass(target);
 }
+
+NODE_MODULE(ursaNative, init)
 
 
 /*
@@ -180,6 +150,24 @@ static bool isBuffer(const Arguments& args, int index) {
 }
 
 /**
+ * Check that the given argument index exists and is a string. Returns
+ * true if so. Schedules an exception and returns false if not.
+ */
+static bool isString(const Arguments& args, int index) {
+    if (!hasArgument(args, index)) { return false; }
+
+    if (!args[index]->IsString()) {
+        char *message = NULL;
+        asprintf(&message, "Expected a string in args[%d].", index);
+        ThrowException(Exception::TypeError(String::New(message)));
+        free(message);
+        return false;
+    }
+
+    return true;
+}
+
+/**
  * Get a Buffer out of args[0], converted to a freshly-allocated
  * memory BIO. Returns a non-null pointer on success. On failure,
  * schedules an exception and returns NULL.
@@ -198,14 +186,16 @@ static BIO *getArg0Bio(const Arguments& args) {
 }
 
 /**
- * Get a Buffer out of args[0], yielding a data pointer and length.
- * Returns a non-null pointer on success and sets the given length
- * pointer. On failure, schedules an exception and returns NULL.
+ * Get a Buffer out of args[] at the given index, yielding a data
+ * pointer and length.  Returns a non-null pointer on success and sets
+ * the given length pointer. On failure, schedules an exception and
+ * returns NULL.
  */
-static void *getArg0DataAndLength(const Arguments& args, int *lengthPtr) {
-    if (!isBuffer(args, 0)) { return NULL; }
+static void *getArgDataAndLength(const Arguments& args, int index,
+                                 int *lengthPtr) {
+    if (!isBuffer(args, index)) { return NULL; }
 
-    Local<Object> buf = args[0]->ToObject();
+    Local<Object> buf = args[index]->ToObject();
 
     *lengthPtr = node::Buffer::Length(buf);
     return node::Buffer::Data(buf);
@@ -216,7 +206,7 @@ static void *getArg0DataAndLength(const Arguments& args, int *lengthPtr) {
  * *). Returns a non-null pointer on success. On failure, schedules an
  * exception and returns NULL.
  */
-static char *getArg1String(const Arguments& args) {
+static char *getArg1BufferAsString(const Arguments& args) {
     if (!isBuffer(args, 1)) { return NULL; }
 
     Local<Object> buf = args[1]->ToObject();
@@ -231,6 +221,36 @@ static char *getArg1String(const Arguments& args) {
 
     memcpy(result, data, length);
     result[length] = '\0';
+    return result;
+}
+
+/**
+ * Get a string out of args[] at the given index, converted to a
+ * freshly-allocated (char *). Returns a non-null pointer on
+ * success. On failure, schedules an exception and returns NULL.
+ */
+static char *getArgString(const Arguments& args, int index) {
+    if (!isString(args, index)) { return NULL; }
+
+    Local<String> str = args[index]->ToString();
+    int length = str->Utf8Length();
+    char *result = (char *) malloc(length + 1);
+
+    if (result == NULL) {
+        scheduleAllocException();
+        return NULL;
+    }
+
+    result[length] = 'x'; // Set up a small sanity check (see below).
+    str->WriteUtf8(result, length + 1);
+
+    if (result[length] != '\0') {
+        char *message = "String conversion failed.";
+        ThrowException(Exception::Error(String::New(message)));
+        free(result);
+        return NULL;
+    }
+
     return result;
 }
 
@@ -256,9 +276,68 @@ static bool getArgInt(const Arguments& args, int index, int *resultPtr) {
     return true;
 }
 
+
+/*
+ * Utility function implementation
+ */
+
+/**
+ * FIXME: Document.
+ */
+Handle<Value> TextToNid(const Arguments& args) {
+    HandleScope scope;
+
+    char *name = getArgString(args, 0);
+    if (name == NULL) { return Undefined(); }        
+
+    int nid = OBJ_txt2nid(name);
+    free(name);
+
+    if (nid == NID_undef) { 
+        scheduleSslException();
+        return Undefined();
+    }
+
+    return scope.Close(Integer::New(nid));
+}
+
+
 /*
  * RsaWrap implementation
  */
+
+/**
+ * Initialize the bindings for this class.
+ */
+void RsaWrap::InitClass(Handle<Object> target) {
+    Local<String> className = String::NewSymbol("RsaWrap");
+
+    // Basic instance setup
+    Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
+
+    tpl->SetClassName(className);
+    tpl->InstanceTemplate()->SetInternalFieldCount(1); // required by ObjectWrap
+
+    // Prototype method bindings
+    Local<ObjectTemplate> proto = tpl->PrototypeTemplate();
+
+    BIND(proto, generatePrivateKey, GeneratePrivateKey);
+    BIND(proto, getExponent,        GetExponent);
+    BIND(proto, getModulus,         GetModulus);
+    BIND(proto, getPrivateKeyPem,   GetPrivateKeyPem);
+    BIND(proto, getPublicKeyPem,    GetPublicKeyPem);
+    BIND(proto, privateDecrypt,     PrivateDecrypt);
+    BIND(proto, privateEncrypt,     PrivateEncrypt);
+    BIND(proto, publicDecrypt,      PublicDecrypt);
+    BIND(proto, publicEncrypt,      PublicEncrypt);
+    BIND(proto, setPrivateKeyPem,   SetPrivateKeyPem);
+    BIND(proto, setPublicKeyPem,    SetPublicKeyPem);
+    BIND(proto, sign,               Sign);
+    BIND(proto, verify,             Verify);
+
+    // Store the constructor in the target bindings.
+    target->Set(className, Persistent<Function>::New(tpl->GetFunction()));
+}
 
 /**
  * Straightforward constructor. Nothing much to initialize, other than
@@ -472,7 +551,7 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
     if (obj == NULL) { return Undefined(); }
 
     int length;
-    void *data = getArg0DataAndLength(args, &length);
+    void *data = getArgDataAndLength(args, 0, &length);
     if (data == NULL) { return Undefined(); }
 
     int rsaLength = RSA_size(obj->rsa);
@@ -509,7 +588,7 @@ Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
     if (obj == NULL) { return Undefined(); }
 
     int length;
-    void *data = getArg0DataAndLength(args, &length);
+    void *data = getArgDataAndLength(args, 0, &length);
     if (data == NULL) { return Undefined(); }
 
     int rsaLength = RSA_size(obj->rsa);
@@ -544,7 +623,7 @@ Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
     if (obj == NULL) { return Undefined(); }
 
     int length;
-    void *data = getArg0DataAndLength(args, &length);
+    void *data = getArgDataAndLength(args, 0, &length);
     if (data == NULL) { return Undefined(); }
 
     int rsaLength = RSA_size(obj->rsa);
@@ -580,7 +659,7 @@ Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
     if (obj == NULL) { return Undefined(); }
 
     int length;
-    void *data = getArg0DataAndLength(args, &length);
+    void *data = getArgDataAndLength(args, 0, &length);
     if (data == NULL) { return Undefined(); }
 
     int rsaLength = RSA_size(obj->rsa);
@@ -624,7 +703,7 @@ Handle<Value> RsaWrap::SetPrivateKeyPem(const Arguments& args) {
 
     char *password = NULL;
     if (ok && (args.Length() >= 2)) {
-        password = getArg1String(args);
+        password = getArg1BufferAsString(args);
         ok &= (password != NULL);
     }
 
@@ -657,5 +736,68 @@ Handle<Value> RsaWrap::SetPublicKeyPem(const Arguments& args) {
     if (obj->rsa == NULL) { scheduleSslException(); }
 
     BIO_vfree(bio);
+    return Undefined();
+}
+
+/**
+ * Sign the given hash data. First argument indicates what kind of hash
+ * was performed. Returns a Buffer object.
+ */
+Handle<Value> RsaWrap::Sign(const Arguments& args) {
+    HandleScope scope;
+
+    RsaWrap *obj = unwrapExpectPrivateKey(args);
+    if (obj == NULL) { return Undefined(); }
+
+    int nid;
+    if (!getArgInt(args, 0, &nid)) { return Undefined(); }
+
+    int dataLength;
+    void *data = getArgDataAndLength(args, 0, &dataLength);
+    if (data == NULL) { return Undefined(); }
+
+    unsigned int sigLength = (unsigned int) RSA_size(obj->rsa);
+    node::Buffer *result = node::Buffer::New(sigLength);
+
+    int ret = RSA_sign(nid, (unsigned char*) data, dataLength, 
+                       (unsigned char *) node::Buffer::Data(result),
+                       &sigLength, obj->rsa);
+
+    printf("~~~ sigLength %d; RSA_size %d\n", sigLength, RSA_size(obj->rsa));
+    if (ret == 0) { 
+        // TODO: Will this leak the result buffer? Is it going to be gc'ed?
+        scheduleSslException();
+        return Undefined();
+    }
+
+    return result->handle_;
+}
+
+/**
+ * Verify the signature on the given hash data. First argument indicates
+ * what kind of hash was performed. Throws an exception if the signature
+ * did not verify.
+ */
+Handle<Value> RsaWrap::Verify(const Arguments& args) {
+    HandleScope scope;
+
+    RsaWrap *obj = unwrapExpectSet(args);
+    if (obj == NULL) { return Undefined(); }
+
+    int nid;
+    if (!getArgInt(args, 0, &nid)) { return Undefined(); }
+
+    int dataLength;
+    void *data = getArgDataAndLength(args, 1, &dataLength);
+    if (data == NULL) { return Undefined(); }
+
+    int sigLength;
+    void *sig = getArgDataAndLength(args, 2, &sigLength);
+    if (data == NULL) { return Undefined(); }
+
+    int ret = RSA_verify(nid, (unsigned char *) data, dataLength,
+                         (unsigned char *) sig, sigLength, obj->rsa);
+    if (ret == 0) { scheduleSslException(); }
+
     return Undefined();
 }

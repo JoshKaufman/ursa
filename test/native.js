@@ -398,6 +398,30 @@ function test_fail_generatePrivateKey() {
     assert.throws(f1, /Key already set\./);
 }
 
+function test_sign() {
+    // FIXME: Stuff goes here.
+}
+
+function test_fail_sign() {
+    // FIXME: Stuff goes here.
+}
+
+function test_verify() {
+    // FIXME: Stuff goes here.
+}
+
+function test_fail_verify() {
+    // FIXME: Stuff goes here.
+}
+
+function test_textToNid() {
+    // FIXME: Stuff goes here.
+}
+
+function test_fail_textToNid() {
+    // FIXME: Stuff goes here.
+}
+
 
 /*
  * Main test script
@@ -432,6 +456,14 @@ function test() {
 
     test_generatePrivateKey();
     test_fail_generatePrivateKey();
+
+    test_sign();
+    test_fail_sign();
+    test_verify();
+    test_fail_verify();
+
+    test_textToNid();
+    test_fail_textToNid();
 }
 
 module.exports = {
