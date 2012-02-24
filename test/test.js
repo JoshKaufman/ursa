@@ -270,11 +270,28 @@ function testSshFingerprint() {
 }
 
 function testSigner() {
-    // FIXME: Add tests.
+    var key = ursa.createPrivateKey(fixture.PRIVATE_KEY);
+    var signer = ursa.createSigner(fixture.SHA256);
+
+    signer.update(fixture.PLAINTEXT, fixture.UTF8);
+
+    var sig = signer.sign(key, fixture.HEX);
+
+    assert.equal(sig, fixture.PLAINTEXT_SHA256_SIGNATURE);
 }
 
 function testVerifier() {
-    // FIXME: Add tests.
+    var key = ursa.createPublicKey(fixture.PUBLIC_KEY);
+    var verifier = ursa.createVerifier(fixture.SHA256);
+    verifier.update(fixture.PLAINTEXT, fixture.UTF8);
+    assert.equal(verifier.verify(key, fixture.PLAINTEXT_SHA256_SIGNATURE,
+                                 fixture.HEX),
+                 true);
+
+    var verifier = ursa.createVerifier(fixture.SHA256);
+    verifier.update(new Buffer(fixture.PLAINTEXT, fixture.UTF8));
+    var sigBuf = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
+    assert.equal(verifier.verify(key, sigBuf), true);
 }
 
 /*
