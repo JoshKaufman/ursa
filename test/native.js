@@ -8,10 +8,12 @@
  * Modules used
  */
 
+"use strict";
+
 var assert = require("assert");
 
-var fixture = require("./fixture");
-var RsaWrap = fixture.RsaWrap;
+var fixture   = require("./fixture");
+var RsaWrap   = fixture.RsaWrap;
 var textToNid = fixture.ursaNative.textToNid;
 
 

@@ -8,9 +8,11 @@
  * Modules used
  */
 
-var fs     = require("fs");
+"use strict";
 
-var ursa = require("../lib/ursa");
+var fs = require("fs");
+
+var ursa       = require("../lib/ursa");
 var ursaNative = require("../bin/ursaNative");
 
 

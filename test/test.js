@@ -8,10 +8,12 @@
  * Modules used
  */
 
+"use strict";
+
 var assert = require("assert");
 
 var fixture = require("./fixture");
-var ursa =    fixture.ursa;
+var ursa    = fixture.ursa;
 
 
 /*
