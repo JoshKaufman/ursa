@@ -29,6 +29,7 @@
     },
 
     "scripts": {
-        "install": "node-waf configure build"
+        "install": "node-waf configure build",
+        "test": "node test/test.js"
     }
 }

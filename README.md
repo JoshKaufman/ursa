@@ -9,8 +9,8 @@ This module was inspired by
 be clear, there are a few lines that I (Danfuzz) used from its
 `wscript` build file, but other than that this code is new.
 
-Installing
-----------
+Building and Installing
+-----------------------
 
 ```shell
 npm install ursa
@@ -24,6 +24,12 @@ node-waf configure build
 
 Testing
 -------
+
+```shell
+npm test
+```
+
+Or
 
 ```shell
 node ./test/test.js
