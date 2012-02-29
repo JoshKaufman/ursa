@@ -231,6 +231,21 @@ function testTypes() {
     assert.equal(ursa.isPrivateKey(priv),      true,  msg);
     assert.equal(ursa.isPrivateKey(undefined), false, msg);
     assert.equal(ursa.isPrivateKey("x"),       false, msg);
+
+    assert.doesNotThrow(function () { ursa.assertKey(pub); });
+    assert.doesNotThrow(function () { ursa.assertKey(priv); });
+    assert.throws(function () { ursa.assertKey(undefined); });
+    assert.throws(function () { ursa.assertKey("x"); });
+
+    assert.doesNotThrow(function () { ursa.assertPublicKey(pub); });
+    assert.throws(function () { ursa.assertPublicKey(priv); });
+    assert.throws(function () { ursa.assertPublicKey(undefined); });
+    assert.throws(function () { ursa.assertPublicKey("x"); });
+
+    assert.throws(function () { ursa.assertPrivateKey(pub); });
+    assert.doesNotThrow(function () { ursa.assertPrivateKey(priv); });
+    assert.throws(function () { ursa.assertPrivateKey(undefined); });
+    assert.throws(function () { ursa.assertPrivateKey("x"); });
 }
 
 function test_fail_createPublicKey() {

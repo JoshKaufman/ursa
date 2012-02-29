@@ -83,6 +83,18 @@ The encoding, if specified, applies to both other arguments.
 
 See "Public Key Methods" below for more details.
 
+### ursa.assertKey(obj)
+
+Convenient shorthand for `assert(ursa.isKey(obj))`.
+
+### ursa.assertPrivateKey(obj)
+
+Convenient shorthand for `assert(ursa.isPrivateKey(obj))`.
+
+### ursa.assertPublicKey(obj)
+
+Convenient shorthand for `assert(ursa.isPublicKey(obj))`.
+
 ### ursa.createPublicKey(pem, encoding)
 
 Create and return a public key read in from the given PEM-format file.
@@ -145,12 +157,6 @@ was created by this module. Return `false` if not.
 Note that, even though all the public key operations work on private
 keys, this function only returns true if the given object is a
 public key, per se.
-
-### ursa.createVerifier(algorithm)
-
-Create and return a verifier which can verify a hash generated with the
-named algorithm (such as `"sha256"` or `"md5"`). See "Verifier Methods" below
-for more details.
 
 ### ursa.sshFingerprint(sshKey, sshEncoding, outEncoding)
 
@@ -269,11 +275,12 @@ This method is the underlying one used as part of the implementation
 of the higher-level and much friendlier `ursa.createVerifier()` and
 `hashAndVerify()`.
 
-### unbox(unboxer)
+### ununseal(ununsealer)
 
 This is an internal method that is used in the implementation of
-`ursa.isKey()` `ursa.isPrivateKey()` and `ursa.isPublicKey()`. When
-called externally, it should always return `undefined`.
+`ursa.isKey()` `ursa.isPrivateKey()` `ursa.isPublicKey()` and
+associated assertion functions. When called externally, it will
+always return `undefined`.
 
 
 Private Key Methods
