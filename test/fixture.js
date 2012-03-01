@@ -31,6 +31,8 @@ var PASS_PRIVATE_KEY = fs.readFileSync(__dirname + "/blort-pass.pem");
 var PRIVATE_KEY = fs.readFileSync(__dirname + "/blort.pem");
 var PUBLIC_KEY = fs.readFileSync(__dirname + "/blort.pub");
 var SSH_PUBLIC_KEY_FILE = fs.readFileSync(__dirname + "/blort.sshpub");
+var PRIVATE_KEY_2 = fs.readFileSync(__dirname + "/zorch.pem");
+var PUBLIC_KEY_2 = fs.readFileSync(__dirname + "/zorch.pub");
 
 var PASSWORD = new Buffer("biscuits", UTF8);
 
@@ -115,8 +117,10 @@ module.exports = {
     PLAINTEXT_SHA256_SIGNATURE: PLAINTEXT_SHA256_SIGNATURE,
     PRIVATE_CIPHERTEXT_HEX:     PRIVATE_CIPHERTEXT_HEX,
     PRIVATE_KEY:                PRIVATE_KEY,
+    PRIVATE_KEY_2:              PRIVATE_KEY_2,
     PUBLIC_CIPHERTEXT_HEX:      PUBLIC_CIPHERTEXT_HEX,
     PUBLIC_KEY:                 PUBLIC_KEY,
+    PUBLIC_KEY_2:               PUBLIC_KEY_2,
     SSH_PUBLIC_KEY:             SSH_PUBLIC_KEY,
     SSH_PUBLIC_KEY_FINGERPRINT_HEX: SSH_PUBLIC_KEY_FINGERPRINT_HEX,
 

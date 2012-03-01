@@ -286,7 +286,7 @@ function testGeneratedKey() {
     assert.equal(decoded, fixture.PLAINTEXT);
 }
 
-function testSshFingerprint() {
+function test_sshFingerprint() {
     var key = fixture.SSH_PUBLIC_KEY;
     var finger = ursa.sshFingerprint(fixture.SSH_PUBLIC_KEY);
     assert.equal(finger.toString(fixture.HEX),
@@ -300,6 +300,60 @@ function testSshFingerprint() {
         fixture.SSH_PUBLIC_KEY.toString(fixture.BASE64), 
         fixture.BASE64, fixture.HEX);
     assert.equal(finger, fixture.SSH_PUBLIC_KEY_FINGERPRINT_HEX);
+}
+
+function test_equalKeys() {
+    var pub = ursa.createPublicKey(fixture.PUBLIC_KEY);
+    var priv = ursa.createPrivateKey(fixture.PRIVATE_KEY);
+    var samePub = ursa.createPublicKey(fixture.PUBLIC_KEY);
+    var samePriv = ursa.createPrivateKey(fixture.PRIVATE_KEY);
+    var diffPub = ursa.createPublicKey(fixture.PUBLIC_KEY_2);
+    var diffPriv = ursa.createPrivateKey(fixture.PRIVATE_KEY_2);
+
+    assert.equal(ursa.equalKeys("1", "2"), false);
+    assert.equal(ursa.equalKeys(123, 123), false);
+    assert.equal(ursa.equalKeys(pub, null), false);
+    assert.equal(ursa.equalKeys(true, pub), false);
+
+    assert.equal(ursa.equalKeys(pub, pub), true);
+    assert.equal(ursa.equalKeys(priv, priv), true);
+    assert.equal(ursa.equalKeys(pub, priv), false);
+    assert.equal(ursa.equalKeys(priv, pub), false);
+
+    assert.equal(ursa.equalKeys(pub, samePub), true);
+    assert.equal(ursa.equalKeys(priv, samePriv), true);
+
+    assert.equal(ursa.equalKeys(pub, diffPub), false);
+    assert.equal(ursa.equalKeys(priv, diffPriv), false);
+}
+
+function test_matchingPublicKeys() {
+    var pub = ursa.createPublicKey(fixture.PUBLIC_KEY);
+    var priv = ursa.createPrivateKey(fixture.PRIVATE_KEY);
+    var samePub = ursa.createPublicKey(fixture.PUBLIC_KEY);
+    var samePriv = ursa.createPrivateKey(fixture.PRIVATE_KEY);
+    var diffPub = ursa.createPublicKey(fixture.PUBLIC_KEY_2);
+    var diffPriv = ursa.createPrivateKey(fixture.PRIVATE_KEY_2);
+
+    assert.equal(ursa.matchingPublicKeys("1", "2"), false);
+    assert.equal(ursa.matchingPublicKeys(123, 123), false);
+    assert.equal(ursa.matchingPublicKeys(pub, null), false);
+    assert.equal(ursa.matchingPublicKeys(true, pub), false);
+
+    assert.equal(ursa.matchingPublicKeys(pub, pub), true);
+    assert.equal(ursa.matchingPublicKeys(priv, priv), true);
+    assert.equal(ursa.matchingPublicKeys(pub, priv), true);
+    assert.equal(ursa.matchingPublicKeys(priv, pub), true);
+
+    assert.equal(ursa.matchingPublicKeys(pub, samePub), true);
+    assert.equal(ursa.matchingPublicKeys(priv, samePriv), true);
+    assert.equal(ursa.matchingPublicKeys(pub, samePriv), true);
+    assert.equal(ursa.matchingPublicKeys(priv, samePub), true);
+
+    assert.equal(ursa.matchingPublicKeys(pub, diffPub), false);
+    assert.equal(ursa.matchingPublicKeys(pub, diffPriv), false);
+    assert.equal(ursa.matchingPublicKeys(priv, diffPriv), false);
+    assert.equal(ursa.matchingPublicKeys(priv, diffPub), false);
 }
 
 function testSigner() {
@@ -341,7 +395,9 @@ test_fail_createPrivateKey();
 testPublicKey();
 testPrivateKey();
 testGeneratedKey();
-testSshFingerprint();
+test_sshFingerprint();
+test_equalKeys();
+test_matchingPublicKeys();
 testSigner();
 testVerifier();
 

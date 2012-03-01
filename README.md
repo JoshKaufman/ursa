@@ -120,6 +120,11 @@ This function is similar to `crypto.createVerify()`, except this function
 takes a hash algorithm name (e.g., `"sha256"`) and not a crypto+hash name
 combination (e.g., `"RSA-SHA256"`).
 
+### ursa.equalKeys(key1, key2)
+
+This returns `true` if and only if both arguments are key objects of
+the same type (public or private) and their contents match.
+
 ### ursa.generatePrivateKey(modulusBits, exponent)
 
 Create and return a freshly-generated private key (aka a keypair).
@@ -157,6 +162,12 @@ was created by this module. Return `false` if not.
 Note that, even though all the public key operations work on private
 keys, this function only returns true if the given object is a
 public key, per se.
+
+### ursa.matchingPublicKeys(key1, key2)
+
+This returns `true` if and only if both arguments are key objects of
+some sort (either can be public or private, and they don't have to
+be the same) and their public aspects match each other.
 
 ### ursa.sshFingerprint(sshKey, sshEncoding, outEncoding)
 
