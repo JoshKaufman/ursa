@@ -248,6 +248,19 @@ function testTypes() {
     assert.throws(function () { ursa.assertPrivateKey("x"); });
 }
 
+function test_createKey() {
+    var priv = ursa.createKey(fixture.PRIVATE_KEY);
+    assert(ursa.isPrivateKey(priv), true);
+
+    var pub = ursa.createKey(fixture.PUBLIC_KEY);
+    assert(ursa.isPublicKey(pub), true);
+
+    function f1() {
+        ursa.createKey("yo there");
+    }
+    assert.throws(f1, /Not a key\./);
+}
+
 function test_fail_createPublicKey() {
     // This is mostly tested at the native level. This just tests the
     // extra failures added at the high level.
@@ -390,6 +403,7 @@ require("./native").test();
 
 testBasics();
 testTypes();
+test_createKey();
 test_fail_createPublicKey();
 test_fail_createPrivateKey();
 testPublicKey();
