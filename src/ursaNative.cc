@@ -282,7 +282,10 @@ static bool getArgInt(const Arguments& args, int index, int *resultPtr) {
  */
 
 /**
- * FIXME: Document.
+ * Call the OpenSSL function OBJ_txt2nid() on the given string.
+ * This returns a number representing the text that, as far as I
+ * (danfuzz) know, is not necessarily stable across versions of
+ * OpenSSL, so it's only safe to use transiently.
  */
 Handle<Value> TextToNid(const Arguments& args) {
     HandleScope scope;
