@@ -806,7 +806,7 @@ Handle<Value> RsaWrap::Verify(const Arguments& args) {
     int ret = RSA_verify(nid, (unsigned char *) data, dataLength,
                          (unsigned char *) sig, sigLength, obj->rsa);
     if (ret == 0) {
-        // Something about ERR_REASON(RSA_R_BAD_SIGNATURE).
+        // Something went wrong; investigate!
         unsigned long err = ERR_peek_error();
         int lib = ERR_GET_LIB(err);
         int reason = ERR_GET_REASON(err);
