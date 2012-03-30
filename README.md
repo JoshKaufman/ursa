@@ -95,6 +95,27 @@ Convenient shorthand for `assert(ursa.isPrivateKey(obj))`.
 
 Convenient shorthand for `assert(ursa.isPublicKey(obj))`.
 
+### ursa.coerceKey(orig)
+
+Coerce the given key value into a key object (either public or
+private), returning it. If given a private key object, this just
+returns it as-is. If given a string or Buffer, it tries to parse it as
+PEM. Anything else will result in an error.
+
+### ursa.coercePrivateKey(orig)
+
+Coerce the given key value into a private key object, returning it. If
+given a private key object, this just returns it as-is. If given a
+string or Buffer, it tries to parse it as PEM. Anything else will
+result in an error.
+
+### ursa.coercePublicKey(orig)
+
+Coerce the given key value into a public key object, returning it. If
+given a private key object, this just returns it as-is. If given a
+string or Buffer, it tries to parse it as PEM. Anything else will
+result in an error.
+
 ### ursa.createPublicKey(pem, encoding)
 
 Create and return a public key read in from the given PEM-format file.

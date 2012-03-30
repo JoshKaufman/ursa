@@ -279,6 +279,114 @@ function test_fail_createPrivateKey() {
     assert.throws(f1, /Not a private key\./);
 }
 
+function test_coerceKey() {
+    var priv = ursa.coerceKey(fixture.PRIVATE_KEY);
+    assert(ursa.isPrivateKey(priv), true);
+
+    priv = ursa.coerceKey(fixture.PRIVATE_KEY.toString());
+    assert(ursa.isPrivateKey(priv), true);
+
+    var pub = ursa.coerceKey(fixture.PUBLIC_KEY);
+    assert(ursa.isPublicKey(pub), true);
+
+    pub = ursa.coerceKey(fixture.PUBLIC_KEY.toString());
+    assert(ursa.isPublicKey(pub), true);
+
+    assert.equal(ursa.coerceKey(priv), priv);
+    assert.equal(ursa.coerceKey(pub), pub);
+}
+
+function test_coercePrivateKey() {
+    var priv = ursa.coercePrivateKey(fixture.PRIVATE_KEY);
+    assert(ursa.isPrivateKey(priv), true);
+
+    priv = ursa.coercePrivateKey(fixture.PRIVATE_KEY.toString());
+    assert(ursa.isPrivateKey(priv), true);
+
+    assert.equal(ursa.coercePrivateKey(priv), priv);
+}
+
+function test_coercePublicKey() {
+    var pub = ursa.coercePublicKey(fixture.PUBLIC_KEY);
+    assert(ursa.isPublicKey(pub), true);
+
+    pub = ursa.coercePublicKey(fixture.PUBLIC_KEY.toString());
+    assert(ursa.isPublicKey(pub), true);
+
+    assert.equal(ursa.coercePublicKey(pub), pub);
+}
+
+function test_fail_coerceKey() {
+    function f1() {
+        ursa.coerceKey("foo");
+    }
+    assert.throws(f1, /Not a key/);
+
+    function f2() {
+        ursa.coerceKey(new Buffer(200));
+    }
+    assert.throws(f2, /Not a key/);
+
+    function f3() {
+        ursa.coerceKey([]);
+    }
+    assert.throws(f3, /Not a key/);
+}
+
+function test_fail_coercePrivateKey() {
+    function f1() {
+        ursa.coercePrivateKey("foo");
+    }
+    assert.throws(f1, /Not a private key/);
+
+    function f2() {
+        ursa.coercePrivateKey(new Buffer(200));
+    }
+    assert.throws(f2, /Not a private key/);
+
+    function f3() {
+        ursa.coercePrivateKey([]);
+    }
+    assert.throws(f3, /Not a private key/);
+
+    function f4() {
+        ursa.coercePrivateKey(fixture.PUBLIC_KEY);
+    }
+    assert.throws(f4, /Not a private key/);
+
+    function f5() {
+        ursa.coercePrivateKey(fixture.PUBLIC_KEY.toString());
+    }
+    assert.throws(f5, /Not a private key/);
+}
+
+function test_fail_coercePublicKey() {
+    function f1() {
+        ursa.coercePublicKey("foo");
+    }
+    assert.throws(f1, /Not a public key/);
+
+    function f2() {
+        ursa.coercePublicKey(new Buffer(200));
+    }
+    assert.throws(f2, /Not a public key/);
+
+    function f3() {
+        ursa.coercePublicKey([]);
+    }
+    assert.throws(f3, /Not a public key/);
+
+    function f4() {
+        ursa.coercePublicKey(fixture.PRIVATE_KEY);
+    }
+    assert.throws(f4, /Not a public key/);
+
+    function f5() {
+        ursa.coercePublicKey(fixture.PRIVATE_KEY.toString());
+    }
+    assert.throws(f5, /Not a public key/);
+}
+
 function testPublicKey() {
     var key = ursa.createPublicKey(fixture.PUBLIC_KEY);
     testPublicKeyMethods(key);
@@ -403,9 +511,17 @@ require("./native").test();
 
 testBasics();
 testTypes();
+
 test_createKey();
 test_fail_createPublicKey();
 test_fail_createPrivateKey();
+test_coerceKey();
+test_coercePrivateKey();
+test_coercePublicKey();
+test_fail_coerceKey();
+test_fail_coercePrivateKey();
+test_fail_coercePublicKey();
+
 testPublicKey();
 testPrivateKey();
 testGeneratedKey();
