@@ -12,9 +12,10 @@
 
 var assert = require("assert");
 
-var fixture   = require("./fixture");
-var RsaWrap   = fixture.RsaWrap;
-var textToNid = fixture.ursaNative.textToNid;
+var fixture    = require("./fixture");
+var RsaWrap    = fixture.RsaWrap;
+var ursaNative = fixture.ursaNative;
+var textToNid  = ursaNative.textToNid;
 
 
 /*
@@ -200,6 +201,10 @@ function test_privateDecrypt() {
     var encoded = new Buffer(fixture.PRIVATE_CIPHERTEXT_HEX, fixture.HEX);
     var decoded = rsa.privateDecrypt(encoded).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
+
+    var encoded = new Buffer(fixture.PRIVATE_OLD_PAD_CIPHER_HEX, fixture.HEX);
+    var decoded = rsa.privateDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING).toString(fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
 }
 
 function test_fail_privateDecrypt() {
@@ -225,6 +230,11 @@ function test_fail_privateDecrypt() {
         rsa.privateDecrypt(new Buffer("x"));
     }
     assert.throws(f3, /decoding error/);
+
+    function f4() {
+        rsa.privateDecrypt(new Buffer("x"), "str");
+    }
+    assert.throws(f4, /Expected a 32-bit integer/);
 }
 
 function test_publicEncrypt() {
@@ -241,6 +251,12 @@ function test_publicEncrypt() {
 
     encoded = priv.publicEncrypt(plainBuf);
     decoded = priv.privateDecrypt(encoded).toString(fixture.UTF8);
+    assert.equal(decoded, fixture.PLAINTEXT);
+
+    // Test with old-style padding.
+    var encoded = rsa.publicEncrypt(plainBuf, ursaNative.RSA_PKCS1_PADDING);
+    var decoded = priv.privateDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING);
+    decoded = decoded.toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 }
 
@@ -265,6 +281,11 @@ function test_fail_publicEncrypt() {
         rsa.publicEncrypt(new Buffer(2048));
     }
     assert.throws(f3, /too large/);
+
+    function f4() {
+        rsa.publicEncrypt(new Buffer("x"), "str");
+    }
+    assert.throws(f4, /Expected a 32-bit integer/);
 }
 
 function test_privateEncrypt() {

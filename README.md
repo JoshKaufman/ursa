@@ -56,11 +56,13 @@ The library knows how to read and output PEM format files for both
 public and private keys, and it can generate new private keys (aka
 keypairs).
 
-The usual public-encryption / private-decryption operations are always
-done using padding mode `RSA_PKCS1_OAEP_PADDING`, which is the recommended
+The usual public-encryption / private-decryption operations by default
+use padding mode `RSA_PKCS1_OAEP_PADDING`, which is the recommended
 mode for all new applications (as of this writing). Note that this mode
 builds-in a random element into every encryption operation, making it
 unnecessary to waste time or effort adding randomness in at a higher layer.
+This default may be overridden to use the older mode `RSA_PKCS1_PADDING`
+if needed.
 
 The less well-understood private-encryption / public-decryption operations
 (used for building signature mechanisms) are always done using padding
@@ -220,7 +222,7 @@ These are all the methods available on public keys. These methods are
 *also* available on private keys (since private keys have all the
 underlying data necessary to perform the public-side operations).
 
-### encrypt(buf, bufEncoding, outEncoding)
+### encrypt(buf, bufEncoding, outEncoding, padding)
 
 This performs the "public encrypt" operation on the given buffer. The
 result is always a byte sequence that is the same size as the key
@@ -230,8 +232,9 @@ then the result of this operation will be 2048 bits, aka 256 bytes.)
 The input buffer is limited to be no larger than the key size
 minus 41 bytes.
 
-This operation is always performed using padding mode
-`RSA_PKCS1_OAEP_PADDING`.
+If no padding mode is specified, the default, and recommended, mode
+is `ursa.RSA_PKCS1_OAEP_PADDING`. The mode
+`ursa.RSA_PKCS1_PADDING` is also supported.
 
 ### getExponent(encoding)
 
@@ -321,7 +324,7 @@ Private Key Methods
 These are the methods available on private keys, above and beyond
 what is available for public keys.
 
-### decrypt(buf, bufEncoding, outEncoding)
+### decrypt(buf, bufEncoding, outEncoding, padding)
 
 This performs the "private decrypt" operation on the given buffer. The
 result is always a byte sequence that is no more than the size of the
@@ -329,8 +332,9 @@ key associated with the instance. (For example, if the key is 2048
 bits, then the result of this operation will be no more than 2048
 bits, aka 256 bytes.)
 
-This operation is always performed using padding mode
-`RSA_PKCS1_OAEP_PADDING`.
+If no padding mode is specified, the default, and recommended, mode
+is `ursa.RSA_PKCS1_OAEP_PADDING`. The mode
+`ursa.RSA_PKCS1_PADDING` is also supported.
 
 ### hashAndSign(algorithm, buf, bufEncoding, outEncoding)
 
@@ -409,6 +413,16 @@ This returns `true` if the signature and hash match appropriately,
 or `false` if the signature appears to be generally valid (e.g.
 structurally) yet doesn't match. This throws an exception in all
 other cases.
+
+
+Constants
+---------
+
+Allowed padding modes for public encryption and
+private decryption:
+
+* `ursa.RSA_PKCS1_PADDING`
+* `ursa.RSA_PKCS1_OAEP_PADDING`
 
 
 Contributing
