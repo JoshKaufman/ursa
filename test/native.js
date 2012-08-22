@@ -199,7 +199,7 @@ function test_privateDecrypt() {
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
 
     var encoded = new Buffer(fixture.PRIVATE_CIPHERTEXT_HEX, fixture.HEX);
-    var decoded = rsa.privateDecrypt(encoded).toString(fixture.UTF8);
+    var decoded = rsa.privateDecrypt(encoded, ursaNative.RSA_PKCS1_OAEP_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 
     var encoded = new Buffer(fixture.PRIVATE_OLD_PAD_CIPHER_HEX, fixture.HEX);
@@ -222,12 +222,12 @@ function test_fail_privateDecrypt() {
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
 
     function f2() {
-        rsa.privateDecrypt("x");
+        rsa.privateDecrypt("x", ursaNative.RSA_PKCS1_OAEP_PADDING);
     }
     assert.throws(f2, /Expected a Buffer in args\[0]\./);
 
     function f3() {
-        rsa.privateDecrypt(new Buffer("x"));
+        rsa.privateDecrypt(new Buffer("x"), ursaNative.RSA_PKCS1_OAEP_PADDING);
     }
     assert.throws(f3, /decoding error/);
 
@@ -245,12 +245,12 @@ function test_publicEncrypt() {
 
     var rsa = new RsaWrap();
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
-    var encoded = rsa.publicEncrypt(plainBuf);
-    var decoded = priv.privateDecrypt(encoded).toString(fixture.UTF8);
+    var encoded = rsa.publicEncrypt(plainBuf, ursaNative.RSA_PKCS1_OAEP_PADDING);
+    var decoded = priv.privateDecrypt(encoded, ursaNative.RSA_PKCS1_OAEP_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 
-    encoded = priv.publicEncrypt(plainBuf);
-    decoded = priv.privateDecrypt(encoded).toString(fixture.UTF8);
+    encoded = priv.publicEncrypt(plainBuf, ursaNative.RSA_PKCS1_OAEP_PADDING);
+    decoded = priv.privateDecrypt(encoded, ursaNative.RSA_PKCS1_OAEP_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 
     // Test with old-style padding.
@@ -273,12 +273,12 @@ function test_fail_publicEncrypt() {
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
 
     function f2() {
-        rsa.publicEncrypt("x");
+        rsa.publicEncrypt("x", ursaNative.RSA_PKCS1_OAEP_PADDING);
     }
     assert.throws(f2, /Expected a Buffer in args\[0]\./);
 
     function f3() {
-        rsa.publicEncrypt(new Buffer(2048));
+        rsa.publicEncrypt(new Buffer(2048), ursaNative.RSA_PKCS1_OAEP_PADDING);
     }
     assert.throws(f3, /too large/);
 
@@ -366,21 +366,21 @@ function test_generatePrivateKey() {
 
     // Do a round trip check.
     var plainBuf = new Buffer(fixture.PLAINTEXT, fixture.UTF8);
-    var encoded = rsa.publicEncrypt(plainBuf);
-    var decoded = rsa.privateDecrypt(encoded).toString(fixture.UTF8);
+    var encoded = rsa.publicEncrypt(plainBuf, ursaNative.RSA_PKCS1_OAEP_PADDING);
+    var decoded = rsa.privateDecrypt(encoded, ursaNative.RSA_PKCS1_OAEP_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 
     // Extract the public key, and try using it for a round trip.
     var pubKey = new RsaWrap();
     pubKey.setPublicKeyPem(rsa.getPublicKeyPem());
-    encoded = pubKey.publicEncrypt(plainBuf);
-    decoded = rsa.privateDecrypt(encoded).toString(fixture.UTF8);
+    encoded = pubKey.publicEncrypt(plainBuf, ursaNative.RSA_PKCS1_OAEP_PADDING);
+    decoded = rsa.privateDecrypt(encoded, ursaNative.RSA_PKCS1_OAEP_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
     
     // Similarly, try decoding with an extracted private key.
     var privKey = new RsaWrap();
     privKey.setPrivateKeyPem(rsa.getPrivateKeyPem());
-    decoded = privKey.privateDecrypt(encoded).toString(fixture.UTF8);
+    decoded = privKey.privateDecrypt(encoded, ursaNative.RSA_PKCS1_OAEP_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 }
 
