@@ -27,6 +27,8 @@ using namespace v8;
  * Top-level initialization function.
  */
 void init(Handle<Object> target) {
+    NODE_DEFINE_CONSTANT(target, RSA_PKCS1_PADDING);
+    NODE_DEFINE_CONSTANT(target, RSA_PKCS1_OAEP_PADDING);
     BIND(target, textToNid, TextToNid);
     RsaWrap::InitClass(target);
 }
@@ -245,7 +247,7 @@ static char *getArgString(const Arguments& args, int index) {
     str->WriteUtf8(result, length + 1);
 
     if (result[length] != '\0') {
-        char *message = "String conversion failed.";
+        const char *message = "String conversion failed.";
         ThrowException(Exception::Error(String::New(message)));
         free(result);
         return NULL;
@@ -560,8 +562,11 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
     int rsaLength = RSA_size(obj->rsa);
     unsigned char buf[rsaLength];
 
+    int padding;
+    if (!getArgInt(args, 1, &padding)) { return Undefined(); }
+
     int bufLength = RSA_private_decrypt(length, (unsigned char *) data,
-                                        buf, obj->rsa, RSA_PKCS1_OAEP_PADDING);
+                                        buf, obj->rsa, padding);
 
     if (bufLength < 0) {
         scheduleSslException();
@@ -673,9 +678,12 @@ Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
         return Undefined();
     }
 
+    int padding;
+    if (!getArgInt(args, 1, &padding)) { return Undefined(); }
+
     int ret = RSA_public_encrypt(length, (unsigned char *) data, 
                                  (unsigned char *) node::Buffer::Data(result),
-                                 obj->rsa, RSA_PKCS1_OAEP_PADDING);
+                                 obj->rsa, padding);
 
     if (ret < 0) {
         // TODO: Will this leak the result buffer? Is it going to be gc'ed?
