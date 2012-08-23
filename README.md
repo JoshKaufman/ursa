@@ -435,12 +435,16 @@ Bug reports that include steps-to-reproduce (including code) are the
 best. Even better, make them in the form of pull requests that update
 the test suite. Thanks!
 
-Author
-------
+Authors
+-------
 
 [Dan Bornstein](https://github.com/danfuzz)
 ([personal website](http://www.milk.com/)), supported by
 [The Obvious Corporation](http://obvious.com/).
+
+With contribution from:
+
+* [Tyler Neylon](https://github.com/tylerneylon)
 
 License
 -------
