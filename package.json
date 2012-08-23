@@ -33,7 +33,7 @@
     },
 
     "scripts": {
-        "install": "node-gyp configure build",
+        "install": "node-gyp configure build; mkdir -p bin; mv build/Release/*.node bin",
         "test": "node test/test.js"
     }
 }

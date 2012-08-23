@@ -2,7 +2,7 @@
     "targets": [
         {
             "target_name": "ursaNative",
-            "sources": [ "ursaNative.cc" ]
+            "sources": [ "src/ursaNative.cc" ]
         }
     ]
 }
