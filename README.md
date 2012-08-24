@@ -1,13 +1,9 @@
 ursa
 ====
 
-This Node module provides wrappers for the RSA public/private key
-crypto functionality of OpenSSL.
+This Node module provides a fairly complete set of wrappers for the
+RSA public/private key crypto functionality of OpenSSL.
 
-This module was inspired by
-[node-rsa](https://github.com/chrisa/node-rsa) by Chris Andrews. To
-be clear, there are a few lines that I (Danfuzz) used from its
-`wscript` build file, but other than that this code is new.
 
 Building and Installing
 -----------------------
@@ -449,6 +445,12 @@ Authors
 With contribution from:
 
 * [Tyler Neylon](https://github.com/tylerneylon)
+
+With thanks to:
+
+* [node-rsa](https://github.com/chrisa/node-rsa) by Chris Andrews,
+  for inspiration
+
 
 License
 -------
