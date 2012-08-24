@@ -408,14 +408,19 @@ function test_fail_generatePrivateKey() {
     assert.throws(f4, /Expected a 32-bit integer in args\[1]\./);
 
     function f5() {
-        rsa.generatePrivateKey(512, 0);
+        rsa.generatePrivateKey(512, 2);
     }
     assert.throws(f5, /Expected odd exponent\./);
 
     function f6() {
-        rsa.generatePrivateKey(0, 1);
+        rsa.generatePrivateKey(512, 0);
     }
-    assert.throws(f6, /key size too small/);
+    assert.throws(f6, /Expected positive exponent\./);
+
+    function f7() {
+        rsa.generatePrivateKey(511, 1);
+    }
+    assert.throws(f7, /Expected modulus bit count >= 512\./);
 
     // Use the original f1(), above, for this test.
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);

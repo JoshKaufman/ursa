@@ -157,6 +157,10 @@ the exponent value, which must be odd (65537 is the typical value; 3
 and 17 are also common).  Both arguments are optional and default to
 2048 and 65537 (respectively).
 
+This method will throw if `modulusBits` is less than `512` (because
+it's pretty crazy to want a key with that few bits) or if `exponent`
+is even (because RSA only works for odd exponents).
+
 Using the command-line `openssl` tool, this operation is
 equivalent to:
 

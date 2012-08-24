@@ -444,8 +444,28 @@ Handle<Value> RsaWrap::GeneratePrivateKey(const Arguments& args) {
         return Undefined();
     }
 
-    // Sanity-check the exponent, since (as of this writing) it looks like
-    // OpenSSL doesn't check it. It's required to be odd.
+    // Sanity-check the arguments, since (as of this writing) OpenSSL
+    // either doesn't check, or at least doesn't consistently check:
+    //
+    // * The modulus bit count must be >= 512. Really, it just has to
+    //   be a positive integer, but anything less than 512 is a
+    //   horrendously bad idea.
+    //
+    // * The exponend must be positive and odd.
+
+    if (modulusBits < 512) {
+        Local<String> message =
+            String::New("Expected modulus bit count >= 512.");
+        ThrowException(Exception::TypeError(message));
+        return Undefined();
+    }
+
+    if (exponent <= 0) {
+        Local<String> message = String::New("Expected positive exponent.");
+        ThrowException(Exception::TypeError(message));
+        return Undefined();
+    }
+
     if ((exponent & 1) == 0) {
         Local<String> message = String::New("Expected odd exponent.");
         ThrowException(Exception::TypeError(message));
