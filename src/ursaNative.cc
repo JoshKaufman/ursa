@@ -278,6 +278,42 @@ static bool getArgInt(const Arguments& args, int index, int *resultPtr) {
     return true;
 }
 
+/**
+ * Generate a key, using one of the two possibly-available functions.
+ * This prefers the newer function, if available.
+ */
+static RSA *generateKey(int num, unsigned long e) {
+#if OPENSSL_VERSION_NUMBER < 0x009080001
+    RSA_generate_key(num, e, NULL, NULL);
+#else
+    BIGNUM *eBig = BN_new();
+
+    if (eBig == NULL) {
+        return NULL;
+    }
+
+    if (!BN_set_word(eBig, e)) {
+        BN_free(eBig);
+        return NULL;
+    }
+
+    RSA *result = RSA_new();
+
+    if (result == NULL) {
+        BN_free(eBig);
+        return NULL;
+    }
+
+    if (RSA_generate_key_ex(result, num, eBig, NULL) < 0) {
+        RSA_free(result);
+        result = NULL;
+    }
+
+    BN_free(eBig);
+    return result;
+#endif
+}
+
 
 /*
  * Utility function implementation
@@ -321,7 +357,7 @@ void RsaWrap::InitClass(Handle<Object> target) {
     Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
 
     tpl->SetClassName(className);
-    tpl->InstanceTemplate()->SetInternalFieldCount(1); // required by ObjectWrap
+    tpl->InstanceTemplate()->SetInternalFieldCount(1); // req'd by ObjectWrap
 
     // Prototype method bindings
     Local<ObjectTemplate> proto = tpl->PrototypeTemplate();
@@ -472,8 +508,7 @@ Handle<Value> RsaWrap::GeneratePrivateKey(const Arguments& args) {
         return Undefined();
     }
 
-    obj->rsa =
-        RSA_generate_key(modulusBits, (unsigned long) exponent, NULL, NULL);
+    obj->rsa = generateKey(modulusBits, (unsigned long) exponent);
 
     if (obj->rsa == NULL) {
         scheduleSslException();
