@@ -1,13 +1,14 @@
 ursa
 ====
 
-This Node module provides wrappers for the RSA public/private key
-crypto functionality of OpenSSL.
+This Node module provides a fairly complete set of wrappers for the
+RSA public/private key crypto functionality of OpenSSL.
 
-This module was inspired by
-[node-rsa](https://github.com/chrisa/node-rsa) by Chris Andrews. To
-be clear, there are a few lines that I (Danfuzz) used from its
-`wscript` build file, but other than that this code is new.
+It has been tested by the maintainer on both Node 0.6.* and Node 0.8.*,
+on both Linux and OS X (the latter in several configurations, including
+Node built from source as well as installed via MacPorts and Homebrew).
+If you find it doesn't work for you, please file a bug (see below).
+
 
 Building and Installing
 -----------------------
@@ -156,6 +157,10 @@ or more is generally considered secure). The second argument indicates
 the exponent value, which must be odd (65537 is the typical value; 3
 and 17 are also common).  Both arguments are optional and default to
 2048 and 65537 (respectively).
+
+This method will throw if `modulusBits` is less than `512` (because
+it's pretty crazy to want a key with that few bits) or if `exponent`
+is even (because RSA only works for odd exponents).
 
 Using the command-line `openssl` tool, this operation is
 equivalent to:
@@ -375,6 +380,7 @@ is not encrypted, so it behooves the user of this method to take care
 with the result if the key is sensitive from a security standpoint,
 which is often the case with such things. (YMMV of course.)
 
+
 Signer Methods
 --------------
 
@@ -435,6 +441,7 @@ Bug reports that include steps-to-reproduce (including code) are the
 best. Even better, make them in the form of pull requests that update
 the test suite. Thanks!
 
+
 Authors
 -------
 
@@ -445,6 +452,12 @@ Authors
 With contribution from:
 
 * [Tyler Neylon](https://github.com/tylerneylon)
+
+With thanks to:
+
+* [node-rsa](https://github.com/chrisa/node-rsa) by Chris Andrews,
+  for inspiration
+
 
 License
 -------

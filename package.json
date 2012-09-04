@@ -1,6 +1,6 @@
 {
     "name": "ursa",
-    "version": "0.6.9",
+    "version": "0.7.0",
     "keywords": [
         "crypto", "key", "openssl", "private", "public", "rsa", "sign",
         "signature", "verify", "verification", "hash", "digest"
@@ -33,7 +33,7 @@
     },
 
     "scripts": {
-        "install": "node-waf configure build",
+        "install": "node-gyp configure build; mkdir -p bin; mv build/Release/*.node bin",
         "test": "node test/test.js"
     }
 }

@@ -1,4 +1,2 @@
-.lock-wscript
-.waf*
 build
 ursaNative.node
