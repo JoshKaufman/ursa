@@ -4,6 +4,11 @@ ursa
 This Node module provides a fairly complete set of wrappers for the
 RSA public/private key crypto functionality of OpenSSL.
 
+It has been tested by the maintainer on both Node 0.6.* and Node 0.8.*,
+on both Linux and OS X (the latter in several configurations, including
+Node built from source as well as installed via MacPorts and Homebrew).
+If you find it doesn't work for you, please file a bug (see below).
+
 
 Building and Installing
 -----------------------
