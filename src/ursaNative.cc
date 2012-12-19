@@ -1,9 +1,11 @@
 // Copyright 2012 The Obvious Corporation.
 
+#include "asprintf.cc"
 #include "ursaNative.h"
 #include <node_buffer.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <malloc.h>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -615,7 +617,7 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
     if (data == NULL) { return Undefined(); }
 
     int rsaLength = RSA_size(obj->rsa);
-    unsigned char buf[rsaLength];
+    unsigned char* buf = (unsigned char*)_alloca(rsaLength);
 
     int padding;
     if (!getArgInt(args, 1, &padding)) { return Undefined(); }
@@ -690,7 +692,7 @@ Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
     if (data == NULL) { return Undefined(); }
 
     int rsaLength = RSA_size(obj->rsa);
-    unsigned char buf[rsaLength];
+    unsigned char* buf = (unsigned char*)_alloca(rsaLength);
 
     int bufLength = RSA_public_decrypt(length, (unsigned char *) data,
                                        buf, obj->rsa, RSA_PKCS1_PADDING);
