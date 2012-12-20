@@ -18,11 +18,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _WIN32
-# define HAVE_VASPRINTF
-# define HAVE_ASPRINTF
-#endif
-
+#include "asprintf.h"
 
 /* Include vasprintf() if not on your OS. */
 #ifndef HAVE_VASPRINTF

@@ -1,19 +1,19 @@
 // Copyright 2012 The Obvious Corporation.
 
-#include "asprintf.cc"
 #include "ursaNative.h"
 #include <node_buffer.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
+#include "asprintf.h"
 
 using namespace v8;
 
 #ifdef _WIN32
+#  include <malloc.h>
 #  define VAR_ARRAY(type, name, size)  type* name = (type*)_alloca(size)
 #else
 #  define VAR_ARRAY(type, name, size)  type name[size]

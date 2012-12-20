@@ -7,7 +7,7 @@
 	'targets': [
 		{
 			'target_name': 'ursaNative',
-			'sources': [ 'src/ursaNative.cc' ],
+			'sources': [ 'src/ursaNative.cc', 'src/asprintf.cc' ],
 			'conditions': [
 				[ 'OS=="win"', {
 				  'conditions': [
