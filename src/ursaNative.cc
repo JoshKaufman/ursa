@@ -33,6 +33,19 @@ void init(Handle<Object> target) {
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_OAEP_PADDING);
     BIND(target, textToNid, TextToNid);
     RsaWrap::InitClass(target);
+
+#ifdef _WIN32 
+    // On Windows, we can't use Node's OpenSSL, so we link
+    // to a standalone OpenSSL library. Therefore, we need
+    // to initialize OpenSSL separately.
+
+    //TODO: Do I need to free these?
+    //I'm not sure where to call ERR_free_strings() and EVP_cleanup()
+    OpenSSL_add_all_digests();
+    OpenSSL_add_all_algorithms();
+    OpenSSL_add_all_ciphers();
+    ERR_load_crypto_strings();
+#endif
 }
 
 NODE_MODULE(ursaNative, init)
