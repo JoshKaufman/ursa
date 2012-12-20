@@ -13,6 +13,13 @@
 
 using namespace v8;
 
+#ifdef _WIN32
+#  define VAR_ARRAY(type, name, size)  type* name = (type*)_alloca(size)
+#else
+#  define VAR_ARRAY(type, name, size)  type name[size]
+#endif
+
+
 
 /*
  * Initialization and binding
@@ -630,7 +637,7 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
     if (data == NULL) { return Undefined(); }
 
     int rsaLength = RSA_size(obj->rsa);
-    unsigned char* buf = (unsigned char*)_alloca(rsaLength);
+    VAR_ARRAY(unsigned char, buf, rsaLength);
 
     int padding;
     if (!getArgInt(args, 1, &padding)) { return Undefined(); }
@@ -705,7 +712,7 @@ Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
     if (data == NULL) { return Undefined(); }
 
     int rsaLength = RSA_size(obj->rsa);
-    unsigned char* buf = (unsigned char*)_alloca(rsaLength);
+    VAR_ARRAY(unsigned char, buf, rsaLength);
 
     int bufLength = RSA_public_decrypt(length, (unsigned char *) data,
                                        buf, obj->rsa, RSA_PKCS1_PADDING);
