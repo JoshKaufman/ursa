@@ -17,6 +17,12 @@ var RsaWrap    = fixture.RsaWrap;
 var ursaNative = fixture.ursaNative;
 var textToNid  = ursaNative.textToNid;
 
+/**
+ * Asserts that two strings are equal, ignoring Windows newline differences
+ */
+function assertStringEqual(actual, expected, message) {
+    assert.equal(actual.replace(/\r\n/g, '\n'), expected.replace(/\r\n/g, '\n'), message);
+}
 
 /*
  * Test functions
@@ -156,7 +162,7 @@ function test_getPrivateKeyPem() {
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
 
     var pem = rsa.getPrivateKeyPem().toString(fixture.UTF8);
-    assert.equal(pem, keyStr);
+    assertStringEqual(pem, keyStr);
 }
 
 function test_fail_getPrivateKeyPem() {
@@ -177,12 +183,12 @@ function test_getPublicKeyPem() {
     var rsa = new RsaWrap();
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
     var pem = rsa.getPublicKeyPem().toString(fixture.UTF8);
-    assert.equal(pem, keyStr);
+    assertStringEqual(pem, keyStr);
 
     rsa = new RsaWrap();
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
     pem = rsa.getPublicKeyPem().toString(fixture.UTF8);
-    assert.equal(pem, keyStr);
+    assertStringEqual(pem, keyStr);
 }
 
 function test_fail_getPublicKeyPem() {
