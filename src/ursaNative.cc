@@ -306,7 +306,7 @@ static bool getArgInt(const Arguments& args, int index, int *resultPtr) {
  */
 static RSA *generateKey(int num, unsigned long e) {
 #if OPENSSL_VERSION_NUMBER < 0x009080001
-    RSA_generate_key(num, e, NULL, NULL);
+    return RSA_generate_key(num, e, NULL, NULL);
 #else
     BIGNUM *eBig = BN_new();
 
