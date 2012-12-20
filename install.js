@@ -1,7 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 
-if (!fs.existsSync('bin'))
+if (!(fs.existsSync || path.existsSync)('bin'))
 	fs.mkdirSync('bin');
 
 moveAll('build/Release/', 'bin/', '.node');
