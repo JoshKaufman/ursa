@@ -8,8 +8,17 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
+#include "asprintf.h"
 
 using namespace v8;
+
+#ifdef _WIN32
+#  include <malloc.h>
+#  define VAR_ARRAY(type, name, size)  type* name = (type*)_alloca(size)
+#else
+#  define VAR_ARRAY(type, name, size)  type name[size]
+#endif
+
 
 
 /*
@@ -31,6 +40,19 @@ void init(Handle<Object> target) {
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_OAEP_PADDING);
     BIND(target, textToNid, TextToNid);
     RsaWrap::InitClass(target);
+
+#ifdef _WIN32 
+    // On Windows, we can't use Node's OpenSSL, so we link
+    // to a standalone OpenSSL library. Therefore, we need
+    // to initialize OpenSSL separately.
+
+    //TODO: Do I need to free these?
+    //I'm not sure where to call ERR_free_strings() and EVP_cleanup()
+    OpenSSL_add_all_digests();
+    OpenSSL_add_all_algorithms();
+    OpenSSL_add_all_ciphers();
+    ERR_load_crypto_strings();
+#endif
 }
 
 NODE_MODULE(ursaNative, init)
@@ -615,7 +637,7 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
     if (data == NULL) { return Undefined(); }
 
     int rsaLength = RSA_size(obj->rsa);
-    unsigned char buf[rsaLength];
+    VAR_ARRAY(unsigned char, buf, rsaLength);
 
     int padding;
     if (!getArgInt(args, 1, &padding)) { return Undefined(); }
@@ -690,7 +712,7 @@ Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
     if (data == NULL) { return Undefined(); }
 
     int rsaLength = RSA_size(obj->rsa);
-    unsigned char buf[rsaLength];
+    VAR_ARRAY(unsigned char, buf, rsaLength);
 
     int bufLength = RSA_public_decrypt(length, (unsigned char *) data,
                                        buf, obj->rsa, RSA_PKCS1_PADDING);

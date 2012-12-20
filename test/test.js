@@ -15,6 +15,12 @@ var assert = require("assert");
 var fixture = require("./fixture");
 var ursa    = fixture.ursa;
 
+/**
+ * Asserts that two strings are equal, ignoring Windows newline differences
+ */
+function assertStringEqual(actual, expected, message) {
+    assert.equal(actual.replace(/\r\n/g, '\n'), expected.replace(/\r\n/g, '\n'), message);
+}
 
 /*
  * Helper functions
@@ -57,10 +63,10 @@ function test_getModulus(key) {
 function test_toPublicPem(key) {
     var keyString = fixture.PUBLIC_KEY.toString(fixture.UTF8);
     var result = key.toPublicPem().toString(fixture.UTF8);
-    assert.equal(result, keyString);
+    assertStringEqual(result, keyString);
 
     result = key.toPublicPem(fixture.UTF8);
-    assert.equal(result, keyString);
+    assertStringEqual(result, keyString);
 }
 
 function test_toPublicSsh(key) {
@@ -139,10 +145,10 @@ function testPublicKeyMethods(key) {
 function test_toPrivatePem(key) {
     var keyString = fixture.PRIVATE_KEY.toString(fixture.UTF8);
     var result = key.toPrivatePem().toString(fixture.UTF8);
-    assert.equal(result, keyString);
+    assertStringEqual(result, keyString);
 
     result = key.toPrivatePem(fixture.UTF8);
-    assert.equal(result, keyString);
+    assertStringEqual(result, keyString);
 }
 
 function test_decrypt(key) {

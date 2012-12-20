@@ -9,6 +9,8 @@ on both Linux and OS X (the latter in several configurations, including
 Node built from source as well as installed via MacPorts and Homebrew).
 If you find it doesn't work for you, please file a bug (see below).
 
+It has been tested on Windows by [SLaks](https://github.com/SLaks).  (see additional installation requirements)
+
 
 Building and Installing
 -----------------------
@@ -20,7 +22,7 @@ npm install ursa
 Or grab the source and
 
 ```shell
-node-waf configure build
+npm install
 ```
 
 Testing
@@ -35,6 +37,22 @@ Or
 ```shell
 node ./test/test.js
 ```
+
+On Windows, you'll need to install some dependencies first:
+ - [node-gyp](https://github.com/TooTallNate/node-gyp/) (`npm install -g node-gyp`)
+   - [Python 2.7](http://www.python.org/download/releases/2.7.3#download) (not 3.3)
+   - Vistual Studio 2010 or higher (including Express editions)
+     - Windows XP/Vista/7:
+        - Microsoft Visual Studio C++ 2010 ([Express](http://go.microsoft.com/?linkid=9709949) version works well)
+        - For 64-bit builds of node and native modules you will _**also**_ need the [Windows 7 64-bit SDK](http://www.microsoft.com/en-us/download/details.aspx?id=8279)
+        - If you get errors that the 64-bit compilers are not installed you may also need the [compiler update for the Windows SDK 7.1](http://www.microsoft.com/en-us/download/details.aspx?id=4422)
+     - Windows 8:
+        - Microsoft Visual Studio C++ 2012 for Windows Desktop ([Express](http://go.microsoft.com/?linkid=9816758) version works well)
+ - [OpenSSL](http://slproweb.com/products/Win32OpenSSL.html) (normal, not light)
+in the same bitness as your Node.js installation.
+  - The build script looks for OpenSSL in the default install directory  
+  (`C:\OpenSSL-Win32` or `C:\OpenSSL-Win64`)
+  - If you get `Error: The specified module could not be found.`, copy `libeay32.dll` from the OpenSSL bin directory to this module's bin directory, or to Windows\System3.
 
 Usage
 -----
@@ -467,4 +485,3 @@ Copyright 2012 [The Obvious Corporation](http://obvious.com/).
 Licensed under the Apache License, Version 2.0. 
 See the top-level file `LICENSE.txt` and
 (http://www.apache.org/licenses/LICENSE-2.0).
-
