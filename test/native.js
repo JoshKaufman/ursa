@@ -299,7 +299,7 @@ function test_privateEncrypt() {
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
 
     var plainBuf = new Buffer(fixture.PLAINTEXT, fixture.UTF8);
-    var encoded = rsa.privateEncrypt(plainBuf).toString(fixture.HEX);
+    var encoded = rsa.privateEncrypt(plainBuf, ursaNative.RSA_PKCS1_PADDING).toString(fixture.HEX);
 
     assert.equal(encoded, fixture.PUBLIC_CIPHERTEXT_HEX);
 }
@@ -326,7 +326,7 @@ function test_fail_privateEncrypt() {
     assert.throws(f2, /Expected a Buffer in args\[0]\./);
 
     function f3() {
-        rsa.privateEncrypt(new Buffer(2048));
+        rsa.privateEncrypt(new Buffer(2048), ursaNative.RSA_PKCS1_PADDING);
     }
     assert.throws(f3, /too large/);
 }
@@ -335,13 +335,13 @@ function test_publicDecrypt() {
     var rsa = new RsaWrap();
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
     var encoded = new Buffer(fixture.PUBLIC_CIPHERTEXT_HEX, fixture.HEX);
-    var decoded = rsa.publicDecrypt(encoded).toString(fixture.UTF8);
+    var decoded = rsa.publicDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 
     rsa = new RsaWrap();
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
     encoded = new Buffer(fixture.PUBLIC_CIPHERTEXT_HEX, fixture.HEX);
-    decoded = rsa.publicDecrypt(encoded).toString(fixture.UTF8);
+    decoded = rsa.publicDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 }
 
@@ -361,7 +361,7 @@ function test_fail_publicDecrypt() {
     assert.throws(f2, /Expected a Buffer in args\[0]\./);
 
     function f3() {
-        rsa.publicDecrypt(new Buffer("x"));
+        rsa.publicDecrypt(new Buffer("x"), ursaNative.RSA_PKCS1_PADDING);
     }
     assert.throws(f3, /padding_check/);
 }
