@@ -110,6 +110,10 @@ function test_publicDecrypt(key) {
     decoded = key.publicDecrypt(fixture.PUBLIC_CIPHERTEXT_HEX, fixture.HEX,
                                 fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
+
+    decoded = key.publicDecrypt(fixture.PUBLIC_CIPHERTEXT_NP_HEX, fixture.HEX,
+                                fixture.UTF8, ursa.RSA_NO_PADDING);
+    assert.equal(decoded, fixture.PLAINTEXT_PADDED);
 }
 
 function test_verify(key) {
@@ -171,6 +175,9 @@ function test_privateEncrypt(key) {
 
     encoded = key.privateEncrypt(fixture.PLAINTEXT, undefined, fixture.HEX);
     assert.equal(encoded, fixture.PUBLIC_CIPHERTEXT_HEX);
+
+    encoded = key.privateEncrypt(fixture.PLAINTEXT_PADDED, fixture.UTF8, fixture.HEX, ursa.RSA_NO_PADDING);
+    assert.equal(encoded, fixture.PUBLIC_CIPHERTEXT_NP_HEX);
 }
 
 function test_sign(key) {
