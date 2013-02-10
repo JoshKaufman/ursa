@@ -624,8 +624,7 @@ Handle<Value> RsaWrap::GetPublicKeyPem(const Arguments& args) {
 
 /**
  * Perform decryption on the given buffer using the RSA key, which
- * must be a private key. This always uses the padding mode
- * RSA_PKCS1_OAEP_PADDING.
+ * must be a private key, and padding mode.
  */
 Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
     HandleScope scope;
@@ -664,8 +663,7 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
 
 /**
  * Perform encryption on the given buffer using the RSA key, which
- * must be private. This always uses the padding mode
- * RSA_PKCS1_PADDING.
+ * must be private, and padding mode.
  */
 Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
     HandleScope scope;
@@ -703,7 +701,7 @@ Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
 
 /**
  * Perform decryption on the given buffer using the (public aspect of
- * the) RSA key. This always uses the padding mode RSA_PKCS1_PADDING.
+ * the) RSA key, and padding mode.
  */
 Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
     HandleScope scope;
@@ -742,7 +740,7 @@ Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
 
 /**
  * Perform encryption on the given buffer using the public (aspect of the)
- * RSA key. This always uses the padding mode RSA_PKCS1_OAEP_PADDING.
+ * RSA key, and padding mode.
  */
 Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
     HandleScope scope;

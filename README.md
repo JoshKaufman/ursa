@@ -84,9 +84,10 @@ This default may be overridden to use the older mode `RSA_PKCS1_PADDING`
 if needed.
 
 The less well-understood private-encryption / public-decryption operations
-(used for building signature mechanisms) are always done using padding
+(used for building signature mechanisms) by default use padding
 mode `RSA_PKCS1_PADDING`. This doesn't build in any randomness (but that's
-not usually a problem for applications that use these operations).
+not usually a problem for applications that use these operations).  This 
+default may be overridden to use `RSA_NO_PADDING` if needed.
 
 See the doc comments and tests for the excruciating details, but here's
 a quick rundown of the available top-level exports and instance methods:
@@ -288,8 +289,8 @@ key associated with the instance. (For example, if the key is 2048
 bits, then the result of this operation will be no more than 2048
 bits, aka 256 bytes.)
 
-This operation is always performed using padding mode
-`RSA_PKCS1_PADDING`.
+If no padding mode is specified, the default, and recommended, mode
+is `ursa.RSA_PKCS1_PADDING`. The mode `ursa.RSA_NO_PADDING` is also supported.
 
 ### toPublicPem(encoding)
 
@@ -376,8 +377,8 @@ then the result of this operation will be 2048 bits, aka 256 bytes.)
 The input buffer is limited to be no larger than the key size
 minus 12 bytes.
 
-This operation is always performed using padding mode
-`RSA_PKCS1_PADDING`.
+If no padding mode is specified, the default, and recommended, mode
+is `ursa.RSA_PKCS1_PADDING`. The mode `ursa.RSA_NO_PADDING` is also supported.
 
 ### sign(algorithm, hash, hashEncoding, outEncoding)
 
@@ -442,10 +443,10 @@ other cases.
 Constants
 ---------
 
-Allowed padding modes for public encryption and
-private decryption:
+Allowed padding modes for public/private encryption/decryption:
 
 * `ursa.RSA_PKCS1_PADDING`
+* `ursa.RSA_NO_PADDING`
 * `ursa.RSA_PKCS1_OAEP_PADDING`
 
 
