@@ -32,6 +32,9 @@ using namespace v8;
     (proto)->Set(String::NewSymbol(#highName), \
         FunctionTemplate::New(lowName)->GetFunction())
 
+#define RSA_PKCS1_SALT_LEN_HLEN    -1
+#define RSA_PKCS1_SALT_LEN_MAX     -2
+#define RSA_PKCS1_SALT_LEN_RECOVER -2
 /**
  * Top-level initialization function.
  */
@@ -39,6 +42,10 @@ void init(Handle<Object> target) {
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_PADDING);
     NODE_DEFINE_CONSTANT(target, RSA_NO_PADDING);
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_OAEP_PADDING);
+    NODE_DEFINE_CONSTANT(target, RSA_PKCS1_PSS_PADDING);
+    NODE_DEFINE_CONSTANT(target, RSA_PKCS1_SALT_LEN_HLEN);
+    NODE_DEFINE_CONSTANT(target, RSA_PKCS1_SALT_LEN_MAX);
+    NODE_DEFINE_CONSTANT(target, RSA_PKCS1_SALT_LEN_RECOVER);
     BIND(target, textToNid, TextToNid);
     RsaWrap::InitClass(target);
 
@@ -92,11 +99,6 @@ static Handle<Value> bignumToBuffer(BIGNUM *number) {
     int length = BN_num_bytes(number);
     node::Buffer *result = node::Buffer::New(length);
 
-    if (result == NULL) {
-        scheduleAllocException();
-        return Undefined();
-    }
-
     if (BN_bn2bin(number, (unsigned char *) node::Buffer::Data(result)) < 0) {
         scheduleSslException();
         delete result;
@@ -125,12 +127,6 @@ static Handle<Value> bioToBuffer(BIO *bio) {
     char *data;
     long length = BIO_get_mem_data(bio, &data);
     node::Buffer *result = node::Buffer::New(length);
-
-    if (result == NULL) {
-        scheduleAllocException();
-        BIO_vfree(bio);
-        return Undefined();
-    }
 
     memcpy(node::Buffer::Data(result), data, length);
     BIO_vfree(bio);
@@ -398,6 +394,8 @@ void RsaWrap::InitClass(Handle<Object> target) {
     BIND(proto, setPublicKeyPem,    SetPublicKeyPem);
     BIND(proto, sign,               Sign);
     BIND(proto, verify,             Verify);
+    BIND(proto, addPSSPadding,      AddPSSPadding);
+    BIND(proto, verifyPSSPadding,   VerifyPSSPadding);
 
     // Store the constructor in the target bindings.
     target->Set(className, Persistent<Function>::New(tpl->GetFunction()));
@@ -551,7 +549,7 @@ Handle<Value> RsaWrap::GetExponent(const Arguments& args) {
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) { return Undefined(); }
 
-    return bignumToBuffer(obj->rsa->e);
+    return scope.Close(bignumToBuffer(obj->rsa->e));
 }
 
 /**
@@ -565,7 +563,7 @@ Handle<Value> RsaWrap::GetModulus(const Arguments& args) {
     RsaWrap *obj = unwrapExpectSet(args);
     if (obj == NULL) { return Undefined(); }
 
-    return bignumToBuffer(obj->rsa->n);
+    return scope.Close(bignumToBuffer(obj->rsa->n));
 }
 
 /**
@@ -593,7 +591,7 @@ Handle<Value> RsaWrap::GetPrivateKeyPem(const Arguments& args) {
         return Undefined();
     }
 
-    return bioToBuffer(bio);
+    return scope.Close(bioToBuffer(bio));
 }
 
 /**
@@ -619,7 +617,7 @@ Handle<Value> RsaWrap::GetPublicKeyPem(const Arguments& args) {
         return Undefined();
     }
 
-    return bioToBuffer(bio);
+    return scope.Close(bioToBuffer(bio));
 }
 
 /**
@@ -652,13 +650,8 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
 
     node::Buffer *result = node::Buffer::New(bufLength);
 
-    if (result == NULL) {
-        scheduleAllocException();
-        return Undefined();
-    }
-
     memcpy(node::Buffer::Data(result), buf, bufLength);
-    return result->handle_;
+    return scope.Close(result->handle_);
 }
 
 /**
@@ -678,11 +671,6 @@ Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
     int rsaLength = RSA_size(obj->rsa);
     node::Buffer *result = node::Buffer::New(rsaLength);
 
-    if (result == NULL) {
-        scheduleAllocException();
-        return Undefined();
-    }
-
     int padding;
     if (!getArgInt(args, 1, &padding)) { return Undefined(); }
 
@@ -696,7 +684,7 @@ Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
         return Undefined();
     }
 
-    return result->handle_;
+    return scope.Close(result->handle_);
 }
 
 /**
@@ -729,13 +717,8 @@ Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
 
     node::Buffer *result = node::Buffer::New(bufLength);
 
-    if (result == NULL) {
-        scheduleAllocException();
-        return Undefined();
-    }
-
     memcpy(node::Buffer::Data(result), buf, bufLength);
-    return result->handle_;
+    return scope.Close(result->handle_);
 }
 
 /**
@@ -755,11 +738,6 @@ Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
     int rsaLength = RSA_size(obj->rsa);
     node::Buffer *result = node::Buffer::New(rsaLength);
 
-    if (result == NULL) {
-        scheduleAllocException();
-        return Undefined();
-    }
-
     int padding;
     if (!getArgInt(args, 1, &padding)) { return Undefined(); }
 
@@ -773,7 +751,7 @@ Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
         return Undefined();
     }
 
-    return result->handle_;
+    return scope.Close(result->handle_);
 }
 
 /**
@@ -806,7 +784,7 @@ Handle<Value> RsaWrap::SetPrivateKeyPem(const Arguments& args) {
     }
 
     if (bio != NULL) { BIO_vfree(bio); }
-    free(password);
+    if (password != NULL) { free(password); };
     return Undefined();
 }
 
@@ -868,7 +846,7 @@ Handle<Value> RsaWrap::Sign(const Arguments& args) {
         ThrowException(Exception::Error(String::New("Shouldn't happen.")));
     }
 
-    return result->handle_;
+    return scope.Close(result->handle_);
 }
 
 /**
@@ -908,7 +886,103 @@ Handle<Value> RsaWrap::Verify(const Arguments& args) {
             return False();
         }
         scheduleSslException();
+        return Undefined();
     }
 
     return True();
 }
+
+Handle<Value> RsaWrap::AddPSSPadding(const v8::Arguments& args)
+{
+    HandleScope scope;
+
+    RsaWrap *obj = unwrapExpectSet(args);
+    if (obj == NULL) { return Undefined(); }
+
+    char *hashName = getArgString(args, 0);
+    if (hashName == NULL) { return Undefined(); }        
+
+    const EVP_MD *Hash = EVP_get_digestbyname(hashName);
+    free(hashName);
+    if (Hash == NULL) { return Undefined(); }
+
+    int mHashLength;
+    void *mHash = getArgDataAndLength(args, 1, &mHashLength);
+    if (mHash == NULL) { return Undefined(); }
+
+    if (mHashLength != EVP_MD_size(Hash))
+    {
+        ThrowException(Exception::Error(String::New("Incorrect hash size")));
+    }
+
+    int sLen;
+    if (!getArgInt(args, 2, &sLen)) { return Undefined(); }
+
+    unsigned int emLength = (unsigned int) RSA_size(obj->rsa);
+    node::Buffer *EM = node::Buffer::New(emLength);
+
+    int ret = RSA_padding_add_PKCS1_PSS(obj->rsa,
+                    (unsigned char*) node::Buffer::Data(EM),
+                    (unsigned char*) mHash, Hash, sLen);
+
+    if (ret == 0) { 
+        // TODO: Will this leak the result buffer? Is it going to be gc'ed?
+        scheduleSslException();
+        return Undefined();
+    }
+
+    return scope.Close(EM->handle_);
+}
+
+Handle<Value> RsaWrap::VerifyPSSPadding(const v8::Arguments& args)
+{
+    HandleScope scope;
+
+    RsaWrap *obj = unwrapExpectSet(args);
+    if (obj == NULL) { return Undefined(); }
+
+    char *hashName = getArgString(args, 0);
+    if (hashName == NULL) { return Undefined(); }        
+
+    const EVP_MD *Hash = EVP_get_digestbyname(hashName);
+    free(hashName);
+    if (Hash == NULL) { return Undefined(); }
+
+    int mHashLength;
+    void *mHash = getArgDataAndLength(args, 1, &mHashLength);
+    if (mHash == NULL) { return Undefined(); }
+
+    if (mHashLength != EVP_MD_size(Hash))
+    {
+        ThrowException(Exception::Error(String::New("Incorrect hash size")));
+    }
+
+    int emLength;
+    void *EM = getArgDataAndLength(args, 2, &emLength);
+    if (EM == NULL) { return Undefined(); }
+
+    int sLen;
+    if (!getArgInt(args, 3, &sLen)) { return Undefined(); }
+
+    int ret = RSA_verify_PKCS1_PSS(obj->rsa, 
+                    (unsigned char*) mHash, Hash, (unsigned char*) EM, sLen);
+
+    if (ret == 0) {
+        // Something went wrong; investigate!
+        unsigned long err = ERR_peek_error();
+        int lib = ERR_GET_LIB(err);
+        int reason = ERR_GET_REASON(err);
+        if ((lib == ERR_LIB_RSA) && (reason == RSA_R_BAD_SIGNATURE)) {
+            // This just means that the signature didn't match
+            // (as opposed to, say, a more dire failure in the library
+            // warranting an exception throw).
+            ERR_get_error(); // Consume the error (get it off the err stack).
+            return False();
+        }
+        scheduleSslException();
+        return Undefined();
+    }
+
+    return True();
+}
+
