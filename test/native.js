@@ -607,6 +607,36 @@ function test_fail_textToNid() {
     assert.throws(f3, /asn1/);
 }
 
+function test_verifySpkac() {
+    var rsa = new RsaWrap();
+    assert.equal(rsa.verifySpkac(fixture.SPKAC_VALID.toString(fixture.UTF8)), true);
+}
+
+function test_fail_verifySpkac() {
+    var rsa = new RsaWrap();
+    assert.equal(rsa.verifySpkac(fixture.SPKAC_FAIL.toString(fixture.UTF8)), false);
+}
+
+function test_extractSpkac() {
+    var rsa = new RsaWrap();
+    rsa.setPublicKeyPem(rsa.extractSpkac(fixture.SPKAC_VALID.toString(fixture.UTF8)));
+    assertStringEqual(rsa.getPublicKeyPem().toString(fixture.UTF8), fixture.SPKAC_PEM.toString(fixture.UTF8));
+}
+
+function test_fail_extractSpkac() {
+    var rsa = new RsaWrap();
+    assert.equal(rsa.extractSpkac(fixture.SPKAC_FAIL.toString(fixture.UTF8)), false);
+}
+
+function test_extractSpkacChallenge() {
+    var rsa = new RsaWrap();
+    assertStringEqual(rsa.extractSpkacChallenge(fixture.SPKAC_VALID.toString(fixture.UTF8)), "fb9ab814-6677-42a4-a60c-f905d1a6924d");
+}
+
+function test_fail_extractSpkacChallenge() {
+    var rsa = new RsaWrap();
+    assert.equal(rsa.extractSpkacChallenge(fixture.SPKAC_FAIL.toString(fixture.UTF8)), false);
+}
 
 /*
  * Main test script
@@ -649,6 +679,13 @@ function test() {
 
     test_textToNid();
     test_fail_textToNid();
+
+    test_verifySpkac();
+    test_fail_verifySpkac();
+    test_extractSpkac();
+    test_fail_extractSpkac();
+    test_extractSpkacChallenge();
+    test_fail_extractSpkac();
 }
 
 module.exports = {
