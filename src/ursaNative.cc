@@ -8,6 +8,7 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
+#include <openssl/x509.h>
 #include "asprintf.h"
 
 using namespace v8;
@@ -397,6 +398,10 @@ void RsaWrap::InitClass(Handle<Object> target) {
     BIND(proto, setPublicKeyPem,    SetPublicKeyPem);
     BIND(proto, sign,               Sign);
     BIND(proto, verify,             Verify);
+
+    BIND(proto, verifySpkac,        VerifySPKAC);
+    BIND(proto, extractSpkac,       ExtractSPKAC);
+    BIND(proto, extractSpkacChallenge,       ExtractSPKACChallenge);
 
     // Store the constructor in the target bindings.
     target->Set(className, Persistent<Function>::New(tpl->GetFunction()));
@@ -906,4 +911,95 @@ Handle<Value> RsaWrap::Verify(const Arguments& args) {
     }
 
     return True();
+}
+
+/**
+ * Verify a SPKAC (useful for the KeyGen element)
+ */
+Handle<Value> RsaWrap::VerifySPKAC(const Arguments& args) {
+    HandleScope scope;
+
+    char *data = getArgString(args, 0);
+    if (data == NULL) { return Undefined(); }
+
+    int length = strlen(data);
+
+	EVP_PKEY *pkey = NULL;
+	NETSCAPE_SPKI *spki = NULL;
+
+	spki = NETSCAPE_SPKI_b64_decode((const char *)data, length);
+	if (spki == NULL) {
+        return False();
+	}
+
+	pkey = X509_PUBKEY_get(spki->spkac->pubkey);
+	if (pkey == NULL) {
+        return False();
+	}
+
+    int i;
+	i = NETSCAPE_SPKI_verify(spki, pkey);
+
+    return (i > 0) ? True() : False();
+}
+
+/**
+ * Extract the public key from SPKAC (Possible Diffie-Hellman public key?)
+ */
+Handle<Value> RsaWrap::ExtractSPKAC(const Arguments& args) {
+    HandleScope scope;
+
+    char *data = getArgString(args, 0);
+    if (data == NULL) { return Undefined(); }
+
+    int length = strlen(data);
+
+	NETSCAPE_SPKI *spki = NULL;
+	spki = NETSCAPE_SPKI_b64_decode((const char *)data, length);
+	if (spki == NULL) {
+        return False();
+	}
+
+	EVP_PKEY *pkey = NULL;
+	pkey = X509_PUBKEY_get(spki->spkac->pubkey);
+	if (pkey == NULL) {
+        return False();
+	}
+
+    BIO *bio = BIO_new(BIO_s_mem());
+    if (bio == NULL) {
+        scheduleSslException();
+        return False();
+    }
+
+    if (!PEM_write_bio_PUBKEY(bio, pkey)) {
+        scheduleSslException();
+        return False();
+    }
+    return bioToBuffer(bio);
+}
+
+/**
+ * Extract the challenge from SPKAC (Provides proof of private key ownership)
+ */
+Handle<Value> RsaWrap::ExtractSPKACChallenge(const Arguments& args) {
+    HandleScope scope;
+
+    char *data = getArgString(args, 0);
+    if (data == NULL) { return Undefined(); }
+
+    int length = strlen(data);
+
+	NETSCAPE_SPKI *spki = NULL;
+	spki = NETSCAPE_SPKI_b64_decode((const char *)data, length);
+	if (spki == NULL) {
+        return False();
+	}
+
+    Local<String> spkac = String::New((const char *)ASN1_STRING_data(spki->spkac->challenge));
+    if (sizeof(spkac) < 0) {
+        return False();
+    }
+
+    return spkac;
 }

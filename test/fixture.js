@@ -33,7 +33,9 @@ var PUBLIC_KEY = fs.readFileSync(__dirname + "/blort.pub");
 var SSH_PUBLIC_KEY_FILE = fs.readFileSync(__dirname + "/blort.sshpub");
 var PRIVATE_KEY_2 = fs.readFileSync(__dirname + "/zorch.pem");
 var PUBLIC_KEY_2 = fs.readFileSync(__dirname + "/zorch.pub");
-
+var SPKAC_VALID = fs.readFileSync(__dirname + "/spkac.valid");
+var SPKAC_FAIL = fs.readFileSync(__dirname + "/spkac.fail");
+var SPKAC_PEM = fs.readFileSync(__dirname + "/spkac.pem");
 var PASSWORD = new Buffer("biscuits", UTF8);
 
 var EXPONENT_HEX = "010001";
@@ -133,6 +135,10 @@ module.exports = {
     PUBLIC_KEY_2:               PUBLIC_KEY_2,
     SSH_PUBLIC_KEY:             SSH_PUBLIC_KEY,
     SSH_PUBLIC_KEY_FINGERPRINT_HEX: SSH_PUBLIC_KEY_FINGERPRINT_HEX,
+
+    SPKAC_VALID:                SPKAC_VALID,
+    SPKAC_FAIL:                 SPKAC_FAIL,
+    SPKAC_PEM:                  SPKAC_PEM,
 
     RsaWrap: ursaNative.RsaWrap,
 
