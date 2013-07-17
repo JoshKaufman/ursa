@@ -679,9 +679,8 @@ Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
                                   obj->rsa, padding);
 
     if (ret < 0) {
-        // TODO: Will this leak the result buffer? Is it going to be gc'ed?
         scheduleSslException();
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     return scope.Close(result->handle_);
@@ -746,9 +745,8 @@ Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
                                  obj->rsa, padding);
 
     if (ret < 0) {
-        // TODO: Will this leak the result buffer? Is it going to be gc'ed?
         scheduleSslException();
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     return scope.Close(result->handle_);
@@ -836,9 +834,8 @@ Handle<Value> RsaWrap::Sign(const Arguments& args) {
                        &sigLength, obj->rsa);
 
     if (ret == 0) { 
-        // TODO: Will this leak the result buffer? Is it going to be gc'ed?
         scheduleSslException();
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     if (rsaSize != sigLength) {
@@ -926,9 +923,8 @@ Handle<Value> RsaWrap::AddPSSPadding(const v8::Arguments& args)
                     (unsigned char*) mHash, Hash, sLen);
 
     if (ret == 0) { 
-        // TODO: Will this leak the result buffer? Is it going to be gc'ed?
         scheduleSslException();
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     return scope.Close(EM->handle_);
