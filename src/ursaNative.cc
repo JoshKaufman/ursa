@@ -876,7 +876,14 @@ Handle<Value> RsaWrap::Verify(const Arguments& args) {
         unsigned long err = ERR_peek_error();
         int lib = ERR_GET_LIB(err);
         int reason = ERR_GET_REASON(err);
-        if ((lib == ERR_LIB_RSA) && (reason == RSA_R_BAD_SIGNATURE)) {
+        if ((lib == ERR_LIB_RSA) &&
+            ((reason == RSA_R_BLOCK_TYPE_IS_NOT_01) ||
+             (reason == RSA_R_BAD_FIXED_HEADER_DECRYPT) ||
+             (reason == RSA_R_NULL_BEFORE_BLOCK_MISSING) ||
+             (reason == RSA_R_BAD_PAD_BYTE_COUNT) ||
+             (reason == RSA_R_DATA_TOO_LARGE) ||
+             (reason == RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE) ||
+             (reason == RSA_R_BLOCK_TYPE_IS_NOT_02))) {
             // This just means that the signature didn't match
             // (as opposed to, say, a more dire failure in the library
             // warranting an exception throw).
