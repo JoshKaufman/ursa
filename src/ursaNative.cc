@@ -355,7 +355,7 @@ Handle<Value> TextToNid(const Arguments& args) {
 
     if (nid == NID_undef) { 
         scheduleSslException();
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     return scope.Close(Integer::New(nid));
@@ -498,7 +498,7 @@ Handle<Value> RsaWrap::GeneratePrivateKey(const Arguments& args) {
 
     if (! (getArgInt(args, 0, &modulusBits) &&
            getArgInt(args, 1, &exponent))) {
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     // Sanity-check the arguments, since (as of this writing) OpenSSL
@@ -514,19 +514,19 @@ Handle<Value> RsaWrap::GeneratePrivateKey(const Arguments& args) {
         Local<String> message =
             String::New("Expected modulus bit count >= 512.");
         ThrowException(Exception::TypeError(message));
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     if (exponent <= 0) {
         Local<String> message = String::New("Expected positive exponent.");
         ThrowException(Exception::TypeError(message));
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     if ((exponent & 1) == 0) {
         Local<String> message = String::New("Expected odd exponent.");
         ThrowException(Exception::TypeError(message));
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     obj->rsa = generateKey(modulusBits, (unsigned long) exponent);
@@ -535,7 +535,7 @@ Handle<Value> RsaWrap::GeneratePrivateKey(const Arguments& args) {
         scheduleSslException();
     }
 
-    return Undefined();
+    return scope.Close(Undefined());
 }
 
 /**
@@ -547,7 +547,7 @@ Handle<Value> RsaWrap::GetExponent(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     return scope.Close(bignumToBuffer(obj->rsa->e));
 }
@@ -561,7 +561,7 @@ Handle<Value> RsaWrap::GetModulus(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     return scope.Close(bignumToBuffer(obj->rsa->n));
 }
@@ -576,19 +576,19 @@ Handle<Value> RsaWrap::GetPrivateKeyPem(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectPrivateKey(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     BIO *bio = BIO_new(BIO_s_mem());
     if (bio == NULL) {
         scheduleSslException();
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     if (!PEM_write_bio_RSAPrivateKey(bio, obj->rsa,
                                      NULL, NULL, 0, NULL, NULL)) {
         scheduleSslException();
         BIO_vfree(bio);
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     return scope.Close(bioToBuffer(bio));
@@ -603,18 +603,18 @@ Handle<Value> RsaWrap::GetPublicKeyPem(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     BIO *bio = BIO_new(BIO_s_mem());
     if (bio == NULL) {
         scheduleSslException();
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     if (!PEM_write_bio_RSA_PUBKEY(bio, obj->rsa)) {
         scheduleSslException();
         BIO_vfree(bio);
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     return scope.Close(bioToBuffer(bio));
@@ -628,11 +628,11 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectPrivateKey(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     int length;
     void *data = getArgDataAndLength(args, 0, &length);
-    if (data == NULL) { return Undefined(); }
+    if (data == NULL) { return scope.Close(Undefined()); }
 
     int rsaLength = RSA_size(obj->rsa);
     VAR_ARRAY(unsigned char, buf, rsaLength);
@@ -645,7 +645,7 @@ Handle<Value> RsaWrap::PrivateDecrypt(const Arguments& args) {
 
     if (bufLength < 0) {
         scheduleSslException();
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     node::Buffer *result = node::Buffer::New(bufLength);
@@ -662,11 +662,11 @@ Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectPrivateKey(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     int length;
     void *data = getArgDataAndLength(args, 0, &length);
-    if (data == NULL) { return Undefined(); }
+    if (data == NULL) { return scope.Close(Undefined()); }
 
     int rsaLength = RSA_size(obj->rsa);
     node::Buffer *result = node::Buffer::New(rsaLength);
@@ -694,24 +694,24 @@ Handle<Value> RsaWrap::PublicDecrypt(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     int length;
     void *data = getArgDataAndLength(args, 0, &length);
-    if (data == NULL) { return Undefined(); }
+    if (data == NULL) { return scope.Close(Undefined()); }
 
     int rsaLength = RSA_size(obj->rsa);
     VAR_ARRAY(unsigned char, buf, rsaLength);
 
     int padding;
-    if (!getArgInt(args, 1, &padding)) { return Undefined(); }
+    if (!getArgInt(args, 1, &padding)) { return scope.Close(Undefined()); }
 
     int bufLength = RSA_public_decrypt(length, (unsigned char *) data,
                                        buf, obj->rsa, padding);
 
     if (bufLength < 0) {
         scheduleSslException();
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
     node::Buffer *result = node::Buffer::New(bufLength);
@@ -728,17 +728,17 @@ Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     int length;
     void *data = getArgDataAndLength(args, 0, &length);
-    if (data == NULL) { return Undefined(); }
+    if (data == NULL) { return scope.Close(Undefined()); }
 
     int rsaLength = RSA_size(obj->rsa);
     node::Buffer *result = node::Buffer::New(rsaLength);
 
     int padding;
-    if (!getArgInt(args, 1, &padding)) { return Undefined(); }
+    if (!getArgInt(args, 1, &padding)) { return scope.Close(Undefined()); }
 
     int ret = RSA_public_encrypt(length, (unsigned char *) data, 
                                  (unsigned char *) node::Buffer::Data(result),
@@ -783,7 +783,7 @@ Handle<Value> RsaWrap::SetPrivateKeyPem(const Arguments& args) {
 
     if (bio != NULL) { BIO_vfree(bio); }
     if (password != NULL) { free(password); };
-    return Undefined();
+    return scope.Close(Undefined());
 }
 
 /**
@@ -795,17 +795,17 @@ Handle<Value> RsaWrap::SetPublicKeyPem(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectUnset(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     BIO *bio = getArg0Bio(args);
-    if (bio == NULL) { return Undefined(); }
+    if (bio == NULL) { return scope.Close(Undefined()); }
 
     obj->rsa = PEM_read_bio_RSA_PUBKEY(bio, NULL, NULL, NULL);
 
     if (obj->rsa == NULL) { scheduleSslException(); }
 
     BIO_vfree(bio);
-    return Undefined();
+    return scope.Close(Undefined());
 }
 
 /**
@@ -816,14 +816,14 @@ Handle<Value> RsaWrap::Sign(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectPrivateKey(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     int nid;
-    if (!getArgInt(args, 0, &nid)) { return Undefined(); }
+    if (!getArgInt(args, 0, &nid)) { return scope.Close(Undefined()); }
 
     int dataLength;
     void *data = getArgDataAndLength(args, 1, &dataLength);
-    if (data == NULL) { return Undefined(); }
+    if (data == NULL) { return scope.Close(Undefined()); }
 
     unsigned int rsaSize = (unsigned int) RSA_size(obj->rsa);
     unsigned int sigLength = rsaSize;
@@ -841,6 +841,7 @@ Handle<Value> RsaWrap::Sign(const Arguments& args) {
     if (rsaSize != sigLength) {
         // Sanity check. Shouldn't ever happen in practice.
         ThrowException(Exception::Error(String::New("Shouldn't happen.")));
+        return scope.Close(Undefined());
     }
 
     return scope.Close(result->handle_);
@@ -855,18 +856,18 @@ Handle<Value> RsaWrap::Verify(const Arguments& args) {
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     int nid;
-    if (!getArgInt(args, 0, &nid)) { return Undefined(); }
+    if (!getArgInt(args, 0, &nid)) { return scope.Close(Undefined()); }
 
     int dataLength;
     void *data = getArgDataAndLength(args, 1, &dataLength);
-    if (data == NULL) { return Undefined(); }
+    if (data == NULL) { return scope.Close(Undefined()); }
 
     int sigLength;
     void *sig = getArgDataAndLength(args, 2, &sigLength);
-    if (sig == NULL) { return Undefined(); }
+    if (sig == NULL) { return scope.Close(Undefined()); }
 
     int ret = RSA_verify(nid, (unsigned char *) data, dataLength,
                          (unsigned char *) sig, sigLength, obj->rsa);
@@ -880,13 +881,13 @@ Handle<Value> RsaWrap::Verify(const Arguments& args) {
             // (as opposed to, say, a more dire failure in the library
             // warranting an exception throw).
             ERR_get_error(); // Consume the error (get it off the err stack).
-            return False();
+            return scope.Close(False());
         }
         scheduleSslException();
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
-    return True();
+    return scope.Close(True());
 }
 
 Handle<Value> RsaWrap::AddPSSPadding(const v8::Arguments& args)
@@ -894,26 +895,26 @@ Handle<Value> RsaWrap::AddPSSPadding(const v8::Arguments& args)
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     char *hashName = getArgString(args, 0);
-    if (hashName == NULL) { return Undefined(); }        
+    if (hashName == NULL) { return scope.Close(Undefined()); }        
 
     const EVP_MD *Hash = EVP_get_digestbyname(hashName);
     free(hashName);
-    if (Hash == NULL) { return Undefined(); }
+    if (Hash == NULL) { return scope.Close(Undefined()); }
 
     int mHashLength;
     void *mHash = getArgDataAndLength(args, 1, &mHashLength);
-    if (mHash == NULL) { return Undefined(); }
+    if (mHash == NULL) { return scope.Close(Undefined()); }
 
-    if (mHashLength != EVP_MD_size(Hash))
-    {
+    if (mHashLength != EVP_MD_size(Hash)) {
         ThrowException(Exception::Error(String::New("Incorrect hash size")));
+        return scope.Close(Undefined());
     }
 
     int sLen;
-    if (!getArgInt(args, 2, &sLen)) { return Undefined(); }
+    if (!getArgInt(args, 2, &sLen)) { return scope.Close(Undefined()); }
 
     unsigned int emLength = (unsigned int) RSA_size(obj->rsa);
     node::Buffer *EM = node::Buffer::New(emLength);
@@ -935,30 +936,27 @@ Handle<Value> RsaWrap::VerifyPSSPadding(const v8::Arguments& args)
     HandleScope scope;
 
     RsaWrap *obj = unwrapExpectSet(args);
-    if (obj == NULL) { return Undefined(); }
+    if (obj == NULL) { return scope.Close(Undefined()); }
 
     char *hashName = getArgString(args, 0);
-    if (hashName == NULL) { return Undefined(); }        
+    if (hashName == NULL) { return scope.Close(Undefined()); }        
 
     const EVP_MD *Hash = EVP_get_digestbyname(hashName);
     free(hashName);
-    if (Hash == NULL) { return Undefined(); }
+    if (Hash == NULL) { return scope.Close(Undefined()); }
 
     int mHashLength;
     void *mHash = getArgDataAndLength(args, 1, &mHashLength);
-    if (mHash == NULL) { return Undefined(); }
+    if (mHash == NULL) { return scope.Close(Undefined()); }
 
-    if (mHashLength != EVP_MD_size(Hash))
-    {
-        ThrowException(Exception::Error(String::New("Incorrect hash size")));
-    }
+    if (mHashLength != EVP_MD_size(Hash)) { return scope.Close(Undefined()); }
 
     int emLength;
     void *EM = getArgDataAndLength(args, 2, &emLength);
-    if (EM == NULL) { return Undefined(); }
+    if (EM == NULL) { return scope.Close(Undefined()); }
 
     int sLen;
-    if (!getArgInt(args, 3, &sLen)) { return Undefined(); }
+    if (!getArgInt(args, 3, &sLen)) { return scope.Close(Undefined()); }
 
     int ret = RSA_verify_PKCS1_PSS(obj->rsa, 
                     (unsigned char*) mHash, Hash, (unsigned char*) EM, sLen);
@@ -968,17 +966,23 @@ Handle<Value> RsaWrap::VerifyPSSPadding(const v8::Arguments& args)
         unsigned long err = ERR_peek_error();
         int lib = ERR_GET_LIB(err);
         int reason = ERR_GET_REASON(err);
-        if ((lib == ERR_LIB_RSA) && (reason == RSA_R_BAD_SIGNATURE)) {
+        if ((lib == ERR_LIB_RSA) &&
+            ((reason == RSA_R_SLEN_CHECK_FAILED) ||
+             (reason == RSA_R_FIRST_OCTET_INVALID) ||
+             (reason == RSA_R_DATA_TOO_LARGE) ||
+             (reason == RSA_R_LAST_OCTET_INVALID) ||
+             (reason == RSA_R_SLEN_RECOVERY_FAILED) ||
+             (reason == RSA_R_BAD_SIGNATURE))) {
             // This just means that the signature didn't match
             // (as opposed to, say, a more dire failure in the library
             // warranting an exception throw).
             ERR_get_error(); // Consume the error (get it off the err stack).
-            return False();
+            return scope.Close(False());
         }
         scheduleSslException();
-        return Undefined();
+        return scope.Close(Undefined());
     }
 
-    return True();
+    return scope.Close(True());
 }
 
