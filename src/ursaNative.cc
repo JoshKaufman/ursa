@@ -872,30 +872,6 @@ Handle<Value> RsaWrap::Verify(const Arguments& args) {
     int ret = RSA_verify(nid, (unsigned char *) data, dataLength,
                          (unsigned char *) sig, sigLength, obj->rsa);
     if (ret == 0) {
-        // Something went wrong; investigate!
-        unsigned long err = ERR_peek_error();
-        int lib = ERR_GET_LIB(err);
-        int reason = ERR_GET_REASON(err);
-        if ((lib == ERR_LIB_RSA) &&
-            ((reason == RSA_R_BLOCK_TYPE_IS_NOT_01) ||
-             (reason == RSA_R_BAD_FIXED_HEADER_DECRYPT) ||
-             (reason == RSA_R_NULL_BEFORE_BLOCK_MISSING) ||
-             (reason == RSA_R_BAD_PAD_BYTE_COUNT) ||
-             (reason == RSA_R_DATA_TOO_LARGE) ||
-             (reason == RSA_R_DATA_TOO_LARGE_FOR_KEY_SIZE) ||
-             (reason == RSA_R_BLOCK_TYPE_IS_NOT_02) ||
-             (reason == RSA_R_MODULUS_TOO_LARGE) ||
-             (reason == RSA_R_BAD_E_VALUE) ||
-             (reason == RSA_R_DATA_GREATER_THAN_MOD_LEN) ||
-             (reason == RSA_R_DATA_TOO_LARGE_FOR_MODULUS) ||
-             (reason == RSA_R_UNKNOWN_PADDING_TYPE) ||
-             (reason == RSA_R_PADDING_CHECK_FAILED))) {
-            // This just means that the signature didn't match
-            // (as opposed to, say, a more dire failure in the library
-            // warranting an exception throw).
-            ERR_get_error(); // Consume the error (get it off the err stack).
-            return scope.Close(False());
-        }
         scheduleSslException();
         return scope.Close(Undefined());
     }
@@ -975,29 +951,6 @@ Handle<Value> RsaWrap::VerifyPSSPadding(const v8::Arguments& args)
                     (unsigned char*) mHash, Hash, (unsigned char*) EM, sLen);
 
     if (ret == 0) {
-        // Something went wrong; investigate!
-        unsigned long err = ERR_peek_error();
-        int lib = ERR_GET_LIB(err);
-        int reason = ERR_GET_REASON(err);
-        if ((lib == ERR_LIB_RSA) &&
-            ((reason == RSA_R_SLEN_CHECK_FAILED) ||
-             (reason == RSA_R_FIRST_OCTET_INVALID) ||
-             (reason == RSA_R_DATA_TOO_LARGE) ||
-             (reason == RSA_R_LAST_OCTET_INVALID) ||
-             (reason == RSA_R_SLEN_RECOVERY_FAILED) ||
-             (reason == RSA_R_BAD_SIGNATURE) ||
-             (reason == RSA_R_MODULUS_TOO_LARGE) ||
-             (reason == RSA_R_BAD_E_VALUE) ||
-             (reason == RSA_R_DATA_GREATER_THAN_MOD_LEN) ||
-             (reason == RSA_R_DATA_TOO_LARGE_FOR_MODULUS) ||
-             (reason == RSA_R_UNKNOWN_PADDING_TYPE) ||
-             (reason == RSA_R_PADDING_CHECK_FAILED))) {
-            // This just means that the signature didn't match
-            // (as opposed to, say, a more dire failure in the library
-            // warranting an exception throw).
-            ERR_get_error(); // Consume the error (get it off the err stack).
-            return scope.Close(False());
-        }
         scheduleSslException();
         return scope.Close(Undefined());
     }
