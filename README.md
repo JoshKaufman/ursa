@@ -215,6 +215,11 @@ This returns `true` if and only if both arguments are key objects of
 some sort (either can be public or private, and they don't have to
 be the same) and their public aspects match each other.
 
+### ursa.openSshPublicKey(key, encoding)
+
+This returns `publicKey` from ssh-rsa public key-string. First argument
+must be a string like `ssh-rsa AAAAB3Nz.... user@localhost` or Buffer of pubKey bits.
+
 ### ursa.sshFingerprint(sshKey, sshEncoding, outEncoding)
 
 Return the SSH-style public key fingerprint of the given SSH-format
