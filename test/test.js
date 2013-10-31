@@ -508,6 +508,13 @@ function testVerifier() {
     assert.equal(verifier.verify(key, sigBuf), true);
 }
 
+function test_openSshPublicKey() {
+    var sshKey = ursa.openSshPublicKey(fixture.SSH_PUBLIC_KEY),
+        pubKey = ursa.createPublicKey(fixture.PUBLIC_KEY);
+
+    assert.equal(ursa.equalKeys(sshKey, pubKey), true);
+}
+
 /*
  * Main test script
  */
@@ -536,5 +543,6 @@ test_equalKeys();
 test_matchingPublicKeys();
 testSigner();
 testVerifier();
+test_openSshPublicKey();
 
 console.log("All tests pass!");

@@ -31,7 +31,7 @@ class RsaWrap : node::ObjectWrap {
     static v8::Handle<v8::Value> SetPublicKeyPem(const v8::Arguments& args);
     static v8::Handle<v8::Value> Sign(const v8::Arguments& args);
     static v8::Handle<v8::Value> Verify(const v8::Arguments& args);
-
+    static v8::Handle<v8::Value> OpenPublicSshKey(const v8::Arguments& args);
 
   private:
     static RsaWrap *unwrapExpectPrivateKey(const v8::Arguments& args);

@@ -397,6 +397,7 @@ void RsaWrap::InitClass(Handle<Object> target) {
     BIND(proto, setPublicKeyPem,    SetPublicKeyPem);
     BIND(proto, sign,               Sign);
     BIND(proto, verify,             Verify);
+    BIND(proto, openPublicSshKey,   OpenPublicSshKey);
 
     // Store the constructor in the target bindings.
     target->Set(className, Persistent<Function>::New(tpl->GetFunction()));
@@ -418,6 +419,30 @@ RsaWrap::~RsaWrap() {
     if (rsa != NULL) {
         RSA_free(rsa);
     }
+}
+
+Handle<Value> RsaWrap::OpenPublicSshKey(const Arguments& args) {
+    HandleScope scope;
+    RsaWrap *obj = unwrapExpectUnset(args);
+
+    Local<Object> obj_n = args[0]->ToObject();
+    Local<Object> obj_e = args[1]->ToObject();
+    int n_length = node::Buffer::Length(obj_n);
+    int e_length = node::Buffer::Length(obj_e);
+    unsigned char *data_n = (unsigned char *)malloc(n_length);
+    unsigned char *data_e = (unsigned char *)malloc(e_length);
+    memcpy(data_n, node::Buffer::Data(obj_n), n_length);
+    memcpy(data_e, node::Buffer::Data(obj_e), e_length);
+
+    if (obj->rsa == NULL) {
+        obj->rsa = RSA_new();
+    }
+
+    obj->rsa->n = BN_bin2bn(data_n, n_length, NULL);
+    obj->rsa->e = BN_bin2bn(data_e, e_length, NULL);
+    free(data_n);
+    free(data_e);
+    return Undefined();
 }
 
 /**
