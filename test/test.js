@@ -151,6 +151,23 @@ function test_toPrivatePem(key) {
     assertStringEqual(result, keyString);
 }
 
+function test_toEncryptedPrivatePem(key) {
+    var password = fixture.PASSWORD.toString(fixture.UTF8);
+    var cipher = fixture.DES_EDE3_CBC;
+
+    var keyString = fixture.PASS_PRIVATE_KEY.toString(fixture.UTF8);
+    var pem = key.toEncryptedPrivatePem(password, cipher).toString(fixture.UTF8);
+
+    var plainTextKey = ursa.createPrivateKey(pem, password);
+    assertStringEqual(plainTextKey.toPrivatePem().toString(), fixture.PRIVATE_KEY.toString());
+
+
+    pem = key.toEncryptedPrivatePem(password, cipher, fixture.UTF8).toString(fixture.UTF8);
+
+    plainTextKey = ursa.createPrivateKey(pem, password);
+    assertStringEqual(plainTextKey.toPrivatePem().toString(), fixture.PRIVATE_KEY.toString());
+}
+
 function test_decrypt(key) {
     var encoded = new Buffer(fixture.PRIVATE_CIPHERTEXT_HEX, fixture.HEX);
     var decoded = key.decrypt(encoded).toString(fixture.UTF8);
@@ -193,6 +210,7 @@ function test_hashAndSign(key) {
 
 function testPrivateKeyMethods(key) {
     test_toPrivatePem(key);
+    test_toEncryptedPrivatePem(key);
     test_decrypt(key);
     test_privateEncrypt(key);
     test_hashAndSign(key);

@@ -585,8 +585,24 @@ Handle<Value> RsaWrap::GetPrivateKeyPem(const Arguments& args) {
         return Undefined();
     }
 
-    if (!PEM_write_bio_RSAPrivateKey(bio, obj->rsa,
-                                     NULL, NULL, 0, NULL, NULL)) {
+    unsigned char *passPhrase = NULL; 
+    int passPhraseLen = 0;
+    const EVP_CIPHER *cipher = NULL;
+
+    if(args.Length() > 0) {
+      passPhrase = (unsigned char *)getArgString(args, 0);
+      cipher = EVP_get_cipherbyname(getArgString(args, 1));
+
+    }
+
+    if(passPhrase != NULL) {
+      passPhraseLen = (int)strlen((const char *)passPhrase);
+    }
+
+
+    if (!PEM_write_bio_RSAPrivateKey(bio, obj->rsa, 
+                                     cipher, passPhrase, 
+                                     passPhraseLen, NULL, NULL)) {
         scheduleSslException();
         BIO_vfree(bio);
         return Undefined();
