@@ -4,6 +4,7 @@
 #include <node_buffer.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
