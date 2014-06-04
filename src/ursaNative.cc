@@ -209,6 +209,17 @@ static BIO *getArg0Bio(const Arguments& args) {
     return bio;
 }
 
+static BIGNUM *getArgXBigNum(int x, const Arguments& args) {
+    if (!isBuffer(args, x)) { return NULL; }
+
+    Local<Object> buf = args[x]->ToObject();
+    char *data = node::Buffer::Data(buf);
+    ssize_t length = node::Buffer::Length(buf);
+
+    return BN_bin2bn(reinterpret_cast<unsigned char*>(data),length,NULL);
+}
+
+
 /**
  * Get a Buffer out of args[] at the given index, yielding a data
  * pointer and length.  Returns a non-null pointer on success and sets
@@ -397,6 +408,7 @@ void RsaWrap::InitClass(Handle<Object> target) {
     BIND(proto, setPublicKeyPem,    SetPublicKeyPem);
     BIND(proto, sign,               Sign);
     BIND(proto, verify,             Verify);
+    BIND(proto, createPrivateKeyFromComponents,   CreatePrivateKeyFromComponents);
 
     // Store the constructor in the target bindings.
     target->Set(className, Persistent<Function>::New(tpl->GetFunction()));
@@ -907,3 +919,30 @@ Handle<Value> RsaWrap::Verify(const Arguments& args) {
 
     return True();
 }
+
+Handle<Value> RsaWrap::CreatePrivateKeyFromComponents(const Arguments& args) {
+   RsaWrap *obj = unwrapExpectUnset(args);
+   obj->rsa = RSA_new();
+
+   BIGNUM *modulus = getArgXBigNum(0, args);
+   BIGNUM *exponent = getArgXBigNum(1, args);
+   BIGNUM *p = getArgXBigNum(2, args);
+   BIGNUM *q = getArgXBigNum(3, args);
+   BIGNUM *dp = getArgXBigNum(4, args);
+   BIGNUM *dq = getArgXBigNum(5, args);
+   BIGNUM *inverseQ = getArgXBigNum(6, args);
+   BIGNUM *d = getArgXBigNum(7, args);
+
+   obj->rsa->n = modulus;
+   obj->rsa->e = exponent;
+   obj->rsa->p = p;
+   obj->rsa->q = q;
+   obj->rsa->dmp1 = dp;
+   obj->rsa->dmq1 = dq;
+   obj->rsa->iqmp = inverseQ;
+   obj->rsa->d = d;
+
+   return Undefined();
+}
+
+
