@@ -1,6 +1,11 @@
 ursa
 ====
 
+**NOTE: This package is no longer under active maintenance. If you would like to
+take ownership please contact [Medium's Open Sourcerer](mailto:opensource@medium.com).**
+
+--
+
 This Node module provides a fairly complete set of wrappers for the
 RSA public/private key crypto functionality of OpenSSL.
 
