@@ -1,8 +1,7 @@
 ursa
 ====
 
-**NOTE: This package is no longer under active maintenance. If you would like to
-take ownership please contact [Medium's Open Sourcerer](mailto:opensource@medium.com).**
+**NOTE: This package was transfered from Medium to NodePrime on November 17, 2014.**
 
 --
 
@@ -458,7 +457,7 @@ Contributing
 ------------
 
 Questions, comments, bug reports, and pull requests are all welcome.
-Submit them at [the project on GitHub](https://github.com/Obvious/ursa/).
+Submit them at [the project on GitHub](https://github.com/NodePrime/ursa/).
 
 Bug reports that include steps-to-reproduce (including code) are the
 best. Even better, make them in the form of pull requests that update
