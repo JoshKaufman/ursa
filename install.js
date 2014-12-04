@@ -4,7 +4,7 @@ var path = require('path');
 if (!(fs.existsSync || path.existsSync)('bin'))
 	fs.mkdirSync('bin');
 
-moveAll('build/Release/', 'bin/', '.node');
+moveAll('build/' + process.config.target_defaults.default_configuration, 'bin/', '.node');
 
 function moveAll(from, to, ext) {
 	fs.readdirSync(from)
