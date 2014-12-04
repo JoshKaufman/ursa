@@ -150,7 +150,7 @@ static bool hasArgument(const Arguments& args, int index) {
     }
 
     char *message = NULL;
-    asprintf(&message, "Missing args[%d].", index);
+    if(asprintf(&message, "Missing args[%d].", index) < 0) { return false; }
     ThrowException(Exception::TypeError(String::New(message)));
     free(message);
     return false;
@@ -165,7 +165,7 @@ static bool isBuffer(const Arguments& args, int index) {
 
     if (!node::Buffer::HasInstance(args[index])) {
         char *message = NULL;
-        asprintf(&message, "Expected a Buffer in args[%d].", index);
+        if(asprintf(&message, "Expected a Buffer in args[%d].", index) < 0) { return false; }
         ThrowException(Exception::TypeError(String::New(message)));
         free(message);
         return false;
@@ -183,7 +183,7 @@ static bool isString(const Arguments& args, int index) {
 
     if (!args[index]->IsString()) {
         char *message = NULL;
-        asprintf(&message, "Expected a string in args[%d].", index);
+        if(asprintf(&message, "Expected a string in args[%d].", index) < 0) { return false; }
         ThrowException(Exception::TypeError(String::New(message)));
         free(message);
         return false;
@@ -291,7 +291,7 @@ static bool getArgInt(const Arguments& args, int index, int *resultPtr) {
 
     if (! arg->IsInt32()) {
         char *message = NULL;
-        asprintf(&message, "Expected a 32-bit integer in args[%d].", index);
+        if(asprintf(&message, "Expected a 32-bit integer in args[%d].", index) < 0) { return false; }
         ThrowException(Exception::TypeError(String::New(message)));
         free(message);
         return false;
