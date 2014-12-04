@@ -1,7 +1,7 @@
-ursa
+URSA - RSA public/private key OpenSSL bindings for Node.js
 ====
 
-**NOTE: This package was transfered from Medium to NodePrime on November 17, 2014.**
+> NOTE: This package was transfered from [Medium](https://github.com/Medium) to [NodePrime](https://github.com/NodePrime) on November 17, 2014. Pull requests are encouraged to help bring it up to date.
 
 --
 
@@ -467,9 +467,11 @@ the test suite. Thanks!
 Authors
 -------
 
-[Dan Bornstein](https://github.com/danfuzz)
+Current (2014+) maintenance sponsored by [NodePrime](http://nodeprime.com).
+
+Original Author (2012): [Dan Bornstein](https://github.com/danfuzz)
 ([personal website](http://www.milk.com/)), supported by
-[The Obvious Corporation](http://obvious.com/).
+[The Obvious Corporation](http://obvious.com/) (now [Medium](https://medium.com/)).
 
 With contribution from:
 
@@ -484,8 +486,9 @@ With thanks to:
 License
 -------
 
-Copyright 2012 [The Obvious Corporation](http://obvious.com/).
+Updates Copyright 2014 [NodePrime, Inc.](http://nodeprime.com/).
+Original Copyright 2012 [The Obvious Corporation](http://obvious.com/).
 
 Licensed under the Apache License, Version 2.0. 
-See the top-level file `LICENSE.txt` and
+See the top-level file `[LICENSE.txt](LICENSE.txt)` and
 (http://www.apache.org/licenses/LICENSE-2.0).
