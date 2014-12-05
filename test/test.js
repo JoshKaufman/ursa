@@ -267,6 +267,24 @@ function test_createKey() {
     assert.throws(f1, /Not a key\./);
 }
 
+function test_createPrivateKeyFromComponents() {
+    var privFromComponenets = ursa.createPrivateKeyFromComponents(
+            fixture.PRIVATE_KEY_COMPONENTS.modulus,
+            fixture.PRIVATE_KEY_COMPONENTS.exponent,
+            fixture.PRIVATE_KEY_COMPONENTS.p,
+            fixture.PRIVATE_KEY_COMPONENTS.q,
+            fixture.PRIVATE_KEY_COMPONENTS.dp,
+            fixture.PRIVATE_KEY_COMPONENTS.dq,
+            fixture.PRIVATE_KEY_COMPONENTS.inverseQ,
+            fixture.PRIVATE_KEY_COMPONENTS.d);
+
+    assert(ursa.isPrivateKey(privFromComponenets), true);
+
+    var privFromPem = ursa.createPrivateKey(fixture.PRIVATE_KEY_3);
+
+    assert.equal(privFromComponenets.toPrivatePem('utf8'), privFromPem.toPrivatePem('utf8'));
+}
+
 function test_fail_createPublicKey() {
     // This is mostly tested at the native level. This just tests the
     // extra failures added at the high level.
@@ -519,6 +537,7 @@ testBasics();
 testTypes();
 
 test_createKey();
+test_createPrivateKeyFromComponents();
 test_fail_createPublicKey();
 test_fail_createPrivateKey();
 test_coerceKey();

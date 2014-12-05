@@ -155,6 +155,10 @@ The encoding, if specified, applies to both other arguments.
 
 See "Public Key Methods" below for more details.
 
+### ursa.createPrivateKeyFromComponents(modulus, exponent, p, q, dp, dq, inverseQ, d)
+
+Create and return a private key from the given components.
+
 ### ursa.assertKey(obj)
 
 Convenient shorthand for `assert(ursa.isKey(obj))`.

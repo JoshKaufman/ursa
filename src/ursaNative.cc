@@ -210,6 +210,17 @@ static BIO *getArg0Bio(const Arguments& args) {
     return bio;
 }
 
+static BIGNUM *getArgXBigNum(int x, const Arguments& args) {
+    if (!isBuffer(args, x)) { return NULL; }
+
+    Local<Object> buf = args[x]->ToObject();
+    char *data = node::Buffer::Data(buf);
+    ssize_t length = node::Buffer::Length(buf);
+
+    return BN_bin2bn(reinterpret_cast<unsigned char*>(data),length,NULL);
+}
+
+
 /**
  * Get a Buffer out of args[] at the given index, yielding a data
  * pointer and length.  Returns a non-null pointer on success and sets
@@ -398,6 +409,7 @@ void RsaWrap::InitClass(Handle<Object> target) {
     BIND(proto, setPublicKeyPem,    SetPublicKeyPem);
     BIND(proto, sign,               Sign);
     BIND(proto, verify,             Verify);
+    BIND(proto, createPrivateKeyFromComponents,   CreatePrivateKeyFromComponents);
 
     // Store the constructor in the target bindings.
     target->Set(className, Persistent<Function>::New(tpl->GetFunction()));
@@ -908,3 +920,81 @@ Handle<Value> RsaWrap::Verify(const Arguments& args) {
 
     return True();
 }
+
+Handle<Value> RsaWrap::CreatePrivateKeyFromComponents(const Arguments& args) {
+    RsaWrap *obj = unwrapExpectUnset(args);
+    if (obj == NULL) {
+        return Undefined();
+    }
+
+    obj->rsa = RSA_new();
+    if (obj->rsa == NULL) {
+        return Undefined();
+    }
+
+    BIGNUM *modulus;
+    BIGNUM *exponent;
+    BIGNUM *p;
+    BIGNUM *q;
+    BIGNUM *dp;
+    BIGNUM *dq;
+    BIGNUM *inverseQ;
+    BIGNUM *d;
+
+    bool ok = true;
+
+    modulus = getArgXBigNum(0, args);
+    ok &= (modulus != NULL);
+    if (ok) {
+        exponent = getArgXBigNum(1, args);
+        ok &= (exponent != NULL);
+    }
+    if (ok) {
+        p = getArgXBigNum(2, args);
+        ok &= (p != NULL);
+    }
+    if (ok) {
+        q = getArgXBigNum(3, args);
+        ok &= (q != NULL);
+    }
+    if (ok) {
+        dp = getArgXBigNum(4, args);
+        ok &= (dp != NULL);
+    }
+    if (ok) {
+        dq = getArgXBigNum(5, args);
+        ok &= (dq != NULL);
+    }
+    if (ok) {
+        inverseQ = getArgXBigNum(6, args);
+        ok &= (inverseQ != NULL);
+    }
+    if (ok) {
+        d = getArgXBigNum(7, args);
+        ok &= (d != NULL);
+    }
+
+    if (ok) {
+        obj->rsa->n = modulus;
+        obj->rsa->e = exponent;
+        obj->rsa->p = p;
+        obj->rsa->q = q;
+        obj->rsa->dmp1 = dp;
+        obj->rsa->dmq1 = dq;
+        obj->rsa->iqmp = inverseQ;
+        obj->rsa->d = d;
+    } else {
+        BN_free(modulus);
+        BN_free(exponent);
+        BN_free(p);
+        BN_free(q);
+        BN_free(dp);
+        BN_free(dq);
+        BN_free(inverseQ);
+        BN_free(d);
+    }
+
+    return Undefined();
+}
+
+
