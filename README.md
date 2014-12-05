@@ -496,3 +496,12 @@ Original Copyright 2012 [The Obvious Corporation](http://obvious.com/).
 Licensed under the Apache License, Version 2.0. 
 See the top-level file `[LICENSE.txt](LICENSE.txt)` and
 (http://www.apache.org/licenses/LICENSE-2.0).
+
+Other Repos that may be of Interest:
+-----------------------
+
+* https://github.com/coolaj86/nodejs-self-signed-certificate-example
+* https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js
+* https://github.com/coolaj86/node-ssl-root-cas
+* https://github.com/coolaj86/nodejs-ssl-trusted-peer-example
+* https://github.com/coolaj86/bitcrypt
