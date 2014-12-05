@@ -26,6 +26,7 @@ var HEX    = "hex";
 var SHA1   = "sha1";
 var SHA256 = "sha256";
 var UTF8   = "utf8";
+var DES_EDE3_CBC = "des-ede3-cbc";
 
 var PASS_PRIVATE_KEY = fs.readFileSync(__dirname + "/blort-pass.pem");
 var PRIVATE_KEY = fs.readFileSync(__dirname + "/blort.pem");
@@ -127,6 +128,7 @@ module.exports = {
     SHA1:   SHA1,
     SHA256: SHA256,
     UTF8:   UTF8,
+    DES_EDE3_CBC: DES_EDE3_CBC,
     
     EXPONENT_HEX:               EXPONENT_HEX,
     FAKE_SHA256_TO_SIGN:        FAKE_SHA256_TO_SIGN,

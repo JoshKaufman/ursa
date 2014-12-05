@@ -165,6 +165,16 @@ function test_getPrivateKeyPem() {
     assertStringEqual(pem, keyStr);
 }
 
+function test_getPrivateKeyPemWithPassPhrase() {
+    var keyStr = fixture.PASS_PRIVATE_KEY.toString(fixture.UTF8);
+
+    var rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PASS_PRIVATE_KEY, fixture.PASSWORD);
+
+    var pem = rsa.getPrivateKeyPem(fixture.PASSWORD, fixture.DES_EDE3_CBC).toString(fixture.UTF8);
+    assertStringEqual(pem, keyStr);
+}
+
 function test_fail_getPrivateKeyPem() {
     var rsa = new RsaWrap();
 

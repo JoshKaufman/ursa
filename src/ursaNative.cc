@@ -623,13 +623,33 @@ Handle<Value> RsaWrap::GetPrivateKeyPem(const Arguments& args) {
         return Undefined();
     }
 
-    if (!PEM_write_bio_RSAPrivateKey(bio, obj->rsa,
-                                     NULL, NULL, 0, NULL, NULL)) {
+    char *password = NULL; 
+    int passwordLen = 0;
+    const EVP_CIPHER *cipher = NULL;
+
+    if(args.Length() > 0) {
+      password = getArgString(args, 0);
+
+      char *cipherName = getArgString(args, 1);
+      cipher = EVP_get_cipherbyname(cipherName);
+      free(cipherName);
+    }
+
+    if(password != NULL) {
+      passwordLen = (int)strlen(password);
+    }
+
+
+    if (!PEM_write_bio_RSAPrivateKey(bio, obj->rsa, 
+                                     cipher, (unsigned char *)password, 
+                                     passwordLen, NULL, NULL)) {
         scheduleSslException();
         BIO_vfree(bio);
+        free(password);
         return Undefined();
     }
 
+    free(password);
     return bioToBuffer(bio);
 }
 
