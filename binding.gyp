@@ -27,12 +27,14 @@
 				  ],
 				  'include_dirs': [
 					'<(openssl_root)/include',
+					'<!(node -e "require(\'nan\')")'
 				  ],
 				}, { # OS!="win"
 				  'conditions': [
 					[ 'node_shared_openssl=="false"', {
 						'include_dirs': [
-							'<(node_root_dir)/deps/openssl/openssl/include'
+							'<(node_root_dir)/deps/openssl/openssl/include',
+							'<!(node -e "require(\'nan\')")'
 						]
 					}]
 					]
