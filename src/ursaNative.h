@@ -22,6 +22,7 @@ class RsaWrap : node::ObjectWrap {
     static v8::Handle<v8::Value> New(const v8::Arguments& args);
     static v8::Handle<v8::Value> GeneratePrivateKey(const v8::Arguments& args);
     static v8::Handle<v8::Value> GetExponent(const v8::Arguments& args);
+    static v8::Handle<v8::Value> GetPrivateExponent(const v8::Arguments& args);
     static v8::Handle<v8::Value> GetModulus(const v8::Arguments& args);
     static v8::Handle<v8::Value> GetPrivateKeyPem(const v8::Arguments& args);
     static v8::Handle<v8::Value> GetPublicKeyPem(const v8::Arguments& args);

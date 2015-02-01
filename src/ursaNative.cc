@@ -42,7 +42,7 @@ void init(Handle<Object> target) {
     BIND(target, textToNid, TextToNid);
     RsaWrap::InitClass(target);
 
-#ifdef _WIN32 
+#ifdef _WIN32
     // On Windows, we can't use Node's OpenSSL, so we link
     // to a standalone OpenSSL library. Therefore, we need
     // to initialize OpenSSL separately.
@@ -363,12 +363,12 @@ Handle<Value> TextToNid(const Arguments& args) {
     HandleScope scope;
 
     char *name = getArgString(args, 0);
-    if (name == NULL) { return Undefined(); }        
+    if (name == NULL) { return Undefined(); }
 
     int nid = OBJ_txt2nid(name);
     free(name);
 
-    if (nid == NID_undef) { 
+    if (nid == NID_undef) {
         scheduleSslException();
         return Undefined();
     }
@@ -398,8 +398,9 @@ void RsaWrap::InitClass(Handle<Object> target) {
 
     BIND(proto, generatePrivateKey, GeneratePrivateKey);
     BIND(proto, getExponent,        GetExponent);
+    BIND(proto, getPrivateExponent, GetPrivateExponent);
     BIND(proto, getModulus,         GetModulus);
-    BIND(proto, getPrivateKeyPem,   GetPrivateKeyPem);
+    BIND(proto, getPrivateKeyPem,   GetPrivateKeyPem);		
     BIND(proto, getPublicKeyPem,    GetPublicKeyPem);
     BIND(proto, privateDecrypt,     PrivateDecrypt);
     BIND(proto, privateEncrypt,     PrivateEncrypt);
@@ -592,6 +593,21 @@ Handle<Value> RsaWrap::GetExponent(const Arguments& args) {
 }
 
 /**
+ * Get the private exponent of the underlying RSA object. The return
+ * value is a Buffer containing the unsigned number in big-endian
+ * order. The returned exponent is not encrypted in any way,
+ * so this should be used with caution.
+ */
+Handle<Value> RsaWrap::GetPrivateExponent(const Arguments& args) {
+    HandleScope scope;
+
+    RsaWrap *obj = unwrapExpectPrivateKey(args);
+    if (obj == NULL) { return Undefined(); }
+
+    return bignumToBuffer(obj->rsa->d);
+}
+
+/**
  * Get the public modulus of the underlying RSA object. The return
  * value is a Buffer containing the unsigned number in big-endian
  * order.
@@ -623,7 +639,7 @@ Handle<Value> RsaWrap::GetPrivateKeyPem(const Arguments& args) {
         return Undefined();
     }
 
-    char *password = NULL; 
+    char *password = NULL;
     int passwordLen = 0;
     const EVP_CIPHER *cipher = NULL;
 
@@ -640,8 +656,8 @@ Handle<Value> RsaWrap::GetPrivateKeyPem(const Arguments& args) {
     }
 
 
-    if (!PEM_write_bio_RSAPrivateKey(bio, obj->rsa, 
-                                     cipher, (unsigned char *)password, 
+    if (!PEM_write_bio_RSAPrivateKey(bio, obj->rsa,
+                                     cipher, (unsigned char *)password,
                                      passwordLen, NULL, NULL)) {
         scheduleSslException();
         BIO_vfree(bio);
@@ -742,7 +758,7 @@ Handle<Value> RsaWrap::PrivateEncrypt(const Arguments& args) {
         return Undefined();
     }
 
-    int ret = RSA_private_encrypt(length, (unsigned char *) data, 
+    int ret = RSA_private_encrypt(length, (unsigned char *) data,
                                   (unsigned char *) node::Buffer::Data(result),
                                   obj->rsa, RSA_PKCS1_PADDING);
 
@@ -816,7 +832,7 @@ Handle<Value> RsaWrap::PublicEncrypt(const Arguments& args) {
     int padding;
     if (!getArgInt(args, 1, &padding)) { return Undefined(); }
 
-    int ret = RSA_public_encrypt(length, (unsigned char *) data, 
+    int ret = RSA_public_encrypt(length, (unsigned char *) data,
                                  (unsigned char *) node::Buffer::Data(result),
                                  obj->rsa, padding);
 
@@ -906,11 +922,11 @@ Handle<Value> RsaWrap::Sign(const Arguments& args) {
     unsigned int sigLength = rsaSize;
     node::Buffer *result = node::Buffer::New(sigLength);
 
-    int ret = RSA_sign(nid, (unsigned char*) data, dataLength, 
+    int ret = RSA_sign(nid, (unsigned char*) data, dataLength,
                        (unsigned char *) node::Buffer::Data(result),
                        &sigLength, obj->rsa);
 
-    if (ret == 0) { 
+    if (ret == 0) {
         // TODO: Will this leak the result buffer? Is it going to be gc'ed?
         scheduleSslException();
         return Undefined();
@@ -1041,5 +1057,3 @@ Handle<Value> RsaWrap::CreatePrivateKeyFromComponents(const Arguments& args) {
 
     return Undefined();
 }
-
-

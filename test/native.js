@@ -155,6 +155,23 @@ function test_fail_getModulus() {
     assert.throws(f1, /Key not yet set\./);
 }
 
+function test_getPrivateExponent() {
+    var rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+    var value = rsa.getPrivateExponent();
+    assert.equal(value.toString(fixture.HEX), fixture.PRIVATE_KEY_COMPONENTS.d.toString(fixture.HEX));
+}
+
+function test_fail_getPrivateExponent() {
+    var rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
+
+    function f1() {
+        rsa.getPrivateExponent();
+    }
+    assert.throws(f1, /Key not yet set\./);
+}
+
 function test_getPrivateKeyPem() {
     var keyStr = fixture.PRIVATE_KEY.toString(fixture.UTF8);
 
@@ -392,7 +409,7 @@ function test_generatePrivateKey() {
     encoded = pubKey.publicEncrypt(plainBuf, ursaNative.RSA_PKCS1_OAEP_PADDING);
     decoded = rsa.privateDecrypt(encoded, ursaNative.RSA_PKCS1_OAEP_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
-    
+
     // Similarly, try decoding with an extracted private key.
     var privKey = new RsaWrap();
     privKey.setPrivateKeyPem(rsa.getPrivateKeyPem());
@@ -625,6 +642,8 @@ function test_fail_textToNid() {
 function test() {
     test_new();
 
+    test_getPrivateExponent();
+    test_fail_getPrivateExponent();
     test_setPrivateKeyPem();
     test_fail_setPrivateKeyPem();
     test_setPublicKeyPem();
