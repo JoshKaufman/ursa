@@ -6,6 +6,7 @@
 	},
 	'targets': [
 		{
+			'include_dirs': [ "<!(node -e \"require('nan')\")" ],
 			'target_name': 'ursaNative',
 			'sources': [ 'src/ursaNative.cc', 'src/asprintf.cc' ],
 			'conditions': [
@@ -22,7 +23,7 @@
 					  },
 					}],
 				  ],
-				  'libraries': [ 
+				  'libraries': [
 					'-l<(openssl_root)/lib/libeay32.lib',
 				  ],
 				  'include_dirs': [
@@ -37,7 +38,7 @@
 					}]
 					]
 				}],
-			
+
 			]
 		}
 	]

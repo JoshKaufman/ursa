@@ -7,6 +7,7 @@
 #define BUILDING_NODE_EXTENSION
 #endif
 #include <node.h>
+#include <nan.h>
 #include <v8.h>
 
 #include <openssl/rsa.h>
