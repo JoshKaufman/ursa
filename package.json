@@ -48,6 +48,6 @@
     "test": "node test/test.js"
   },
   "dependencies": {
-    "nan": "~1.6.1"
+    "nan": "~1.6.2"
   }
 }

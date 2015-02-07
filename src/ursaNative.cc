@@ -20,6 +20,8 @@ using namespace v8;
 #  define VAR_ARRAY(type, name, size)  type name[size]
 #endif
 
+Persistent<Function> constructor;
+
 
 
 /*
@@ -129,27 +131,16 @@ static Handle<Value> bioToBuffer(BIO *bio) {
 }
 
 /**
- * Check that the given argument index exists. Returns true if so.
- * Schedules an exception and returns false if not.
- */
-static bool hasArgument(int length, int index) {
-    if (length > index) {
-        return true;
-    }
-
-    char *message = NULL;
-    if(asprintf(&message, "Missing args[%d].", index) < 0) { return false; }
-    NanThrowError(message);
-    free(message);
-    return false;
-}
-
-/**
  * Get a Buffer out of args[0], converted to a freshly-allocated
  * memory BIO. Returns a non-null pointer on success. On failure,
  * schedules an exception and returns NULL.
  */
 static BIO *getArg0Bio(const Local<Object> buf) {
+    if (!node::Buffer::HasInstance(buf)) {
+        NanThrowError("Expected a Buffer in args[0].");
+        return NULL;
+    }
+
     char *data = node::Buffer::Data(buf);
     ssize_t length = node::Buffer::Length(buf);
     BIO *bio = BIO_new_mem_buf(data, length);
@@ -160,6 +151,10 @@ static BIO *getArg0Bio(const Local<Object> buf) {
 }
 
 static BIGNUM *getArgXBigNum(const Local<Object> buf) {
+    if (!node::Buffer::HasInstance(buf)) {
+        NanThrowError("Expected a Buffer.");
+        return NULL;
+    }
     char *data = node::Buffer::Data(buf);
     ssize_t length = node::Buffer::Length(buf);
 
@@ -173,6 +168,10 @@ static BIGNUM *getArgXBigNum(const Local<Object> buf) {
  * exception and returns NULL.
  */
 static char *copyBufferToCharStar(const Local<Object> buf) {
+
+    if (!node::Buffer::HasInstance(buf)) {
+        return NULL;
+    }
 
     char *data = node::Buffer::Data(buf);
     ssize_t length = node::Buffer::Length(buf);
@@ -266,6 +265,16 @@ static RSA *generateKey(int num, unsigned long e) {
 NAN_METHOD(TextToNid) {
     NanScope();
 
+    if (args.Length() < 1) {
+        NanThrowError("Missing args[0].");
+        NanReturnUndefined();
+    }
+
+    if (!args[0]->IsString()) {
+        NanThrowError("Expected a string in args[0].");
+        NanReturnUndefined();
+    }
+
     Local<String> str = args[0].As<String>();
     char *name = copyBufferToUtf8String(str);
     if (name == NULL) { NanReturnUndefined(); }
@@ -318,7 +327,8 @@ void RsaWrap::InitClass(Handle<Object> target) {
     BIND(proto, openPublicSshKey,   OpenPublicSshKey);
 
     // Store the constructor in the target bindings.
-    target->Set(NanNew("RsaWrap"), NanNew<FunctionTemplate>(New)->GetFunction());
+    target->Set(NanNew("RsaWrap"), tpl->GetFunction());
+    NanAssignPersistent<Function>(constructor, tpl->GetFunction());
 }
 
 /**
@@ -342,7 +352,7 @@ RsaWrap::~RsaWrap() {
 NAN_METHOD(RsaWrap::OpenPublicSshKey) {
     NanScope();
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectUnset(obj);
+    obj = expectUnset(obj);
 
     Local<Object> obj_n = args[0].As<Object>();
     Local<Object> obj_e = args[1].As<Object>();
@@ -371,7 +381,7 @@ NAN_METHOD(RsaWrap::OpenPublicSshKey) {
  * an exception and returns null.
  */
 RsaWrap* RsaWrap::expectPrivateKey(RsaWrap* obj) {
-    expectSet(obj);
+    obj = expectSet(obj);
 
     // The "d" field should always be set on a private key and never
     // set on a public key.
@@ -430,8 +440,29 @@ NAN_METHOD(RsaWrap::GeneratePrivateKey) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectUnset(obj);
+    obj = expectUnset(obj);
     if (obj == NULL) { NanReturnUndefined(); }
+
+    // Sadly the change in V8 args type signature makes this messier now.
+    if (args.Length() < 1) {
+        NanThrowError("Missing args[0].");
+        NanReturnUndefined();
+    }
+
+    if (!args[0]->IsInt32()) {
+        NanThrowError("Expected a 32-bit integer in args[0].");
+        NanReturnUndefined();
+    }
+
+    if (args.Length() < 2) {
+        NanThrowError("Missing args[1].");
+        NanReturnUndefined();
+    }
+
+    if (!args[1]->IsInt32()) {
+        NanThrowError("Expected a 32-bit integer in args[1].");
+        NanReturnUndefined();
+    }
 
     int modulusBits = args[0]->Uint32Value();
     int exponent = args[1]->Uint32Value();
@@ -478,7 +509,7 @@ NAN_METHOD(RsaWrap::GeneratePrivateKey) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectSet(obj);
+    obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
     NanReturnValue(bignumToBuffer(obj->rsa->e));
@@ -493,7 +524,7 @@ NAN_METHOD(RsaWrap::GeneratePrivateKey) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectSet(obj);
+    obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
     NanReturnValue(bignumToBuffer(obj->rsa->n));
@@ -509,7 +540,7 @@ NAN_METHOD(RsaWrap::GeneratePrivateKey) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectPrivateKey(obj);
+    obj = expectPrivateKey(obj);
 
     if (obj == NULL) { NanReturnUndefined(); }
 
@@ -560,7 +591,7 @@ NAN_METHOD(RsaWrap::GeneratePrivateKey) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectSet(obj);
+    obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
     BIO *bio = BIO_new(BIO_s_mem());
@@ -587,11 +618,16 @@ NAN_METHOD(RsaWrap::PrivateDecrypt) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectPrivateKey(obj);
+    obj = expectPrivateKey(obj);
 
     if (obj == NULL) { NanReturnUndefined(); }
 
     Local<Object> buffer = args[0].As<Object>();
+    if (!node::Buffer::HasInstance(buffer)) {
+        NanThrowError("Expected a Buffer in args[0].");
+        NanReturnUndefined();
+    }
+
     size_t length = node::Buffer::Length(buffer);
     char* data = node::Buffer::Data(buffer);
     if (data == NULL) { NanReturnUndefined(); }
@@ -599,6 +635,10 @@ NAN_METHOD(RsaWrap::PrivateDecrypt) {
     int rsaLength = RSA_size(obj->rsa);
     VAR_ARRAY(unsigned char, buf, rsaLength);
 
+    if (!args[1]->IsInt32()) {
+        NanThrowError("Expected a 32-bit integer in args[1].");
+        NanReturnUndefined();
+    }
     int padding = args[1]->Uint32Value();
     int bufLength = RSA_private_decrypt(length, (unsigned char *) data,
                                         buf, obj->rsa, padding);
@@ -622,10 +662,14 @@ NAN_METHOD(RsaWrap::PrivateEncrypt) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectPrivateKey(obj);
+    obj = expectPrivateKey(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
     Local<Object> buffer = args[0].As<Object>();
+    if (!node::Buffer::HasInstance(buffer)) {
+        NanThrowError("Expected a Buffer in args[0].");
+        NanReturnUndefined();
+    }
     size_t length = node::Buffer::Length(buffer);
     char* data = node::Buffer::Data(buffer);
     if (data == NULL) { NanReturnUndefined(); }
@@ -654,10 +698,14 @@ NAN_METHOD(RsaWrap::PublicDecrypt) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectSet(obj);
+    obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
     Local<Object> buffer = args[0].As<Object>();
+    if (!node::Buffer::HasInstance(buffer)) {
+        NanThrowError("Expected a Buffer in args[0].");
+        NanReturnUndefined();
+    }
     size_t length = node::Buffer::Length(buffer);
     char* data = node::Buffer::Data(buffer);
     if (data == NULL) { NanReturnUndefined(); }
@@ -686,16 +734,24 @@ NAN_METHOD(RsaWrap::PublicEncrypt) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectSet(obj);
+    obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
     Local<Object> buffer = args[0].As<Object>();
+    if (!node::Buffer::HasInstance(buffer)) {
+        NanThrowError("Expected a Buffer in args[0].");
+        NanReturnUndefined();
+    }
     size_t length = node::Buffer::Length(buffer);
     char* data = node::Buffer::Data(buffer);
 
     int rsaLength = RSA_size(obj->rsa);
     Local<Object> result = NanNewBufferHandle(rsaLength);
 
+    if (!args[1]->IsInt32()) {
+        NanThrowError("Expected a 32-bit integer in args[1].");
+        NanReturnUndefined();
+    }
     int padding = args[1]->Uint32Value();
 
     int ret = RSA_public_encrypt(length, (unsigned char *) data,
@@ -720,8 +776,13 @@ NAN_METHOD(RsaWrap::PublicEncrypt) {
     NanScope();
     bool ok = true;
 
+    if (args.Length() < 1) {
+        NanThrowError("Missing args[0].");
+        NanReturnUndefined();
+    }
+
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectUnset(obj);
+    obj = expectUnset(obj);
     ok &= (obj != NULL);
 
     BIO *bio = NULL;
@@ -734,6 +795,9 @@ NAN_METHOD(RsaWrap::PublicEncrypt) {
     char *password = NULL;
     if (ok && (args.Length() >= 2)) {
         password = copyBufferToCharStar(buf);
+        if (password == NULL) {
+            NanThrowError("Expected a Buffer in args[1].");
+        }
         ok &= (password != NULL);
     }
 
@@ -756,8 +820,13 @@ NAN_METHOD(RsaWrap::PublicEncrypt) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectUnset(obj);
+    obj = expectUnset(obj);
     if (obj == NULL) { NanReturnUndefined(); }
+
+    if (args.Length() < 1) {
+        NanThrowError("Missing args[0].");
+        NanReturnUndefined();
+    }
 
     BIO *bio = getArg0Bio(args[0].As<Object>());
     if (bio == NULL) { NanReturnUndefined(); }
@@ -778,12 +847,20 @@ NAN_METHOD(RsaWrap::Sign) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectPrivateKey(obj);
+    obj = expectPrivateKey(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
+    if (!args[0]->IsInt32()) {
+        NanThrowError("Expected a 32-bit integer in args[0].");
+        NanReturnUndefined();
+    }
     int nid = args[0]->Uint32Value();
 
     Local<Object> buffer = args[1].As<Object>();
+    if (!node::Buffer::HasInstance(buffer)) {
+        NanThrowError("Expected a Buffer in args[1].");
+        NanReturnUndefined();
+    }
     size_t dataLength = node::Buffer::Length(buffer);
     char* data = node::Buffer::Data(buffer);
     if (data == NULL) { NanReturnUndefined(); }
@@ -819,17 +896,29 @@ NAN_METHOD(RsaWrap::Verify) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectSet(obj);
+    obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
+    if (!args[0]->IsInt32()) {
+        NanThrowError("Expected a 32-bit integer in args[0].");
+        NanReturnUndefined();
+    }
     int nid = args[0]->Uint32Value();
 
     Local<Object> buffer = args[1].As<Object>();
+    if (!node::Buffer::HasInstance(buffer)) {
+        NanThrowError("Expected a Buffer in args[1].");
+        NanReturnUndefined();
+    }
     size_t dataLength = node::Buffer::Length(buffer);
     char* data = node::Buffer::Data(buffer);
     if (data == NULL) { NanReturnUndefined(); }
 
     Local<Object> sigBuffer = args[2].As<Object>();
+    if (!node::Buffer::HasInstance(sigBuffer)) {
+        NanThrowError("Expected a Buffer in args[2].");
+        NanReturnUndefined();
+    }
     size_t sigLength = node::Buffer::Length(sigBuffer);
     char* sig = node::Buffer::Data(sigBuffer);
     if (sig == NULL) { NanReturnUndefined(); }
@@ -856,7 +945,7 @@ NAN_METHOD(RsaWrap::Verify) {
 
 NAN_METHOD(RsaWrap::CreatePrivateKeyFromComponents) {
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    expectUnset(obj);
+    obj = expectUnset(obj);
     if (obj == NULL) {
         NanReturnUndefined();
     }
