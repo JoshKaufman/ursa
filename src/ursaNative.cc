@@ -427,6 +427,8 @@ RsaWrap *RsaWrap::expectUnset(RsaWrap* obj) {
  * Construct an empty instance.
  */
 NAN_METHOD(RsaWrap::New) {
+    NanScope();
+
     RsaWrap *obj = new RsaWrap();
     obj->Wrap(args.This());
 
