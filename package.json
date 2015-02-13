@@ -1,6 +1,6 @@
 {
   "name": "ursa",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "keywords": [
     "crypto",
     "key",
@@ -15,11 +15,11 @@
     "hash",
     "digest"
   ],
-  "description": "RSA public/private key OpenSSL bindings for Node.js",
-  "homepage": "https://github.com/NodePrime/ursa",
+  "description": "RSA public/private key OpenSSL bindings for node and io.js",
+  "homepage": "https://github.com/quartzjer/ursa",
   "repository": {
     "type": "git",
-    "url": "https://github.com/NodePrime/ursa.git"
+    "url": "https://github.com/quartzjer/ursa.git"
   },
   "licenses": [
     {
