@@ -1,17 +1,16 @@
 URSA - RSA public/private key OpenSSL bindings for Node.js
 ====
 
-> NOTE: This package was transfered from [Medium](https://github.com/Medium) to [NodePrime](https://github.com/NodePrime) on November 17, 2014. Pull requests are encouraged to help bring it up to date.
+[![Build Status](https://travis-ci.org/quartzjer/ursa.svg?branch=master)](https://travis-ci.org/quartzjer/ursa)
+
+> NOTE: This package was transfered from [Medium](https://github.com/Medium) and [NodePrime](https://github.com/NodePrime) to [quartzjer](https://github.com/Medium) in February 2015. Pull requests are welcomed to help maintain it.
 
 --
 
 This Node module provides a fairly complete set of wrappers for the
 RSA public/private key crypto functionality of OpenSSL.
 
-It has been tested by the maintainer on both Node 0.6.* and Node 0.8.*,
-on both Linux and OS X (the latter in several configurations, including
-Node built from source as well as installed via MacPorts and Homebrew).
-If you find it doesn't work for you, please file a bug (see below).
+It is being actively developed for node.js 0.8.* through 0.12.* and io.js. If you find it doesn't work for you, please file a bug (see below).
 
 It has been tested on Windows by [SLaks](https://github.com/SLaks).  (see additional installation requirements)
 
@@ -518,7 +517,7 @@ Contributing
 ------------
 
 Questions, comments, bug reports, and pull requests are all welcome.
-Submit them at [the project on GitHub](https://github.com/NodePrime/ursa/).
+Submit them at [the project on GitHub](https://github.com/quartzjer/ursa/).
 
 Bug reports that include steps-to-reproduce (including code) are the
 best. Even better, make them in the form of pull requests that update
@@ -528,7 +527,9 @@ the test suite. Thanks!
 Authors
 -------
 
-Current (2014+) maintenance sponsored by [NodePrime](http://nodeprime.com).
+Current (2015+) maintenance by [Jeremie Miller](https://github.com/quartzjer).
+
+Previous (2014) maintenance sponsored by [NodePrime](http://nodeprime.com).
 
 Original Author (2012): [Dan Bornstein](https://github.com/danfuzz)
 ([personal website](http://www.milk.com/)), supported by
@@ -536,6 +537,7 @@ Original Author (2012): [Dan Bornstein](https://github.com/danfuzz)
 
 With contribution from:
 
+* [C J Silverio](https://github.com/ceejbot)
 * [Tyler Neylon](https://github.com/tylerneylon)
 
 With thanks to:
@@ -557,6 +559,8 @@ See the top-level file `[LICENSE.txt](LICENSE.txt)` and
 Other Repos that may be of Interest:
 -----------------------
 
+* https://github.com/mal/forsake
+* https://github.com/rzcoder/node-rsa
 * https://github.com/coolaj86/nodejs-self-signed-certificate-example
 * https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js
 * https://github.com/coolaj86/node-ssl-root-cas

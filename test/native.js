@@ -234,8 +234,8 @@ function test_privateDecrypt() {
     var decoded = rsa.privateDecrypt(encoded, ursaNative.RSA_PKCS1_OAEP_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 
-    var encoded = new Buffer(fixture.PRIVATE_OLD_PAD_CIPHER_HEX, fixture.HEX);
-    var decoded = rsa.privateDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING).toString(fixture.UTF8);
+    encoded = new Buffer(fixture.PRIVATE_OLD_PAD_CIPHER_HEX, fixture.HEX);
+    decoded = rsa.privateDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 }
 
@@ -286,8 +286,8 @@ function test_publicEncrypt() {
     assert.equal(decoded, fixture.PLAINTEXT);
 
     // Test with old-style padding.
-    var encoded = rsa.publicEncrypt(plainBuf, ursaNative.RSA_PKCS1_PADDING);
-    var decoded = priv.privateDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING);
+    encoded = rsa.publicEncrypt(plainBuf, ursaNative.RSA_PKCS1_PADDING);
+    decoded = priv.privateDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING);
     decoded = decoded.toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 }

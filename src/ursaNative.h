@@ -7,11 +7,12 @@
 #define BUILDING_NODE_EXTENSION
 #endif
 #include <node.h>
+#include <nan.h>
 #include <v8.h>
 
 #include <openssl/rsa.h>
 
-class RsaWrap : node::ObjectWrap {
+class RsaWrap : public node::ObjectWrap {
   public:
     static void InitClass(v8::Handle<v8::Object> target);
 
@@ -19,32 +20,32 @@ class RsaWrap : node::ObjectWrap {
     RsaWrap();
     ~RsaWrap();
 
-    static v8::Handle<v8::Value> New(const v8::Arguments& args);
-    static v8::Handle<v8::Value> GeneratePrivateKey(const v8::Arguments& args);
-    static v8::Handle<v8::Value> GetExponent(const v8::Arguments& args);
-    static v8::Handle<v8::Value> GetPrivateExponent(const v8::Arguments& args);
-    static v8::Handle<v8::Value> GetModulus(const v8::Arguments& args);
-    static v8::Handle<v8::Value> GetPrivateKeyPem(const v8::Arguments& args);
-    static v8::Handle<v8::Value> GetPublicKeyPem(const v8::Arguments& args);
-    static v8::Handle<v8::Value> PrivateDecrypt(const v8::Arguments& args);
-    static v8::Handle<v8::Value> PrivateEncrypt(const v8::Arguments& args);
-    static v8::Handle<v8::Value> PublicDecrypt(const v8::Arguments& args);
-    static v8::Handle<v8::Value> PublicEncrypt(const v8::Arguments& args);
-    static v8::Handle<v8::Value> SetPrivateKeyPem(const v8::Arguments& args);
-    static v8::Handle<v8::Value> SetPublicKeyPem(const v8::Arguments& args);
-    static v8::Handle<v8::Value> Sign(const v8::Arguments& args);
-    static v8::Handle<v8::Value> Verify(const v8::Arguments& args);
-    static v8::Handle<v8::Value> CreatePrivateKeyFromComponents(const v8::Arguments& args);
-    static v8::Handle<v8::Value> OpenPublicSshKey(const v8::Arguments& args);
+    static NAN_METHOD(New);
+    static NAN_METHOD(GeneratePrivateKey);
+    static NAN_METHOD(GetExponent);
+    static NAN_METHOD(GetPrivateExponent);
+    static NAN_METHOD(GetModulus);
+    static NAN_METHOD(GetPrivateKeyPem);
+    static NAN_METHOD(GetPublicKeyPem);
+    static NAN_METHOD(PrivateDecrypt);
+    static NAN_METHOD(PrivateEncrypt);
+    static NAN_METHOD(PublicDecrypt);
+    static NAN_METHOD(PublicEncrypt);
+    static NAN_METHOD(SetPrivateKeyPem);
+    static NAN_METHOD(SetPublicKeyPem);
+    static NAN_METHOD(Sign);
+    static NAN_METHOD(Verify);
+    static NAN_METHOD(CreatePrivateKeyFromComponents);
+    static NAN_METHOD(OpenPublicSshKey);
 
   private:
-    static RsaWrap *unwrapExpectPrivateKey(const v8::Arguments& args);
-    static RsaWrap *unwrapExpectSet(const v8::Arguments& args);
-    static RsaWrap *unwrapExpectUnset(const v8::Arguments& args);
+    static RsaWrap *expectPrivateKey(RsaWrap* obj);
+    static RsaWrap *expectSet(RsaWrap* obj);
+    static RsaWrap *expectUnset(RsaWrap* obj);
 
     RSA *rsa;
 };
 
-v8::Handle<v8::Value> TextToNid(const v8::Arguments& args);
+NAN_METHOD(TextToNid);
 
 #endif // def URSA_NATIVE_H
