@@ -531,7 +531,7 @@ NAN_METHOD(RsaWrap::GetPrivateExponent) {
     obj = expectPrivateKey(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
-    return bignumToBuffer(obj->rsa->d);
+    NanReturnValue(bignumToBuffer(obj->rsa->d));
 }
 
 /**
