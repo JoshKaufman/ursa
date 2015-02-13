@@ -524,11 +524,12 @@ NAN_METHOD(RsaWrap::GeneratePrivateKey) {
  * order. The returned exponent is not encrypted in any way,
  * so this should be used with caution.
  */
-Handle<Value> RsaWrap::GetPrivateExponent(const Arguments& args) {
-    HandleScope scope;
+NAN_METHOD(RsaWrap::GetPrivateExponent) {
+    NanScope();
 
-    RsaWrap *obj = unwrapExpectPrivateKey(args);
-    if (obj == NULL) { return Undefined(); }
+    RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
+    obj = expectPrivateKey(obj);
+    if (obj == NULL) { NanReturnUndefined(); }
 
     return bignumToBuffer(obj->rsa->d);
 }
