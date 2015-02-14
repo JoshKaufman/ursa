@@ -312,6 +312,7 @@ void RsaWrap::InitClass(Handle<Object> target) {
 
     BIND(proto, generatePrivateKey, GeneratePrivateKey);
     BIND(proto, getExponent,        GetExponent);
+    BIND(proto, getPrivateExponent, GetPrivateExponent);
     BIND(proto, getModulus,         GetModulus);
     BIND(proto, getPrivateKeyPem,   GetPrivateKeyPem);
     BIND(proto, getPublicKeyPem,    GetPublicKeyPem);
@@ -515,6 +516,22 @@ NAN_METHOD(RsaWrap::GeneratePrivateKey) {
     if (obj == NULL) { NanReturnUndefined(); }
 
     NanReturnValue(bignumToBuffer(obj->rsa->e));
+}
+
+/**
+ * Get the private exponent of the underlying RSA object. The return
+ * value is a Buffer containing the unsigned number in big-endian
+ * order. The returned exponent is not encrypted in any way,
+ * so this should be used with caution.
+ */
+NAN_METHOD(RsaWrap::GetPrivateExponent) {
+    NanScope();
+
+    RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
+    obj = expectPrivateKey(obj);
+    if (obj == NULL) { NanReturnUndefined(); }
+
+    NanReturnValue(bignumToBuffer(obj->rsa->d));
 }
 
 /**

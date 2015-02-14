@@ -155,6 +155,22 @@ function test_fail_getModulus() {
     assert.throws(f1, /Key not yet set\./);
 }
 
+function test_getPrivateExponent() {
+    var rsa = new RsaWrap();
+    rsa.createPrivateKeyFromComponents(
+        fixture.PRIVATE_KEY_COMPONENTS.modulus,
+        fixture.PRIVATE_KEY_COMPONENTS.exponent,
+        fixture.PRIVATE_KEY_COMPONENTS.p,
+        fixture.PRIVATE_KEY_COMPONENTS.q,
+        fixture.PRIVATE_KEY_COMPONENTS.dp,
+        fixture.PRIVATE_KEY_COMPONENTS.dq,
+        fixture.PRIVATE_KEY_COMPONENTS.inverseQ,
+        fixture.PRIVATE_KEY_COMPONENTS.d);
+
+    var value = rsa.getPrivateExponent();
+    assert.equal(value.toString(fixture.HEX), fixture.PRIVATE_KEY_COMPONENTS.d.toString(fixture.HEX));
+}
+
 function test_getPrivateKeyPem() {
     var keyStr = fixture.PRIVATE_KEY.toString(fixture.UTF8);
 
@@ -625,6 +641,7 @@ function test_fail_textToNid() {
 function test() {
     test_new();
 
+    test_getPrivateExponent();
     test_setPrivateKeyPem();
     test_fail_setPrivateKeyPem();
     test_setPublicKeyPem();
