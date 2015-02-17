@@ -44,10 +44,10 @@
     "node": ">=0.6.0"
   },
   "scripts": {
-    "install": "node-gyp configure && node-gyp build && node install.js",
     "test": "node test/test.js"
   },
   "dependencies": {
+    "bindings": "^1.2.1",
     "nan": "~1.6.2"
   }
 }

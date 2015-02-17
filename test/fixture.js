@@ -13,7 +13,7 @@
 var fs = require("fs");
 
 var ursa       = require("../lib/ursa");
-var ursaNative = require("../bin/ursaNative");
+var ursaNative = require("bindings")("ursaNative");
 
 
 /*
