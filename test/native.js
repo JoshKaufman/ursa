@@ -155,6 +155,22 @@ function test_fail_getModulus() {
     assert.throws(f1, /Key not yet set\./);
 }
 
+function test_getPrivateExponent() {
+    var rsa = new RsaWrap();
+    rsa.createPrivateKeyFromComponents(
+        fixture.PRIVATE_KEY_COMPONENTS.modulus,
+        fixture.PRIVATE_KEY_COMPONENTS.exponent,
+        fixture.PRIVATE_KEY_COMPONENTS.p,
+        fixture.PRIVATE_KEY_COMPONENTS.q,
+        fixture.PRIVATE_KEY_COMPONENTS.dp,
+        fixture.PRIVATE_KEY_COMPONENTS.dq,
+        fixture.PRIVATE_KEY_COMPONENTS.inverseQ,
+        fixture.PRIVATE_KEY_COMPONENTS.d);
+
+    var value = rsa.getPrivateExponent();
+    assert.equal(value.toString(fixture.HEX), fixture.PRIVATE_KEY_COMPONENTS.d.toString(fixture.HEX));
+}
+
 function test_getPrivateKeyPem() {
     var keyStr = fixture.PRIVATE_KEY.toString(fixture.UTF8);
 
@@ -162,6 +178,16 @@ function test_getPrivateKeyPem() {
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
 
     var pem = rsa.getPrivateKeyPem().toString(fixture.UTF8);
+    assertStringEqual(pem, keyStr);
+}
+
+function test_getPrivateKeyPemWithPassPhrase() {
+    var keyStr = fixture.PASS_PRIVATE_KEY.toString(fixture.UTF8);
+
+    var rsa = new RsaWrap();
+    rsa.setPrivateKeyPem(fixture.PASS_PRIVATE_KEY, fixture.PASSWORD);
+
+    var pem = rsa.getPrivateKeyPem(fixture.PASSWORD, fixture.DES_EDE3_CBC).toString(fixture.UTF8);
     assertStringEqual(pem, keyStr);
 }
 
@@ -208,8 +234,8 @@ function test_privateDecrypt() {
     var decoded = rsa.privateDecrypt(encoded, ursaNative.RSA_PKCS1_OAEP_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 
-    var encoded = new Buffer(fixture.PRIVATE_OLD_PAD_CIPHER_HEX, fixture.HEX);
-    var decoded = rsa.privateDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING).toString(fixture.UTF8);
+    encoded = new Buffer(fixture.PRIVATE_OLD_PAD_CIPHER_HEX, fixture.HEX);
+    decoded = rsa.privateDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 }
 
@@ -260,8 +286,8 @@ function test_publicEncrypt() {
     assert.equal(decoded, fixture.PLAINTEXT);
 
     // Test with old-style padding.
-    var encoded = rsa.publicEncrypt(plainBuf, ursaNative.RSA_PKCS1_PADDING);
-    var decoded = priv.privateDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING);
+    encoded = rsa.publicEncrypt(plainBuf, ursaNative.RSA_PKCS1_PADDING);
+    decoded = priv.privateDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING);
     decoded = decoded.toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 }
@@ -382,7 +408,7 @@ function test_generatePrivateKey() {
     encoded = pubKey.publicEncrypt(plainBuf, ursaNative.RSA_PKCS1_OAEP_PADDING);
     decoded = rsa.privateDecrypt(encoded, ursaNative.RSA_PKCS1_OAEP_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
-    
+
     // Similarly, try decoding with an extracted private key.
     var privKey = new RsaWrap();
     privKey.setPrivateKeyPem(rsa.getPrivateKeyPem());
@@ -615,6 +641,7 @@ function test_fail_textToNid() {
 function test() {
     test_new();
 
+    test_getPrivateExponent();
     test_setPrivateKeyPem();
     test_fail_setPrivateKeyPem();
     test_setPublicKeyPem();

@@ -1,13 +1,16 @@
-ursa
+URSA - RSA public/private key OpenSSL bindings for Node.js
 ====
+
+[![Build Status](https://travis-ci.org/quartzjer/ursa.svg?branch=master)](https://travis-ci.org/quartzjer/ursa)
+
+> NOTE: This package was transfered from [Medium](https://github.com/Medium) and [NodePrime](https://github.com/NodePrime) to [quartzjer](https://github.com/quartzjer) in February 2015. Pull requests are welcomed to help maintain it.
+
+--
 
 This Node module provides a fairly complete set of wrappers for the
 RSA public/private key crypto functionality of OpenSSL.
 
-It has been tested by the maintainer on both Node 0.6.* and Node 0.8.*,
-on both Linux and OS X (the latter in several configurations, including
-Node built from source as well as installed via MacPorts and Homebrew).
-If you find it doesn't work for you, please file a bug (see below).
+It is being actively developed for node.js 0.8.* through 0.12.* and io.js. If you find it doesn't work for you, please file a bug (see below).
 
 It has been tested on Windows by [SLaks](https://github.com/SLaks).  (see additional installation requirements)
 
@@ -25,6 +28,49 @@ Or grab the source and
 npm install
 ```
 
+Simple Encrypt / Decrypt Example
+--------------------------------
+
+```javascript
+// openssl genrsa -out certs/server/my-server.key.pem 2048
+// openssl rsa -in certs/server/my-server.key.pem -pubout -out certs/client/my-server.pub
+
+'use strict';
+
+var fs = require('fs')
+  , ursa = require('ursa')
+  , crt
+  , key
+  , msg
+  ;
+
+key = ursa.createPrivateKey(fs.readFileSync('./certs/server/my-server.key.pem'));
+crt = ursa.createPublicKey(fs.readFileSync('./certs/client/my-server.pub'));
+
+console.log('Encrypt with Public');
+msg = crt.encrypt("Everything is going to be 200 OK", 'utf8', 'base64');
+console.log('encrypted', msg, '\n');
+
+console.log('Decrypt with Private');
+msg = key.decrypt(msg, 'base64', 'utf8');
+console.log('decrypted', msg, '\n');
+
+console.log('############################################');
+console.log('Reverse Public -> Private, Private -> Public');
+console.log('############################################\n');
+
+crt = ursa.createPrivateKey(fs.readFileSync('./certs/server/my-server.key.pem'));
+key = ursa.createPublicKey(fs.readFileSync('./certs/client/my-server.pub'));
+
+console.log('Encrypt with Private (called public)');
+msg = key.encrypt("Everything is going to be 200 OK", 'utf8', 'base64');
+console.log('encrypted', msg, '\n');
+
+console.log('Decrypt with Public (called private)');
+msg = crt.decrypt(msg, 'base64', 'utf8');
+console.log('decrypted', msg, '\n');
+```
+
 Testing
 -------
 
@@ -39,20 +85,24 @@ node ./test/test.js
 ```
 
 On Windows, you'll need to install some dependencies first:
- - [node-gyp](https://github.com/TooTallNate/node-gyp/) (`npm install -g node-gyp`)
-   - [Python 2.7](http://www.python.org/download/releases/2.7.3#download) (not 3.3)
-   - Vistual Studio 2010 or higher (including Express editions)
-     - Windows XP/Vista/7:
-        - Microsoft Visual Studio C++ 2010 ([Express](http://go.microsoft.com/?linkid=9709949) version works well)
-        - For 64-bit builds of node and native modules you will _**also**_ need the [Windows 7 64-bit SDK](http://www.microsoft.com/en-us/download/details.aspx?id=8279)
-        - If you get errors that the 64-bit compilers are not installed you may also need the [compiler update for the Windows SDK 7.1](http://www.microsoft.com/en-us/download/details.aspx?id=4422)
-     - Windows 8:
-        - Microsoft Visual Studio C++ 2012 for Windows Desktop ([Express](http://go.microsoft.com/?linkid=9816758) version works well)
  - [OpenSSL](http://slproweb.com/products/Win32OpenSSL.html) (normal, not light)
 in the same bitness as your Node.js installation.
   - The build script looks for OpenSSL in the default install directory  
   (`C:\OpenSSL-Win32` or `C:\OpenSSL-Win64`)
   - If you get `Error: The specified module could not be found.`, copy `libeay32.dll` from the OpenSSL bin directory to this module's bin directory, or to Windows\System3.
+ - [node-gyp](https://github.com/TooTallNate/node-gyp/) (`npm install -g node-gyp`)
+   - [Python 2.7](http://www.python.org/download/releases/2.7.3#download) (not 3.3)
+   - Microsoft Visual Studio C++ _**(either of the two below but not both)**_
+        - `Microsoft Visual Studio C++ 2013 for Windows Desktop` ([Express](http://www.microsoft.com/en-au/download/details.aspx?id=40787) version works well)
+            - No extra patches should be needed, but requires a fully up-to-date machine including all of the latest service packs
+        - Older versions of Visual Studio
+            - Windows XP/Vista/7:
+                - `Microsoft Visual Studio C++ 2010` ([Express](http://go.microsoft.com/?linkid=9709949) version works well)
+                    - For 64-bit builds of node and native modules you will _**also**_ need the [Windows 7 64-bit SDK](http://www.microsoft.com/en-us/download/details.aspx?id=8279)
+                    - If you get errors that the 64-bit compilers are not installed you may also need the [compiler update for the Windows SDK 7.1](http://www.microsoft.com/en-us/download/details.aspx?id=4422)
+            - Windows 8:
+                - `Microsoft Visual Studio C++ 2012 for Windows Desktop` ([Express](http://go.microsoft.com/?linkid=9816758) version works well)
+
 
 Usage
 -----
@@ -104,6 +154,10 @@ the PEM file.
 The encoding, if specified, applies to both other arguments.
 
 See "Public Key Methods" below for more details.
+
+### ursa.createPrivateKeyFromComponents(modulus, exponent, p, q, dp, dq, inverseQ, d)
+
+Create and return a private key from the given components.
 
 ### ursa.assertKey(obj)
 
@@ -215,6 +269,11 @@ public key, per se.
 This returns `true` if and only if both arguments are key objects of
 some sort (either can be public or private, and they don't have to
 be the same) and their public aspects match each other.
+
+### ursa.openSshPublicKey(key, encoding)
+
+This returns `publicKey` from ssh-rsa public key-string. First argument
+must be a string like `ssh-rsa AAAAB3Nz.... user@localhost` or Buffer of pubKey bits.
 
 ### ursa.sshFingerprint(sshKey, sshEncoding, outEncoding)
 
@@ -360,6 +419,11 @@ If no padding mode is specified, the default, and recommended, mode
 is `ursa.RSA_PKCS1_OAEP_PADDING`. The mode
 `ursa.RSA_PKCS1_PADDING` is also supported.
 
+### getPrivateExponent(encoding)
+
+Get the private exponent as an unsigned big-endian byte sequence. The returned
+exponent is not encrypted in any way, so this method should be used with caution. 
+
 ### hashAndSign(algorithm, buf, bufEncoding, outEncoding)
 
 This is a friendly wrapper for producing signatures. The given buffer
@@ -454,7 +518,7 @@ Contributing
 ------------
 
 Questions, comments, bug reports, and pull requests are all welcome.
-Submit them at [the project on GitHub](https://github.com/Obvious/ursa/).
+Submit them at [the project on GitHub](https://github.com/quartzjer/ursa/).
 
 Bug reports that include steps-to-reproduce (including code) are the
 best. Even better, make them in the form of pull requests that update
@@ -464,12 +528,17 @@ the test suite. Thanks!
 Authors
 -------
 
-[Dan Bornstein](https://github.com/danfuzz)
+Current (2015+) maintenance by [Jeremie Miller](https://github.com/quartzjer).
+
+Previous (2014) maintenance sponsored by [NodePrime](http://nodeprime.com).
+
+Original Author (2012): [Dan Bornstein](https://github.com/danfuzz)
 ([personal website](http://www.milk.com/)), supported by
-[The Obvious Corporation](http://obvious.com/).
+[The Obvious Corporation](http://obvious.com/) (now [Medium](https://medium.com/)).
 
 With contribution from:
 
+* [C J Silverio](https://github.com/ceejbot)
 * [Tyler Neylon](https://github.com/tylerneylon)
 
 With thanks to:
@@ -481,8 +550,20 @@ With thanks to:
 License
 -------
 
-Copyright 2012 [The Obvious Corporation](http://obvious.com/).
+Updates Copyright 2014 [NodePrime, Inc.](http://nodeprime.com/).
+Original Copyright 2012 [The Obvious Corporation](http://obvious.com/).
 
-Licensed under the Apache License, Version 2.0. 
-See the top-level file `LICENSE.txt` and
+Licensed under the Apache License, Version 2.0.
+See the top-level file `[LICENSE.txt](LICENSE.txt)` and
 (http://www.apache.org/licenses/LICENSE-2.0).
+
+Other Repos that may be of Interest:
+-----------------------
+
+* https://github.com/mal/forsake
+* https://github.com/rzcoder/node-rsa
+* https://github.com/coolaj86/nodejs-self-signed-certificate-example
+* https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js
+* https://github.com/coolaj86/node-ssl-root-cas
+* https://github.com/coolaj86/nodejs-ssl-trusted-peer-example
+* https://github.com/coolaj86/bitcrypt

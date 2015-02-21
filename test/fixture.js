@@ -26,6 +26,7 @@ var HEX    = "hex";
 var SHA1   = "sha1";
 var SHA256 = "sha256";
 var UTF8   = "utf8";
+var DES_EDE3_CBC = "des-ede3-cbc";
 
 var PASS_PRIVATE_KEY = fs.readFileSync(__dirname + "/blort-pass.pem");
 var PRIVATE_KEY = fs.readFileSync(__dirname + "/blort.pem");
@@ -33,6 +34,8 @@ var PUBLIC_KEY = fs.readFileSync(__dirname + "/blort.pub");
 var SSH_PUBLIC_KEY_FILE = fs.readFileSync(__dirname + "/blort.sshpub");
 var PRIVATE_KEY_2 = fs.readFileSync(__dirname + "/zorch.pem");
 var PUBLIC_KEY_2 = fs.readFileSync(__dirname + "/zorch.pub");
+var PRIVATE_KEY_2 = fs.readFileSync(__dirname + "/zorch.pem");
+var PRIVATE_KEY_3 = fs.readFileSync(__dirname + "/another_zorch.pem");
 
 var PASSWORD = new Buffer("biscuits", UTF8);
 
@@ -121,6 +124,17 @@ var FAKE_SHA256_SIGNATURE =
     "31c351b661694cfd688cd12f16db60ca496ca75338830d98dd1545ca835832d0" +
     "15398a8dbc55eccb5c95fc9e825960ebd99b9b614e18fe0284a2def94cfe9aba";
 
+var PRIVATE_KEY_COMPONENTS = {
+   modulus: new Buffer('4Vc173072M53tIJA/RR5U2IbLgesAVCGUTU2WmouBKSs5XmW64av0ezOAzAOFG4oriOvHzGoHBWIFIH7KQ290AWFUkQ6RdDpsRpuMMNCzo7Bx/9GUC57Bb2xzUHICYmJCx0BUYvQEcHrmTQkZ8N3zGNRoXzubKuye0swAGykN78=', 'base64'),
+   exponent: new Buffer('AQAB', 'base64'),
+   p: new Buffer('9jJD7kB+j+YcBbMtJq+M3wN/l9C9N9o8o2o2pIDPWZ9l5z3mC/0fwsdIdaAZHtwj6yjWkYUQqwcFMzFMd4JJuw==', 'base64'),
+   q: new Buffer('6lBXfCfsiPWzLe6klV+vFaDl40x53AMy+pL0VE/f8GSqHwGPL1q1aa2AtiSCD505g6vq934V3K/KDK2THug3zQ==', 'base64'),
+   dp: new Buffer('HnGIxOVkwRaLUIkfhDEhElK0bGl7fHSYGvz/VMg427RCPZ4B3Gmoi8VoyGLLuG0wY9vg7I2vyfZMRlBKTFzoEQ==', 'base64'),
+   dq: new Buffer('Ieh2gJUWect0npUGZEdwguTB397VU61y1yglC35zncozhEEpg2TRE/XzxmgKGlBaXl+mpSIt773Qs3z66WIZkQ==', 'base64'),
+   inverseQ: new Buffer('3inB7CsdrAdr3Isflf3OiYvzKTuRuhGC6TYFpk0P4o8Q1ucyjACWKC1gnvDYqqkdkwkfAg6Dxh3ZP1s9koxbvw==', 'base64'),
+   d: new Buffer('OPTnMBpyZxGA1kJaFN348KeKgS71PfvRh3Mwwte1u/y3quT5zZxkkmYNiGa8GFPjumhQmkzd1gNnOu/DwRO1Fwbp0bfqwCLnd2Lz400ZrwN/S+hlzu+YR1rKOH7C7q/BeAm/hGVejsmkl16WgEpkqTzo11566Gat9UWDAw7C1Zk=', 'base64'),
+};
+
 /*
  * Exported bindings
  */
@@ -132,6 +146,7 @@ module.exports = {
     SHA1:   SHA1,
     SHA256: SHA256,
     UTF8:   UTF8,
+    DES_EDE3_CBC: DES_EDE3_CBC,
     
     EXPONENT_HEX:               EXPONENT_HEX,
     FAKE_SHA256_TO_SIGN:        FAKE_SHA256_TO_SIGN,
@@ -147,12 +162,14 @@ module.exports = {
     PRIVATE_OLD_PAD_CIPHER_HEX: PRIVATE_OLD_PAD_CIPHER_HEX,
     PRIVATE_KEY:                PRIVATE_KEY,
     PRIVATE_KEY_2:              PRIVATE_KEY_2,
+    PRIVATE_KEY_3:              PRIVATE_KEY_3,
     PUBLIC_CIPHERTEXT_HEX:      PUBLIC_CIPHERTEXT_HEX,
     PUBLIC_CIPHERTEXT_NP_HEX:   PUBLIC_CIPHERTEXT_NP_HEX,
     PUBLIC_KEY:                 PUBLIC_KEY,
     PUBLIC_KEY_2:               PUBLIC_KEY_2,
     SSH_PUBLIC_KEY:             SSH_PUBLIC_KEY,
     SSH_PUBLIC_KEY_FINGERPRINT_HEX: SSH_PUBLIC_KEY_FINGERPRINT_HEX,
+    PRIVATE_KEY_COMPONENTS: PRIVATE_KEY_COMPONENTS,
 
     RsaWrap: ursaNative.RsaWrap,
 

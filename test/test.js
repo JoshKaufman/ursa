@@ -155,6 +155,23 @@ function test_toPrivatePem(key) {
     assertStringEqual(result, keyString);
 }
 
+function test_toEncryptedPrivatePem(key) {
+    var password = fixture.PASSWORD.toString(fixture.UTF8);
+    var cipher = fixture.DES_EDE3_CBC;
+
+    var keyString = fixture.PASS_PRIVATE_KEY.toString(fixture.UTF8);
+    var pem = key.toEncryptedPrivatePem(password, cipher).toString(fixture.UTF8);
+
+    var plainTextKey = ursa.createPrivateKey(pem, password);
+    assertStringEqual(plainTextKey.toPrivatePem().toString(), fixture.PRIVATE_KEY.toString());
+
+
+    pem = key.toEncryptedPrivatePem(password, cipher, fixture.UTF8).toString(fixture.UTF8);
+
+    plainTextKey = ursa.createPrivateKey(pem, password);
+    assertStringEqual(plainTextKey.toPrivatePem().toString(), fixture.PRIVATE_KEY.toString());
+}
+
 function test_decrypt(key) {
     var encoded = new Buffer(fixture.PRIVATE_CIPHERTEXT_HEX, fixture.HEX);
     var decoded = key.decrypt(encoded).toString(fixture.UTF8);
@@ -200,6 +217,7 @@ function test_hashAndSign(key) {
 
 function testPrivateKeyMethods(key) {
     test_toPrivatePem(key);
+    test_toEncryptedPrivatePem(key);
     test_decrypt(key);
     test_privateEncrypt(key);
     test_hashAndSign(key);
@@ -272,6 +290,24 @@ function test_createKey() {
         ursa.createKey("yo there");
     }
     assert.throws(f1, /Not a key\./);
+}
+
+function test_createPrivateKeyFromComponents() {
+    var privFromComponenets = ursa.createPrivateKeyFromComponents(
+            fixture.PRIVATE_KEY_COMPONENTS.modulus,
+            fixture.PRIVATE_KEY_COMPONENTS.exponent,
+            fixture.PRIVATE_KEY_COMPONENTS.p,
+            fixture.PRIVATE_KEY_COMPONENTS.q,
+            fixture.PRIVATE_KEY_COMPONENTS.dp,
+            fixture.PRIVATE_KEY_COMPONENTS.dq,
+            fixture.PRIVATE_KEY_COMPONENTS.inverseQ,
+            fixture.PRIVATE_KEY_COMPONENTS.d);
+
+    assert(ursa.isPrivateKey(privFromComponenets), true);
+
+    var privFromPem = ursa.createPrivateKey(fixture.PRIVATE_KEY_3);
+
+    assert.equal(privFromComponenets.toPrivatePem('utf8'), privFromPem.toPrivatePem('utf8'));
 }
 
 function test_fail_createPublicKey() {
@@ -515,6 +551,13 @@ function testVerifier() {
     assert.equal(verifier.verify(key, sigBuf), true);
 }
 
+function test_openSshPublicKey() {
+    var sshKey = ursa.openSshPublicKey(fixture.SSH_PUBLIC_KEY),
+        pubKey = ursa.createPublicKey(fixture.PUBLIC_KEY);
+
+    assert.equal(ursa.equalKeys(sshKey, pubKey), true);
+}
+
 /*
  * Main test script
  */
@@ -526,6 +569,7 @@ testBasics();
 testTypes();
 
 test_createKey();
+test_createPrivateKeyFromComponents();
 test_fail_createPublicKey();
 test_fail_createPrivateKey();
 test_coerceKey();
@@ -543,5 +587,6 @@ test_equalKeys();
 test_matchingPublicKeys();
 testSigner();
 testVerifier();
+test_openSshPublicKey();
 
 console.log("All tests pass!");
