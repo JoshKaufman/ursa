@@ -46,7 +46,6 @@ void init(Handle<Object> target) {
     NODE_DEFINE_CONSTANT(target, RSA_NO_PADDING);
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_PADDING);
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_OAEP_PADDING);
-    NODE_DEFINE_CONSTANT(target, RSA_PKCS1_PSS_PADDING);
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_SALT_LEN_HLEN);
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_SALT_LEN_MAX);
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_SALT_LEN_RECOVER);
@@ -333,7 +332,8 @@ void RsaWrap::InitClass(Handle<Object> target) {
     BIND(proto, setPublicKeyPem,    SetPublicKeyPem);
     BIND(proto, sign,               Sign);
     BIND(proto, verify,             Verify);
-    BIND(proto, createPrivateKeyFromComponents,   CreatePrivateKeyFromComponents);
+    BIND(proto, createPrivateKeyFromComponents, CreatePrivateKeyFromComponents);
+    BIND(proto, createPublicKeyFromComponents,  CreatePublicKeyFromComponents);
     BIND(proto, openPublicSshKey,   OpenPublicSshKey);
     BIND(proto, addPSSPadding,      AddPSSPadding);
     BIND(proto, verifyPSSPadding,   VerifyPSSPadding);
@@ -1027,7 +1027,7 @@ NAN_METHOD(RsaWrap::AddPSSPadding)
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    obj = expectPrivateKey(obj);
+    obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
     if (args.Length() < 3) {
@@ -1051,7 +1051,7 @@ NAN_METHOD(RsaWrap::AddPSSPadding)
     size_t mHashLength = node::Buffer::Length(buffer);
     char *mHash = node::Buffer::Data(buffer);
     if (mHash == NULL) { NanReturnUndefined(); }
-    if (mHashLength != EVP_MD_size(Hash)) {
+    if (mHashLength != (size_t) EVP_MD_size(Hash)) {
         NanThrowError("Incorrect hash size.");
         NanReturnUndefined();
     }
@@ -1078,15 +1078,14 @@ NAN_METHOD(RsaWrap::AddPSSPadding)
 
 /**
   * Verify a signature with PSS padding. First argument is digest algorithm ID,
-  * second is the digest, third is the padded and signed digest,
-  * fourth is the salt length.
+  * second is the digest, third is the padded digest, fourth is the salt length.
   */
 NAN_METHOD(RsaWrap::VerifyPSSPadding)
 {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
-    obj = expectPrivateKey(obj);
+    obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
     if (args.Length() < 4) {
@@ -1110,18 +1109,18 @@ NAN_METHOD(RsaWrap::VerifyPSSPadding)
     size_t mHashLength = node::Buffer::Length(buffer);
     char *mHash = node::Buffer::Data(buffer);
     if (mHash == NULL) { NanReturnUndefined(); }
-    if (mHashLength != EVP_MD_size(Hash)) {
+    if (mHashLength != (size_t) EVP_MD_size(Hash)) {
         NanThrowError("Incorrect hash size.");
         NanReturnUndefined();
     }
 
     Local<Object> emBuffer = args[2].As<Object>();
-    if (!node::Buffer::HasInstance(buffer)) {
+    if (!node::Buffer::HasInstance(emBuffer)) {
         NanThrowError("Expected a Buffer in args[2].");
         NanReturnUndefined();
     }
-    if (node::Buffer::Length(emBuffer) != RSA_size(obj->rsa)) {
-        NanThrowError("Incorrect signature size.");
+    if (node::Buffer::Length(emBuffer) != (size_t) RSA_size(obj->rsa)) {
+        NanThrowError("Incorrect encoded message size.");
         NanReturnUndefined();
     }
     char *EM = node::Buffer::Data(emBuffer);
@@ -1171,14 +1170,14 @@ NAN_METHOD(RsaWrap::CreatePrivateKeyFromComponents) {
         NanReturnUndefined();
     }
 
-    BIGNUM *modulus;
-    BIGNUM *exponent;
-    BIGNUM *p;
-    BIGNUM *q;
-    BIGNUM *dp;
-    BIGNUM *dq;
-    BIGNUM *inverseQ;
-    BIGNUM *d;
+    BIGNUM *modulus = NULL;
+    BIGNUM *exponent = NULL;
+    BIGNUM *p = NULL;
+    BIGNUM *q = NULL;
+    BIGNUM *dp = NULL;
+    BIGNUM *dq = NULL;
+    BIGNUM *inverseQ = NULL;
+    BIGNUM *d = NULL;
 
     bool ok = true;
 
@@ -1223,14 +1222,54 @@ NAN_METHOD(RsaWrap::CreatePrivateKeyFromComponents) {
         obj->rsa->iqmp = inverseQ;
         obj->rsa->d = d;
     } else {
-        BN_free(modulus);
-        BN_free(exponent);
-        BN_free(p);
-        BN_free(q);
-        BN_free(dp);
-        BN_free(dq);
-        BN_free(inverseQ);
-        BN_free(d);
+        if (modulus) { BN_free(modulus); }
+        if (exponent) { BN_free(exponent); }
+        if (p) { BN_free(p); }
+        if (q) { BN_free(q); }
+        if (dp) { BN_free(dp); }
+        if (dq) { BN_free(dq); }
+        if (inverseQ) { BN_free(inverseQ); }
+        if (d) { BN_free(d); }
+    }
+
+    NanReturnUndefined();
+}
+
+NAN_METHOD(RsaWrap::CreatePublicKeyFromComponents) {
+    RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
+    obj = expectUnset(obj);
+    if (obj == NULL) {
+        NanReturnUndefined();
+    }
+
+    if (args.Length() < 2) {
+        NanThrowError("Not enough args.");
+        NanReturnUndefined();
+    }
+
+    obj->rsa = RSA_new();
+    if (obj->rsa == NULL) {
+        NanReturnUndefined();
+    }
+
+    BIGNUM *modulus = NULL;
+    BIGNUM *exponent = NULL;
+
+    bool ok = true;
+
+    modulus = getArgXBigNum(args[0].As<Object>());
+    ok &= (modulus != NULL);
+    if (ok) {
+        exponent = getArgXBigNum(args[1].As<Object>());
+        ok &= (exponent != NULL);
+    }
+
+    if (ok) {
+        obj->rsa->n = modulus;
+        obj->rsa->e = exponent;
+    } else {
+        if (modulus) { BN_free(modulus); }
+        if (exponent) { BN_free(exponent); }
     }
 
     NanReturnUndefined();

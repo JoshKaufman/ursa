@@ -132,6 +132,25 @@ function test_hashAndVerify(key) {
                                    fixture.PLAINTEXT_SHA256_SIGNATURE,
                                    fixture.HEX),
                  true);
+
+    var key2 = ursa.createPublicKeyFromComponents(
+                    new Buffer(fixture.PSS_MODULUS_HEX, fixture.HEX),
+                    new Buffer(fixture.EXPONENT_HEX, fixture.HEX));
+
+    assert.equal(key2.hashAndVerify(fixture.SHA1,
+                                    fixture.PSS_M_HEX,
+                                    fixture.PSS_S_HEX,
+                                    fixture.HEX,
+                                    true,
+                                    ursa.RSA_PKCS1_SALT_LEN_HLEN),
+                 true);
+
+    assert.equal(key2.hashAndVerify(fixture.SHA1,
+                                    fixture.PSS_M_HEX,
+                                    fixture.PSS_S_HEX,
+                                    fixture.HEX,
+                                    true),
+                 true);
 }
 
 function testPublicKeyMethods(key) {
@@ -213,6 +232,21 @@ function test_hashAndSign(key) {
     var sig = key.hashAndSign(fixture.SHA256, fixture.PLAINTEXT,
                               fixture.UTF8, fixture.HEX);
     assert.equal(sig, fixture.PLAINTEXT_SHA256_SIGNATURE);
+
+    // PSS uses random salt so can't have a fixture
+
+    var sig = key.hashAndSign(fixture.SHA256, fixture.PLAINTEXT,
+                              fixture.UTF8, fixture.HEX,
+                              true, ursa.RSA_PKCS1_SALT_LEN_MAX);
+
+    assert.equal(key.hashAndVerify(
+            fixture.SHA256,
+            new Buffer(fixture.PLAINTEXT).toString(fixture.HEX),
+            sig,
+            fixture.HEX,
+            true,
+            ursa.RSA_PKCS1_SALT_LEN_MAX),
+            true);
 }
 
 function testPrivateKeyMethods(key) {
@@ -293,7 +327,7 @@ function test_createKey() {
 }
 
 function test_createPrivateKeyFromComponents() {
-    var privFromComponenets = ursa.createPrivateKeyFromComponents(
+    var privFromComponents = ursa.createPrivateKeyFromComponents(
             fixture.PRIVATE_KEY_COMPONENTS.modulus,
             fixture.PRIVATE_KEY_COMPONENTS.exponent,
             fixture.PRIVATE_KEY_COMPONENTS.p,
@@ -303,11 +337,24 @@ function test_createPrivateKeyFromComponents() {
             fixture.PRIVATE_KEY_COMPONENTS.inverseQ,
             fixture.PRIVATE_KEY_COMPONENTS.d);
 
-    assert(ursa.isPrivateKey(privFromComponenets), true);
+    assert(ursa.isPrivateKey(privFromComponents), true);
 
     var privFromPem = ursa.createPrivateKey(fixture.PRIVATE_KEY_3);
 
-    assert.equal(privFromComponenets.toPrivatePem('utf8'), privFromPem.toPrivatePem('utf8'));
+    assert.equal(privFromComponents.toPrivatePem('utf8'), privFromPem.toPrivatePem('utf8'));
+}
+
+function test_createPublicKeyFromComponents() {
+    var pubFromComponents = ursa.createPublicKeyFromComponents(
+            new Buffer(fixture.PSS_MODULUS_HEX, fixture.HEX),
+            new Buffer(fixture.EXPONENT_HEX, fixture.HEX));
+
+    assert(ursa.isPublicKey(pubFromComponents), true);
+
+    var pubFromPem = ursa.createPublicKey(fixture.PSS_PUBLIC_KEY);
+
+    assert.equal(pubFromComponents.toPublicPem('utf8'),
+                 pubFromPem.toPublicPem('utf8'));
 }
 
 function test_fail_createPublicKey() {
@@ -570,6 +617,7 @@ testTypes();
 
 test_createKey();
 test_createPrivateKeyFromComponents();
+test_createPublicKeyFromComponents();
 test_fail_createPublicKey();
 test_fail_createPrivateKey();
 test_coerceKey();

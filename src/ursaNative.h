@@ -36,6 +36,7 @@ class RsaWrap : public node::ObjectWrap {
     static NAN_METHOD(Sign);
     static NAN_METHOD(Verify);
     static NAN_METHOD(CreatePrivateKeyFromComponents);
+    static NAN_METHOD(CreatePublicKeyFromComponents);
     static NAN_METHOD(OpenPublicSshKey);
     static NAN_METHOD(AddPSSPadding);
     static NAN_METHOD(VerifyPSSPadding);

@@ -135,6 +135,37 @@ var PRIVATE_KEY_COMPONENTS = {
    d: new Buffer('OPTnMBpyZxGA1kJaFN348KeKgS71PfvRh3Mwwte1u/y3quT5zZxkkmYNiGa8GFPjumhQmkzd1gNnOu/DwRO1Fwbp0bfqwCLnd2Lz400ZrwN/S+hlzu+YR1rKOH7C7q/BeAm/hGVejsmkl16WgEpkqTzo11566Gat9UWDAw7C1Zk=', 'base64'),
 };
 
+// From ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-1/pkcs-1v2-1-vec.zip
+
+var PSS_MODULUS_HEX = 
+    "a2ba40ee07e3b2bd2f02ce227f36a195024486e49c19cb41bbbdfbba98b22b0e"+
+    "577c2eeaffa20d883a76e65e394c69d4b3c05a1e8fadda27edb2a42bc000fe88"+
+    "8b9b32c22d15add0cd76b3e7936e19955b220dd17d4ea904b1ec102b2e4de775"+
+    "1222aa99151024c7cb41cc5ea21d00eeb41f7c800834d2c6e06bce3bce7ea9a5";
+
+var PSS_M_HEX =
+    "859eef2fd78aca00308bdc471193bf55bf9d78db8f8a672b484634f3c9c26e64"+
+    "78ae10260fe0dd8c082e53a5293af2173cd50c6d5d354febf78b26021c25c027"+
+    "12e78cd4694c9f469777e451e7f8e9e04cd3739c6bbfedae487fb55644e9ca74"+
+    "ff77a53cb729802f6ed4a5ffa8ba159890fc";
+
+var PSS_MHASH_HEX =
+    "37b66ae0445843353d47ecb0b4fd14c110e62d6a";
+
+var PSS_EM_HEX =
+    "66e4672e836ad121ba244bed6576b867d9a447c28a6e66a5b87dee7fbc7e65af" +
+    "5057f86fae8984d9ba7f969ad6fe02a4d75f7445fefdd85b6d3a477c28d24ba1" +
+    "e3756f792dd1dce8ca94440ecb5279ecd3183a311fc896da1cb39311af37ea4a" +
+    "75e24bdbfd5c1da0de7cecdf1a896f9d8bc816d97cd7a2c43bad546fbe8cfebc";
+
+var PSS_S_HEX =
+    "8daa627d3de7595d63056c7ec659e54406f10610128baae821c8b2a0f3936d54" +
+    "dc3bdce46689f6b7951bb18e840542769718d5715d210d85efbb596192032c42" +
+    "be4c29972c856275eb6d5a45f05f51876fc6743deddd28caec9bb30ea99e02c3" +
+    "488269604fe497f74ccd7c7fca1671897123cbd30def5d54a2b5536ad90a747e";
+
+var PSS_PUBLIC_KEY = fs.readFileSync(__dirname + "/pss_tv.pub");
+
 /*
  * Exported bindings
  */
@@ -170,6 +201,12 @@ module.exports = {
     SSH_PUBLIC_KEY:             SSH_PUBLIC_KEY,
     SSH_PUBLIC_KEY_FINGERPRINT_HEX: SSH_PUBLIC_KEY_FINGERPRINT_HEX,
     PRIVATE_KEY_COMPONENTS: PRIVATE_KEY_COMPONENTS,
+    PSS_MODULUS_HEX:            PSS_MODULUS_HEX,
+    PSS_M_HEX:                  PSS_M_HEX,
+    PSS_MHASH_HEX:              PSS_MHASH_HEX,
+    PSS_EM_HEX:                 PSS_EM_HEX,
+    PSS_S_HEX:                  PSS_S_HEX,
+    PSS_PUBLIC_KEY:             PSS_PUBLIC_KEY,
 
     RsaWrap: ursaNative.RsaWrap,
 
