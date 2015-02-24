@@ -325,7 +325,7 @@ function test_privateEncrypt() {
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
 
     var plainBuf = new Buffer(fixture.PLAINTEXT, fixture.UTF8);
-    var encoded = rsa.privateEncrypt(plainBuf).toString(fixture.HEX);
+    var encoded = rsa.privateEncrypt(plainBuf, ursaNative.RSA_PKCS1_PADDING).toString(fixture.HEX);
 
     assert.equal(encoded, fixture.PUBLIC_CIPHERTEXT_HEX);
 }
@@ -347,12 +347,12 @@ function test_fail_privateEncrypt() {
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
 
     function f2() {
-        rsa.privateEncrypt("x");
+        rsa.privateEncrypt("x", ursaNative.RSA_PKCS1_PADDING);
     }
     assert.throws(f2, /Expected a Buffer in args\[0]\./);
 
     function f3() {
-        rsa.privateEncrypt(new Buffer(2048));
+        rsa.privateEncrypt(new Buffer(2048), ursaNative.RSA_PKCS1_PADDING);
     }
     assert.throws(f3, /too large/);
 }
@@ -361,13 +361,13 @@ function test_publicDecrypt() {
     var rsa = new RsaWrap();
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
     var encoded = new Buffer(fixture.PUBLIC_CIPHERTEXT_HEX, fixture.HEX);
-    var decoded = rsa.publicDecrypt(encoded).toString(fixture.UTF8);
+    var decoded = rsa.publicDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 
     rsa = new RsaWrap();
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
     encoded = new Buffer(fixture.PUBLIC_CIPHERTEXT_HEX, fixture.HEX);
-    decoded = rsa.publicDecrypt(encoded).toString(fixture.UTF8);
+    decoded = rsa.publicDecrypt(encoded, ursaNative.RSA_PKCS1_PADDING).toString(fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
 }
 
@@ -382,12 +382,12 @@ function test_fail_publicDecrypt() {
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
 
     function f2() {
-        rsa.publicDecrypt("x");
+        rsa.publicDecrypt("x", ursaNative.RSA_PKCS1_PADDING);
     }
     assert.throws(f2, /Expected a Buffer in args\[0]\./);
 
     function f3() {
-        rsa.publicDecrypt(new Buffer("x"));
+        rsa.publicDecrypt(new Buffer("x"), ursaNative.RSA_PKCS1_PADDING);
     }
     assert.throws(f3, /padding_check/);
 }
@@ -491,7 +491,7 @@ function test_fail_sign() {
     rsa.setPrivateKeyPem(fixture.PRIVATE_KEY);
 
     function f2() {
-        rsa.sign("x");
+        rsa.sign("x", "x");
     }
     assert.throws(f2, /Expected a 32-bit integer in args\[0]\./);
 
@@ -543,12 +543,12 @@ function test_fail_verify() {
     rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
 
     function f2() {
-        rsa.verify("x");
+        rsa.verify("x", "x", "x");
     }
     assert.throws(f2, /Expected a 32-bit integer in args\[0]\./);
 
     function f3() {
-        rsa.verify(1, "x");
+        rsa.verify(1, "x", "x");
     }
     assert.throws(f3, /Expected a Buffer in args\[1]\./);
 
@@ -633,6 +633,123 @@ function test_fail_textToNid() {
     assert.throws(f3, /asn1/);
 }
 
+function _test_PSSPadding(slen)
+{
+    var rsa = new RsaWrap();
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+
+    var nid = textToNid(fixture.SHA256);
+    var hash = new Buffer(fixture.FAKE_SHA256_TO_SIGN, fixture.HEX);
+    var em = rsa.addPSSPadding(nid, hash, slen);
+
+    assert.equal(rsa.verifyPSSPadding(nid, hash, em, slen), true);
+}
+
+function test_PSSPadding()
+{
+    _test_PSSPadding(ursaNative.RSA_PKCS1_SALT_LEN_HLEN);
+    _test_PSSPadding(ursaNative.RSA_PKCS1_SALT_LEN_RECOVER);
+
+    var rsa = new RsaWrap();
+    rsa.createPublicKeyFromComponents(
+        new Buffer(fixture.PSS_MODULUS_HEX, fixture.HEX),
+        new Buffer(fixture.EXPONENT_HEX, fixture.HEX));
+
+    var tvhash = new Buffer(fixture.PSS_MHASH_HEX, fixture.HEX);
+    var tvem = new Buffer(fixture.PSS_EM_HEX, fixture.HEX);
+
+    assert.equal(rsa.verifyPSSPadding(
+            textToNid(fixture.SHA1), tvhash, tvem, ursaNative.RSA_PKCS1_SALT_LEN_HLEN), true);
+}
+
+function test_fail_PSSPadding()
+{
+    var rsa = new RsaWrap();
+
+    function f1() {
+        rsa.addPSSPadding();
+    }
+    assert.throws(f1, /Key not yet set\./);
+    rsa.setPublicKeyPem(fixture.PUBLIC_KEY);
+    assert.throws(f1, /Not enough args\./);
+
+    var nid = textToNid(fixture.SHA256);
+    var hash = new Buffer(fixture.FAKE_SHA256_TO_SIGN, fixture.HEX);
+    var slen = ursaNative.RSA_PKCS1_SALT_LEN_HLEN;
+
+    function f2() {
+        rsa.addPSSPadding("x", hash, slen);
+    }
+    assert.throws(f2, /Expected a 32-bit integer in args\[0\]\./);
+
+    function f3() {
+        rsa.addPSSPadding(nid, "x", slen);
+    }
+    assert.throws(f3, /Expected a Buffer in args\[1\]\./);
+
+    function f4() {
+        rsa.addPSSPadding(nid, hash, "x");
+    }
+    assert.throws(f4, /Expected a 32-bit integer in args\[2\]\./);
+
+    function f5() {
+        rsa.addPSSPadding(nid, hash, 1000000);
+    }
+    assert.throws(f5, /data too large for key size/);
+
+    function f6() {
+        rsa.addPSSPadding(nid, hash, -3);
+    }
+    assert.throws(f6, /salt length check failed/);
+
+    var em = rsa.addPSSPadding(nid, hash, slen);
+
+    function f7() {
+        rsa.verifyPSSPadding();
+    }
+    assert.throws(f7, /Not enough args\./);
+
+    function f8() {
+        rsa.verifyPSSPadding("x", hash, em, slen);
+    }
+    assert.throws(f8, /Expected a 32-bit integer in args\[0\]\./);
+
+    function f9() {
+        rsa.verifyPSSPadding(nid, "x", em, slen);
+    }
+    assert.throws(f9, /Expected a Buffer in args\[1\]\./);
+
+    function f10() {
+        rsa.verifyPSSPadding(nid, hash, "x", slen);
+    }
+    assert.throws(f10, /Expected a Buffer in args\[2\]\./);
+
+    function f11() {
+        rsa.verifyPSSPadding(nid, hash, em, "x");
+    }
+    assert.throws(f11, /Expected a 32-bit integer in args\[3\]\./);
+
+    function f12() {
+        rsa.verifyPSSPadding(nid, hash, em, 1000000);
+    }
+    assert.throws(f12, /data too large/);
+
+    function f13() {
+        rsa.verifyPSSPadding(nid, hash, em, -3);
+    }
+    assert.throws(f13, /salt length check failed/);
+
+    em[em.length-1] ^= 2;
+
+    function f14()  {
+        rsa.verifyPSSPadding(nid, hash, em, slen);
+    }
+    assert.throws(f14, /last octet invalid/);
+
+    em[em.length-1] ^= 2;
+    em[1] ^= 2;
+    assert.throws(f14, /salt length recovery failed/);
+}
 
 /*
  * Main test script
@@ -676,6 +793,9 @@ function test() {
 
     test_textToNid();
     test_fail_textToNid();
+
+    test_PSSPadding();
+    test_fail_PSSPadding();
 }
 
 module.exports = {

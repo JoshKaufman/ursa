@@ -134,9 +134,10 @@ This default may be overridden to use the older mode `RSA_PKCS1_PADDING`
 if needed.
 
 The less well-understood private-encryption / public-decryption operations
-(used for building signature mechanisms) are always done using padding
+(used for building signature mechanisms) by default use padding
 mode `RSA_PKCS1_PADDING`. This doesn't build in any randomness (but that's
-not usually a problem for applications that use these operations).
+not usually a problem for applications that use these operations).  This 
+default may be overridden to use `RSA_NO_PADDING` if needed.
 
 See the doc comments and tests for the excruciating details, but here's
 a quick rundown of the available top-level exports and instance methods:
@@ -157,6 +158,10 @@ See "Public Key Methods" below for more details.
 ### ursa.createPrivateKeyFromComponents(modulus, exponent, p, q, dp, dq, inverseQ, d)
 
 Create and return a private key from the given components.
+
+### ursa.createPublicKeyFromComponents(modulus, exponent)
+
+Create and return a public key from the given components.
 
 ### ursa.assertKey(obj)
 
@@ -326,7 +331,7 @@ Get the public exponent as an unsigned big-endian byte sequence.
 
 Get the public modulus as an unsigned big-endian byte sequence.
 
-### hashAndVerify(algorithm, buf, sig, encoding)
+### hashAndVerify(algorithm, buf, sig, encoding, use\_pss\_padding, salt\_len)
 
 This is a friendly wrapper for verifying signatures. The given buffer
 is hashed using the named algorithm, and the result is verified
@@ -339,6 +344,13 @@ cases.
 The encoding, if specified, applies to both buffer-like arguments. The
 algorithm must always be a string.
 
+If `use\_pss\_padding` is truthy then [RSASSA-PSS](http://tools.ietf.org/html/rfc3447#section-8.1)
+padding is used when verifying the signature. `salt_len`, if specified, is
+the length of the PSS salt (in bytes) or one of the following:
+
+- `RSA_PKCS1_SALT_LEN_HLEN` (the same as the hash length).
+- `RSA_PKCS1_SALT_LEN_MAX` (maximum permissable value).
+
 ### publicDecrypt(buf, bufEncoding, outEncoding)
 
 This performs the "public decrypt" operation on the given buffer. The
@@ -347,8 +359,8 @@ key associated with the instance. (For example, if the key is 2048
 bits, then the result of this operation will be no more than 2048
 bits, aka 256 bytes.)
 
-This operation is always performed using padding mode
-`RSA_PKCS1_PADDING`.
+If no padding mode is specified, the default, and recommended, mode
+is `ursa.RSA_PKCS1_PADDING`. The mode `ursa.RSA_NO_PADDING` is also supported.
 
 ### toPublicPem(encoding)
 
@@ -399,7 +411,6 @@ This is an internal method that is used in the implementation of
 associated assertion functions. When called externally, it will
 always return `undefined`.
 
-
 Private Key Methods
 -------------------
 
@@ -423,12 +434,19 @@ is `ursa.RSA_PKCS1_OAEP_PADDING`. The mode
 Get the private exponent as an unsigned big-endian byte sequence. The returned
 exponent is not encrypted in any way, so this method should be used with caution. 
 
-### hashAndSign(algorithm, buf, bufEncoding, outEncoding)
+### hashAndSign(algorithm, buf, bufEncoding, outEncoding, use\_pss\_padding, salt\_len)
 
 This is a friendly wrapper for producing signatures. The given buffer
 is hashed using the named algorithm, and the result is signed using
 the private key held by this instance. The return value of this method
 is the signature.
+
+If `use\_pss\_padding` is truthy then [RSASSA-PSS](http://tools.ietf.org/html/rfc3447#section-8.1)
+padding is used when generating the signature. The `salt_len`, if specified, is
+the length of the PSS salt (in bytes) or one of the following:
+
+- `RSA_PKCS1_SALT_LEN_HLEN` (the same as the hash length).
+- `RSA_PKCS1_SALT_LEN_RECOVER` (assume `RSA_PKCS1_SALT_LEN_MAX` was used when the padding was added).
 
 ### privateEncrypt(buf, bufEncoding, outEncoding)
 
@@ -440,8 +458,8 @@ then the result of this operation will be 2048 bits, aka 256 bytes.)
 The input buffer is limited to be no larger than the key size
 minus 12 bytes.
 
-This operation is always performed using padding mode
-`RSA_PKCS1_PADDING`.
+If no padding mode is specified, the default, and recommended, mode
+is `ursa.RSA_PKCS1_PADDING`. The mode `ursa.RSA_NO_PADDING` is also supported.
 
 ### sign(algorithm, hash, hashEncoding, outEncoding)
 
@@ -506,10 +524,10 @@ other cases.
 Constants
 ---------
 
-Allowed padding modes for public encryption and
-private decryption:
+Allowed padding modes for public/private encryption/decryption:
 
 * `ursa.RSA_PKCS1_PADDING`
+* `ursa.RSA_NO_PADDING`
 * `ursa.RSA_PKCS1_OAEP_PADDING`
 
 

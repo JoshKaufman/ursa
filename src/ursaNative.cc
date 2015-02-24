@@ -35,12 +35,20 @@ Persistent<Function> constructor;
     (proto)->Set(NanNew<String>(#highName), \
         NanNew<FunctionTemplate>(lowName)->GetFunction())
 
+#define RSA_PKCS1_SALT_LEN_HLEN    -1
+#define RSA_PKCS1_SALT_LEN_MAX     -2
+#define RSA_PKCS1_SALT_LEN_RECOVER -2
+
 /**
  * Top-level initialization function.
  */
 void init(Handle<Object> target) {
+    NODE_DEFINE_CONSTANT(target, RSA_NO_PADDING);
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_PADDING);
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_OAEP_PADDING);
+    NODE_DEFINE_CONSTANT(target, RSA_PKCS1_SALT_LEN_HLEN);
+    NODE_DEFINE_CONSTANT(target, RSA_PKCS1_SALT_LEN_MAX);
+    NODE_DEFINE_CONSTANT(target, RSA_PKCS1_SALT_LEN_RECOVER);
     BIND(target, textToNid, TextToNid);
     RsaWrap::InitClass(target);
 
@@ -324,8 +332,11 @@ void RsaWrap::InitClass(Handle<Object> target) {
     BIND(proto, setPublicKeyPem,    SetPublicKeyPem);
     BIND(proto, sign,               Sign);
     BIND(proto, verify,             Verify);
-    BIND(proto, createPrivateKeyFromComponents,   CreatePrivateKeyFromComponents);
+    BIND(proto, createPrivateKeyFromComponents, CreatePrivateKeyFromComponents);
+    BIND(proto, createPublicKeyFromComponents,  CreatePublicKeyFromComponents);
     BIND(proto, openPublicSshKey,   OpenPublicSshKey);
+    BIND(proto, addPSSPadding,      AddPSSPadding);
+    BIND(proto, verifyPSSPadding,   VerifyPSSPadding);
 
     // Store the constructor in the target bindings.
     target->Set(NanNew("RsaWrap"), tpl->GetFunction());
@@ -354,6 +365,11 @@ NAN_METHOD(RsaWrap::OpenPublicSshKey) {
     NanScope();
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
     obj = expectUnset(obj);
+
+    if (args.Length() < 2) {
+        NanThrowError("Not enough args.");
+        NanReturnUndefined();
+    }
 
     Local<Object> obj_n = args[0].As<Object>();
     Local<Object> obj_e = args[1].As<Object>();
@@ -630,8 +646,7 @@ NAN_METHOD(RsaWrap::GetPrivateExponent) {
 
 /**
  * Perform decryption on the given buffer using the RSA key, which
- * must be a private key. This always uses the padding mode
- * RSA_PKCS1_OAEP_PADDING.
+ * must be a private key, and padding mode.
  */
 NAN_METHOD(RsaWrap::PrivateDecrypt) {
     NanScope();
@@ -640,6 +655,11 @@ NAN_METHOD(RsaWrap::PrivateDecrypt) {
     obj = expectPrivateKey(obj);
 
     if (obj == NULL) { NanReturnUndefined(); }
+
+    if (args.Length() < 2) {
+        NanThrowError("Not enough args.");
+        NanReturnUndefined();
+    }
 
     Local<Object> buffer = args[0].As<Object>();
     if (!node::Buffer::HasInstance(buffer)) {
@@ -659,6 +679,7 @@ NAN_METHOD(RsaWrap::PrivateDecrypt) {
         NanReturnUndefined();
     }
     int padding = args[1]->Uint32Value();
+
     int bufLength = RSA_private_decrypt(length, (unsigned char *) data,
                                         buf, obj->rsa, padding);
 
@@ -674,8 +695,7 @@ NAN_METHOD(RsaWrap::PrivateDecrypt) {
 
 /**
  * Perform encryption on the given buffer using the RSA key, which
- * must be private. This always uses the padding mode
- * RSA_PKCS1_PADDING.
+ * must be private, and padding mode.
  */
 NAN_METHOD(RsaWrap::PrivateEncrypt) {
     NanScope();
@@ -683,6 +703,11 @@ NAN_METHOD(RsaWrap::PrivateEncrypt) {
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
     obj = expectPrivateKey(obj);
     if (obj == NULL) { NanReturnUndefined(); }
+
+    if (args.Length() < 2) {
+        NanThrowError("Not enough args.");
+        NanReturnUndefined();
+    }
 
     Local<Object> buffer = args[0].As<Object>();
     if (!node::Buffer::HasInstance(buffer)) {
@@ -696,12 +721,17 @@ NAN_METHOD(RsaWrap::PrivateEncrypt) {
     int rsaLength = RSA_size(obj->rsa);
     Local<Object> result = NanNewBufferHandle(rsaLength);
 
+    if (!args[1]->IsInt32()) {
+        NanThrowError("Expected a 32-bit integer in args[1].");
+        NanReturnUndefined();
+    }
+    int padding = args[1]->Uint32Value();
+
     int ret = RSA_private_encrypt(length, (unsigned char *) data,
                                   (unsigned char *) node::Buffer::Data(result),
-                                  obj->rsa, RSA_PKCS1_PADDING);
+                                  obj->rsa, padding);
 
     if (ret < 0) {
-        // TODO: Will this leak the result buffer? Is it going to be gc'ed?
         scheduleSslException();
         NanReturnUndefined();
     }
@@ -711,7 +741,7 @@ NAN_METHOD(RsaWrap::PrivateEncrypt) {
 
 /**
  * Perform decryption on the given buffer using the (public aspect of
- * the) RSA key. This always uses the padding mode RSA_PKCS1_PADDING.
+ * the) RSA key, and padding mode.
  */
 NAN_METHOD(RsaWrap::PublicDecrypt) {
     NanScope();
@@ -719,6 +749,11 @@ NAN_METHOD(RsaWrap::PublicDecrypt) {
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
     obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
+
+    if (args.Length() < 2) {
+        NanThrowError("Not enough args.");
+        NanReturnUndefined();
+    }
 
     Local<Object> buffer = args[0].As<Object>();
     if (!node::Buffer::HasInstance(buffer)) {
@@ -732,8 +767,14 @@ NAN_METHOD(RsaWrap::PublicDecrypt) {
     int rsaLength = RSA_size(obj->rsa);
     VAR_ARRAY(unsigned char, buf, rsaLength);
 
+    if (!args[1]->IsInt32()) {
+        NanThrowError("Expected a 32-bit integer in args[1].");
+        NanReturnUndefined();
+    }
+    int padding = args[1]->Uint32Value();
+
     int bufLength = RSA_public_decrypt(length, (unsigned char *) data,
-                                       buf, obj->rsa, RSA_PKCS1_PADDING);
+                                       buf, obj->rsa, padding);
 
     if (bufLength < 0) {
         scheduleSslException();
@@ -747,7 +788,7 @@ NAN_METHOD(RsaWrap::PublicDecrypt) {
 
 /**
  * Perform encryption on the given buffer using the public (aspect of the)
- * RSA key. This always uses the padding mode RSA_PKCS1_OAEP_PADDING.
+ * RSA key, and padding mode.
  */
 NAN_METHOD(RsaWrap::PublicEncrypt) {
     NanScope();
@@ -755,6 +796,11 @@ NAN_METHOD(RsaWrap::PublicEncrypt) {
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
     obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
+
+    if (args.Length() < 2) {
+        NanThrowError("Not enough args.");
+        NanReturnUndefined();
+    }
 
     Local<Object> buffer = args[0].As<Object>();
     if (!node::Buffer::HasInstance(buffer)) {
@@ -778,7 +824,6 @@ NAN_METHOD(RsaWrap::PublicEncrypt) {
                                  obj->rsa, padding);
 
     if (ret < 0) {
-        // TODO: Will this leak the result buffer? Is it going to be gc'ed?
         scheduleSslException();
         NanReturnUndefined();
     }
@@ -826,7 +871,7 @@ NAN_METHOD(RsaWrap::PublicEncrypt) {
     }
 
     if (bio != NULL) { BIO_vfree(bio); }
-    free(password);
+    if (password != NULL) { free(password); };
     NanReturnUndefined();
 }
 
@@ -868,6 +913,11 @@ NAN_METHOD(RsaWrap::Sign) {
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
     obj = expectPrivateKey(obj);
     if (obj == NULL) { NanReturnUndefined(); }
+
+    if (args.Length() < 2) {
+        NanThrowError("Not enough args.");
+        NanReturnUndefined();
+    }
 
     if (!args[0]->IsInt32()) {
         NanThrowError("Expected a 32-bit integer in args[0].");
@@ -918,6 +968,11 @@ NAN_METHOD(RsaWrap::Verify) {
     obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
+    if (args.Length() < 3) {
+        NanThrowError("Not enough args.");
+        NanReturnUndefined();
+    }
+
     if (!args[0]->IsInt32()) {
         NanThrowError("Expected a 32-bit integer in args[0].");
         NanReturnUndefined();
@@ -957,6 +1012,142 @@ NAN_METHOD(RsaWrap::Verify) {
             NanReturnValue(NanFalse());
         }
         scheduleSslException();
+        NanReturnUndefined();
+    }
+
+    NanReturnValue(NanTrue());
+}
+
+/**
+  * Add PSS padding to a digest. First argument is digest algorithm ID,
+  * second is the digest, third is the salt length.
+  */
+NAN_METHOD(RsaWrap::AddPSSPadding)
+{
+    NanScope();
+
+    RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
+    obj = expectSet(obj);
+    if (obj == NULL) { NanReturnUndefined(); }
+
+    if (args.Length() < 3) {
+        NanThrowError("Not enough args.");
+        NanReturnUndefined();
+    }
+
+    if (!args[0]->IsInt32()) {
+        NanThrowError("Expected a 32-bit integer in args[0].");
+        NanReturnUndefined();
+    }
+    int nid = args[0]->Uint32Value();
+    const EVP_MD *Hash = EVP_get_digestbynid(nid);
+    if (Hash == NULL) { NanReturnUndefined(); }
+
+    Local<Object> buffer = args[1].As<Object>();
+    if (!node::Buffer::HasInstance(buffer)) {
+        NanThrowError("Expected a Buffer in args[1].");
+        NanReturnUndefined();
+    }
+    size_t mHashLength = node::Buffer::Length(buffer);
+    char *mHash = node::Buffer::Data(buffer);
+    if (mHash == NULL) { NanReturnUndefined(); }
+    if (mHashLength != (size_t) EVP_MD_size(Hash)) {
+        NanThrowError("Incorrect hash size.");
+        NanReturnUndefined();
+    }
+
+    if (!args[2]->IsInt32()) {
+        NanThrowError("Expected a 32-bit integer in args[2].");
+        NanReturnUndefined();
+    }
+    int sLen = args[2]->Uint32Value();
+
+    unsigned int emLength = (unsigned int) RSA_size(obj->rsa);
+    Local<Object> EM = NanNewBufferHandle(emLength);
+
+    int ret = RSA_padding_add_PKCS1_PSS(obj->rsa,
+                    (unsigned char*) node::Buffer::Data(EM),
+                    (unsigned char*) mHash, Hash, sLen);
+    if (ret == 0) { 
+        scheduleSslException();
+        NanReturnUndefined();
+    }
+
+    NanReturnValue(EM);
+}
+
+/**
+  * Verify a signature with PSS padding. First argument is digest algorithm ID,
+  * second is the digest, third is the padded digest, fourth is the salt length.
+  */
+NAN_METHOD(RsaWrap::VerifyPSSPadding)
+{
+    NanScope();
+
+    RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
+    obj = expectSet(obj);
+    if (obj == NULL) { NanReturnUndefined(); }
+
+    if (args.Length() < 4) {
+        NanThrowError("Not enough args.");
+        NanReturnUndefined();
+    }
+
+    if (!args[0]->IsInt32()) {
+        NanThrowError("Expected a 32-bit integer in args[0].");
+        NanReturnUndefined();
+    }
+    int nid = args[0]->Uint32Value();
+    const EVP_MD *Hash = EVP_get_digestbynid(nid);
+    if (Hash == NULL) { NanReturnUndefined(); }
+
+    Local<Object> buffer = args[1].As<Object>();
+    if (!node::Buffer::HasInstance(buffer)) {
+        NanThrowError("Expected a Buffer in args[1].");
+        NanReturnUndefined();
+    }
+    size_t mHashLength = node::Buffer::Length(buffer);
+    char *mHash = node::Buffer::Data(buffer);
+    if (mHash == NULL) { NanReturnUndefined(); }
+    if (mHashLength != (size_t) EVP_MD_size(Hash)) {
+        NanThrowError("Incorrect hash size.");
+        NanReturnUndefined();
+    }
+
+    Local<Object> emBuffer = args[2].As<Object>();
+    if (!node::Buffer::HasInstance(emBuffer)) {
+        NanThrowError("Expected a Buffer in args[2].");
+        NanReturnUndefined();
+    }
+    if (node::Buffer::Length(emBuffer) != (size_t) RSA_size(obj->rsa)) {
+        NanThrowError("Incorrect encoded message size.");
+        NanReturnUndefined();
+    }
+    char *EM = node::Buffer::Data(emBuffer);
+    if (EM == NULL) { NanReturnUndefined(); }
+
+    if (!args[3]->IsInt32()) {
+        NanThrowError("Expected a 32-bit integer in args[3].");
+        NanReturnUndefined();
+    }
+    int sLen = args[3]->Uint32Value();
+
+    int ret = RSA_verify_PKCS1_PSS(obj->rsa, 
+                    (unsigned char*) mHash, Hash, (unsigned char*) EM, sLen);
+    if (ret == 0) {
+        // Something went wrong; investigate!
+        unsigned long err = ERR_peek_error();
+        int lib = ERR_GET_LIB(err);
+        int reason = ERR_GET_REASON(err);
+        if ((lib == ERR_LIB_RSA) && (reason == RSA_R_BAD_SIGNATURE)) {
+            // This just means that the signature didn't match
+            // (as opposed to, say, a more dire failure in the library
+            // warranting an exception throw).
+            ERR_get_error(); // Consume the error (get it off the err stack).
+            NanReturnValue(NanFalse());
+        }
+        scheduleSslException();
+        NanReturnUndefined();
     }
 
     NanReturnValue(NanTrue());
@@ -969,19 +1160,24 @@ NAN_METHOD(RsaWrap::CreatePrivateKeyFromComponents) {
         NanReturnUndefined();
     }
 
+    if (args.Length() < 8) {
+        NanThrowError("Not enough args.");
+        NanReturnUndefined();
+    }
+
     obj->rsa = RSA_new();
     if (obj->rsa == NULL) {
         NanReturnUndefined();
     }
 
-    BIGNUM *modulus;
-    BIGNUM *exponent;
-    BIGNUM *p;
-    BIGNUM *q;
-    BIGNUM *dp;
-    BIGNUM *dq;
-    BIGNUM *inverseQ;
-    BIGNUM *d;
+    BIGNUM *modulus = NULL;
+    BIGNUM *exponent = NULL;
+    BIGNUM *p = NULL;
+    BIGNUM *q = NULL;
+    BIGNUM *dp = NULL;
+    BIGNUM *dq = NULL;
+    BIGNUM *inverseQ = NULL;
+    BIGNUM *d = NULL;
 
     bool ok = true;
 
@@ -1026,15 +1222,56 @@ NAN_METHOD(RsaWrap::CreatePrivateKeyFromComponents) {
         obj->rsa->iqmp = inverseQ;
         obj->rsa->d = d;
     } else {
-        BN_free(modulus);
-        BN_free(exponent);
-        BN_free(p);
-        BN_free(q);
-        BN_free(dp);
-        BN_free(dq);
-        BN_free(inverseQ);
-        BN_free(d);
+        if (modulus) { BN_free(modulus); }
+        if (exponent) { BN_free(exponent); }
+        if (p) { BN_free(p); }
+        if (q) { BN_free(q); }
+        if (dp) { BN_free(dp); }
+        if (dq) { BN_free(dq); }
+        if (inverseQ) { BN_free(inverseQ); }
+        if (d) { BN_free(d); }
     }
 
     NanReturnUndefined();
 }
+
+NAN_METHOD(RsaWrap::CreatePublicKeyFromComponents) {
+    RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
+    obj = expectUnset(obj);
+    if (obj == NULL) {
+        NanReturnUndefined();
+    }
+
+    if (args.Length() < 2) {
+        NanThrowError("Not enough args.");
+        NanReturnUndefined();
+    }
+
+    obj->rsa = RSA_new();
+    if (obj->rsa == NULL) {
+        NanReturnUndefined();
+    }
+
+    BIGNUM *modulus = NULL;
+    BIGNUM *exponent = NULL;
+
+    bool ok = true;
+
+    modulus = getArgXBigNum(args[0].As<Object>());
+    ok &= (modulus != NULL);
+    if (ok) {
+        exponent = getArgXBigNum(args[1].As<Object>());
+        ok &= (exponent != NULL);
+    }
+
+    if (ok) {
+        obj->rsa->n = modulus;
+        obj->rsa->e = exponent;
+    } else {
+        if (modulus) { BN_free(modulus); }
+        if (exponent) { BN_free(exponent); }
+    }
+
+    NanReturnUndefined();
+}
+
