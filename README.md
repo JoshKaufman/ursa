@@ -344,11 +344,11 @@ cases.
 The encoding, if specified, applies to both buffer-like arguments. The
 algorithm must always be a string.
 
-If `use\_pss\_padding` is truthy then [RSASSA-PSS](http://tools.ietf.org/html/rfc3447#section-8.1)
+If `use_pss_padding` is truthy then [RSASSA-PSS](http://tools.ietf.org/html/rfc3447#section-8.1)
 padding is used when verifying the signature. `salt_len`, if specified, is
 the length of the PSS salt (in bytes) or one of the following:
 
-- `RSA_PKCS1_SALT_LEN_HLEN` (the same as the hash length).
+- `RSA_PKCS1_SALT_LEN_HLEN` (the same as the hash length, default).
 - `RSA_PKCS1_SALT_LEN_MAX` (maximum permissable value).
 
 ### publicDecrypt(buf, bufEncoding, outEncoding)
@@ -441,11 +441,11 @@ is hashed using the named algorithm, and the result is signed using
 the private key held by this instance. The return value of this method
 is the signature.
 
-If `use\_pss\_padding` is truthy then [RSASSA-PSS](http://tools.ietf.org/html/rfc3447#section-8.1)
+If `use_pss_padding` is truthy then [RSASSA-PSS](http://tools.ietf.org/html/rfc3447#section-8.1)
 padding is used when generating the signature. The `salt_len`, if specified, is
 the length of the PSS salt (in bytes) or one of the following:
 
-- `RSA_PKCS1_SALT_LEN_HLEN` (the same as the hash length).
+- `RSA_PKCS1_SALT_LEN_HLEN` (the same as the hash length, default).
 - `RSA_PKCS1_SALT_LEN_RECOVER` (assume `RSA_PKCS1_SALT_LEN_MAX` was used when the padding was added).
 
 ### privateEncrypt(buf, bufEncoding, outEncoding)
