@@ -278,7 +278,7 @@ function testTypes() {
     var pub = ursa.createPublicKey(fixture.PUBLIC_KEY);
     var priv = ursa.createPrivateKey(fixture.PRIVATE_KEY);
     var msg;
-    
+
     msg = "Problem with isKey()";
     assert.equal(ursa.isKey(pub),       true,  msg);
     assert.equal(ursa.isKey(priv),      true,  msg);
@@ -514,7 +514,7 @@ function test_sshFingerprint() {
     assert.equal(finger, fixture.SSH_PUBLIC_KEY_FINGERPRINT_HEX);
 
     finger = ursa.sshFingerprint(
-        fixture.SSH_PUBLIC_KEY.toString(fixture.BASE64), 
+        fixture.SSH_PUBLIC_KEY.toString(fixture.BASE64),
         fixture.BASE64, fixture.HEX);
     assert.equal(finger, fixture.SSH_PUBLIC_KEY_FINGERPRINT_HEX);
 }
@@ -577,7 +577,8 @@ function testSigner() {
     var key = ursa.createPrivateKey(fixture.PRIVATE_KEY);
     var signer = ursa.createSigner(fixture.SHA256);
 
-    signer.update(fixture.PLAINTEXT, fixture.UTF8);
+    var ret = signer.update(fixture.PLAINTEXT, fixture.UTF8);
+    assert.equal(ret === signer, true);
 
     var sig = signer.sign(key, fixture.HEX);
 
@@ -587,7 +588,11 @@ function testSigner() {
 function testVerifier() {
     var key = ursa.createPublicKey(fixture.PUBLIC_KEY);
     var verifier = ursa.createVerifier(fixture.SHA256);
-    verifier.update(fixture.PLAINTEXT, fixture.UTF8);
+
+    var ret = verifier.update(fixture.PLAINTEXT, fixture.UTF8);
+    assert.equal(ret === verifier, true);
+
+
     assert.equal(verifier.verify(key, fixture.PLAINTEXT_SHA256_SIGNATURE,
                                  fixture.HEX),
                  true);
