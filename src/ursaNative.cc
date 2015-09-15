@@ -32,8 +32,19 @@ Persistent<Function> constructor;
  * Helper for prototype binding.
  */
 #define BIND(proto, highName, lowName) \
-    (proto)->Set(NanNew<String>(#highName), \
-        NanNew<FunctionTemplate>(lowName)->GetFunction())
+    (proto)->Set(Nan::New(#highName).ToLocalChecked(), \
+        Nan::New<FunctionTemplate>(lowName)->GetFunction())
+
+#define NanThrowError(err) Nan::ThrowError(err);
+#define NanNewBufferHandle(length) Nan::NewBuffer(length).ToLocalChecked()
+#define NanUndefined() Nan::Undefined()
+#define args info
+#define NanScope() Nan::HandleScope scope
+#define NanReturnUndefined() info.GetReturnValue().Set(Nan::Undefined())
+#define NanNew Nan::New
+#define NanReturnValue(value) info.GetReturnValue().Set(value);
+#define NanFalse() Nan::False()
+#define NanTrue() Nan::True()
 
 #define RSA_PKCS1_SALT_LEN_HLEN    -1
 #define RSA_PKCS1_SALT_LEN_MAX     -2
@@ -307,7 +318,7 @@ NAN_METHOD(TextToNid) {
  * Initialize the bindings for this class.
  */
 void RsaWrap::InitClass(Handle<Object> target) {
-    Local<String> className = NanNew<String>("RsaWrap");
+    Local<String> className = NanNew("RsaWrap").ToLocalChecked();
 
     // Basic instance setup
     Local<FunctionTemplate> tpl = NanNew<FunctionTemplate>(New);
@@ -339,8 +350,8 @@ void RsaWrap::InitClass(Handle<Object> target) {
     BIND(proto, verifyPSSPadding,   VerifyPSSPadding);
 
     // Store the constructor in the target bindings.
-    target->Set(NanNew("RsaWrap"), tpl->GetFunction());
-    NanAssignPersistent<Function>(constructor, tpl->GetFunction());
+    target->Set(NanNew("RsaWrap").ToLocalChecked(), tpl->GetFunction());
+    constructor.Reset(target->GetIsolate(), tpl->GetFunction());
 }
 
 /**
