@@ -40,9 +40,9 @@ Persistent<Function> constructor;
 #define NanUndefined() Nan::Undefined()
 #define args info
 #define NanScope() Nan::HandleScope scope
-#define NanReturnUndefined() info.GetReturnValue().Set(Nan::Undefined()); return;
+#define NanReturnUndefined() info.GetReturnValue().Set(Nan::Undefined()); return
 #define NanNew Nan::New
-#define NanReturnValue(value) info.GetReturnValue().Set(value); return;
+#define NanReturnValue(value) info.GetReturnValue().Set(value); return
 #define NanFalse() Nan::False()
 #define NanTrue() Nan::True()
 
