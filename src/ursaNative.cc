@@ -40,9 +40,9 @@ Persistent<Function> constructor;
 #define NanUndefined() Nan::Undefined()
 #define args info
 #define NanScope() Nan::HandleScope scope
-#define NanReturnUndefined() info.GetReturnValue().Set(Nan::Undefined())
+#define NanReturnUndefined() info.GetReturnValue().Set(Nan::Undefined()); return;
 #define NanNew Nan::New
-#define NanReturnValue(value) info.GetReturnValue().Set(value);
+#define NanReturnValue(value) info.GetReturnValue().Set(value); return;
 #define NanFalse() Nan::False()
 #define NanTrue() Nan::True()
 
@@ -535,7 +535,7 @@ NAN_METHOD(RsaWrap::GeneratePrivateKey) {
  * value is a Buffer containing the unsigned number in big-endian
  * order.
  */
- NAN_METHOD(RsaWrap::GetExponent) {
+NAN_METHOD(RsaWrap::GetExponent) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
@@ -566,7 +566,7 @@ NAN_METHOD(RsaWrap::GetPrivateExponent) {
  * value is a Buffer containing the unsigned number in big-endian
  * order.
  */
- NAN_METHOD(RsaWrap::GetModulus) {
+NAN_METHOD(RsaWrap::GetModulus) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
@@ -582,7 +582,7 @@ NAN_METHOD(RsaWrap::GetPrivateExponent) {
  * file contents (in ASCII / UTF8). Note: This does not do any
  * encryption of the results.
  */
- NAN_METHOD(RsaWrap::GetPrivateKeyPem) {
+NAN_METHOD(RsaWrap::GetPrivateKeyPem) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
@@ -633,7 +633,7 @@ NAN_METHOD(RsaWrap::GetPrivateExponent) {
  * in PEM format. The return value is a Buffer containing the
  * file contents (in ASCII / UTF8).
  */
- NAN_METHOD(RsaWrap::GetPublicKeyPem) {
+NAN_METHOD(RsaWrap::GetPublicKeyPem) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
@@ -847,7 +847,7 @@ NAN_METHOD(RsaWrap::PublicEncrypt) {
  * private key (a Buffer of PEM format data). This throws an
  * exception if the underlying RSA had previously been set.
  */
- NAN_METHOD(RsaWrap::SetPrivateKeyPem) {
+NAN_METHOD(RsaWrap::SetPrivateKeyPem) {
     NanScope();
     bool ok = true;
 
@@ -891,7 +891,7 @@ NAN_METHOD(RsaWrap::PublicEncrypt) {
  * public key (a Buffer of PEM format data). This throws an
  * exception if the underlying RSA had previously been set.
  */
- NAN_METHOD(RsaWrap::SetPublicKeyPem) {
+NAN_METHOD(RsaWrap::SetPublicKeyPem) {
     NanScope();
 
     RsaWrap *obj = ObjectWrap::Unwrap<RsaWrap>(args.Holder());
