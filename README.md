@@ -59,15 +59,12 @@ console.log('############################################');
 console.log('Reverse Public -> Private, Private -> Public');
 console.log('############################################\n');
 
-crt = ursa.createPrivateKey(fs.readFileSync('./certs/server/my-server.key.pem'));
-key = ursa.createPublicKey(fs.readFileSync('./certs/client/my-server.pub'));
-
 console.log('Encrypt with Private (called public)');
-msg = key.encrypt("Everything is going to be 200 OK", 'utf8', 'base64');
+msg = key.privateEncrypt("Everything is going to be 200 OK", 'utf8', 'base64');
 console.log('encrypted', msg, '\n');
 
 console.log('Decrypt with Public (called private)');
-msg = crt.decrypt(msg, 'base64', 'utf8');
+msg = crt.publicDecrypt(msg, 'base64', 'utf8');
 console.log('decrypted', msg, '\n');
 ```
 
