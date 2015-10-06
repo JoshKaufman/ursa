@@ -14,7 +14,7 @@
 
 class RsaWrap : public node::ObjectWrap {
   public:
-    static void InitClass(v8::Handle<v8::Object> target);
+    static void InitClass(v8::Local<v8::Object> target);
 
   protected:
     RsaWrap();
