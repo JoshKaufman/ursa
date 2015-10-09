@@ -20,7 +20,7 @@ using namespace v8;
 #  define VAR_ARRAY(type, name, size)  type name[size]
 #endif
 
-Persistent<Function> constructor;
+Nan::Persistent<Function> constructor;
 
 
 
@@ -37,7 +37,6 @@ Persistent<Function> constructor;
 
 #define NanThrowError(err) Nan::ThrowError(err);
 #define NanNewBufferHandle(length) Nan::NewBuffer(length).ToLocalChecked()
-#define NanUndefined() Nan::Undefined()
 #define args info
 #define NanScope() Nan::HandleScope scope
 #define NanReturnUndefined() { info.GetReturnValue().Set(Nan::Undefined()); return; }
@@ -53,7 +52,7 @@ Persistent<Function> constructor;
 /**
  * Top-level initialization function.
  */
-void init(Handle<Object> target) {
+void init(Local<Object> target) {
     NODE_DEFINE_CONSTANT(target, RSA_NO_PADDING);
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_PADDING);
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_OAEP_PADDING);
@@ -107,16 +106,17 @@ static void scheduleAllocException() {
  * contents. Returns a Buffer-containing handle on success. Schedules an
  * exception and returns Undefined() on failure.
  */
-static Handle<Value> bignumToBuffer(BIGNUM *number) {
+static Nan::NAN_METHOD_RETURN_TYPE bignumToBuffer(Nan::NAN_METHOD_ARGS_TYPE args,
+                                                  BIGNUM *number) {
     int length = BN_num_bytes(number);
     Local<Object> result = NanNewBufferHandle(length);
 
     if (BN_bn2bin(number, (unsigned char *) node::Buffer::Data(result)) < 0) {
         scheduleSslException();
-        return NanUndefined();
+        NanReturnUndefined();
     }
 
-    return result;
+    NanReturnValue(result);
 }
 
 /**
@@ -128,9 +128,10 @@ static Handle<Value> bignumToBuffer(BIGNUM *number) {
  * As a special case to help with error handling, if given a NULL
  * argument, this simply returns Undefined().
  */
-static Handle<Value> bioToBuffer(BIO *bio) {
+static Nan::NAN_METHOD_RETURN_TYPE bioToBuffer(Nan::NAN_METHOD_ARGS_TYPE args,
+                                               BIO *bio) {
     if (bio == NULL) {
-        return NanUndefined();
+        NanReturnUndefined();
     }
 
     char *data;
@@ -140,13 +141,13 @@ static Handle<Value> bioToBuffer(BIO *bio) {
     if (result.IsEmpty()) {
         scheduleAllocException();
         BIO_vfree(bio);
-        return NanUndefined();
+        NanReturnUndefined();
     }
 
     memcpy(node::Buffer::Data(result), data, length);
     BIO_vfree(bio);
 
-    return result;
+    NanReturnValue(result);
 }
 
 /**
@@ -317,7 +318,7 @@ NAN_METHOD(TextToNid) {
 /**
  * Initialize the bindings for this class.
  */
-void RsaWrap::InitClass(Handle<Object> target) {
+void RsaWrap::InitClass(Local<Object> target) {
     Local<String> className = NanNew("RsaWrap").ToLocalChecked();
 
     // Basic instance setup
@@ -351,7 +352,7 @@ void RsaWrap::InitClass(Handle<Object> target) {
 
     // Store the constructor in the target bindings.
     target->Set(NanNew("RsaWrap").ToLocalChecked(), tpl->GetFunction());
-    constructor.Reset(target->GetIsolate(), tpl->GetFunction());
+    constructor.Reset(tpl->GetFunction());
 }
 
 /**
@@ -542,7 +543,7 @@ NAN_METHOD(RsaWrap::GetExponent) {
     obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
-    NanReturnValue(bignumToBuffer(obj->rsa->e));
+    bignumToBuffer(args, obj->rsa->e);
 }
 
 /**
@@ -558,7 +559,7 @@ NAN_METHOD(RsaWrap::GetPrivateExponent) {
     obj = expectPrivateKey(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
-    NanReturnValue(bignumToBuffer(obj->rsa->d));
+    bignumToBuffer(args, obj->rsa->d);
 }
 
 /**
@@ -573,7 +574,7 @@ NAN_METHOD(RsaWrap::GetModulus) {
     obj = expectSet(obj);
     if (obj == NULL) { NanReturnUndefined(); }
 
-    NanReturnValue(bignumToBuffer(obj->rsa->n));
+    bignumToBuffer(args, obj->rsa->n);
 }
 
 /**
@@ -625,7 +626,7 @@ NAN_METHOD(RsaWrap::GetPrivateKeyPem) {
     }
 
     free(password);
-    NanReturnValue(bioToBuffer(bio));
+    bioToBuffer(args, bio);
 }
 
 /**
@@ -652,7 +653,7 @@ NAN_METHOD(RsaWrap::GetPublicKeyPem) {
         NanReturnUndefined();
     }
 
-    NanReturnValue(bioToBuffer(bio));
+    bioToBuffer(args, bio);
 }
 
 /**
