@@ -9,7 +9,6 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
-#include "asprintf.h"
 
 using namespace v8;
 

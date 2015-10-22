@@ -8,7 +8,7 @@
 		{
 			'include_dirs': [ "<!(node -e \"require('nan')\")" ],
 			'target_name': 'ursaNative',
-			'sources': [ 'src/ursaNative.cc', 'src/asprintf.cc' ],
+			'sources': [ 'src/ursaNative.cc' ],
 			'conditions': [
 				[ 'OS=="win"', {
 				  'conditions': [
