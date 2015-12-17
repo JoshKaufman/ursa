@@ -12,21 +12,26 @@ RSA public/private key crypto functionality of OpenSSL.
 
 It is being actively developed for node.js 0.8.* through 0.12.* and io.js. If you find it doesn't work for you, please file a bug (see below).
 
-It has been tested on Windows by [SLaks](https://github.com/SLaks).  (see additional installation requirements)
+It has been tested on Windows by [SLaks](https://github.com/SLaks).  (see [additional installation requirements](#windows-install))
+
+Table of Contents
+-----------------
+- [Simple Encrypt / Decrypt Example](#simple-encrypt--decrypt-example)
+- [Building and Installing](#building-and-installing)
+- [Usage](#usage)
+- [Top-level Exports](#top-level-exports)
+- [Public Key Methods](#public-key-methods)
+- [Private Key Methods](#private-key-methods)
+- [Signer Methods](#signer-methods)
+- [Verifier Methods](#verifier-methods)
+- [Constants](#constants)
+- [Contributing](#contributing)
+- [Authors](#authors)
+- [License](#license)
+- [Related Repos](#other-repos-that-may-be-of-interest)
 
 
-Building and Installing
------------------------
 
-```shell
-npm install ursa
-```
-
-Or grab the source and
-
-```shell
-npm install
-```
 
 Simple Encrypt / Decrypt Example
 --------------------------------
@@ -68,6 +73,20 @@ msg = crt.publicDecrypt(msg, 'base64', 'utf8');
 console.log('decrypted', msg, '\n');
 ```
 
+
+Building and Installing
+-----------------------
+
+```shell
+npm install ursa
+```
+
+Or grab the source and
+
+```shell
+npm install
+```
+
 Testing
 -------
 
@@ -80,7 +99,7 @@ Or
 ```shell
 node ./test/test.js
 ```
-
+<a id="windows-install"></a>
 On Windows, you'll need to install some dependencies first:
  - [OpenSSL](http://slproweb.com/products/Win32OpenSSL.html) (normal, not light)
 in the same bitness as your Node.js installation.
@@ -99,6 +118,8 @@ in the same bitness as your Node.js installation.
                     - If you get errors that the 64-bit compilers are not installed you may also need the [compiler update for the Windows SDK 7.1](http://www.microsoft.com/en-us/download/details.aspx?id=4422)
             - Windows 8:
                 - `Microsoft Visual Studio C++ 2012 for Windows Desktop` ([Express](http://go.microsoft.com/?linkid=9816758) version works well)
+
+
 
 
 Usage
