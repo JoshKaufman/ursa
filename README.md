@@ -12,21 +12,26 @@ RSA public/private key crypto functionality of OpenSSL.
 
 It is being actively developed for node.js 0.8.* through 0.12.* and io.js. If you find it doesn't work for you, please file a bug (see below).
 
-It has been tested on Windows by [SLaks](https://github.com/SLaks).  (see additional installation requirements)
+It has been tested on Windows by [SLaks](https://github.com/SLaks).  (see [additional installation requirements](#windows-install))
+
+Table of Contents
+-----------------
+- [Simple Encrypt / Decrypt Example](#simple-encrypt--decrypt-example)
+- [Building and Installing](#building-and-installing)
+- [Usage](#usage)
+- [Top-level Exports](#top-level-exports)
+- [Public Key Methods](#public-key-methods)
+- [Private Key Methods](#private-key-methods)
+- [Signer Methods](#signer-methods)
+- [Verifier Methods](#verifier-methods)
+- [Constants](#constants)
+- [Contributing](#contributing)
+- [Authors](#authors)
+- [License](#license)
+- [Related Repos](#other-repos-that-may-be-of-interest)
 
 
-Building and Installing
------------------------
 
-```shell
-npm install ursa
-```
-
-Or grab the source and
-
-```shell
-npm install
-```
 
 Simple Encrypt / Decrypt Example
 --------------------------------
@@ -68,6 +73,20 @@ msg = crt.publicDecrypt(msg, 'base64', 'utf8');
 console.log('decrypted', msg, '\n');
 ```
 
+
+Building and Installing
+-----------------------
+
+```shell
+npm install ursa
+```
+
+Or grab the source and
+
+```shell
+npm install
+```
+
 Testing
 -------
 
@@ -80,26 +99,18 @@ Or
 ```shell
 node ./test/test.js
 ```
-
+<a id="windows-install"></a>
 On Windows, you'll need to install some dependencies first:
  - [OpenSSL](http://slproweb.com/products/Win32OpenSSL.html) (normal, not light)
 in the same bitness as your Node.js installation.
-  - The build script looks for OpenSSL in the default install directory  
-  (`C:\OpenSSL-Win32` or `C:\OpenSSL-Win64`)
-  - If you get `Error: The specified module could not be found.`, copy `libeay32.dll` from the OpenSSL bin directory to this module's bin directory, or to Windows\System3.
- - [node-gyp](https://github.com/TooTallNate/node-gyp/) (`npm install -g node-gyp`)
-   - [Python 2.7](http://www.python.org/download/releases/2.7.3#download) (not 3.3)
-   - Microsoft Visual Studio C++ _**(either of the two below but not both)**_
-        - `Microsoft Visual Studio C++ 2013 for Windows Desktop` ([Express](http://www.microsoft.com/en-au/download/details.aspx?id=40787) version works well)
-            - No extra patches should be needed, but requires a fully up-to-date machine including all of the latest service packs
-        - Older versions of Visual Studio
-            - Windows XP/Vista/7:
-                - `Microsoft Visual Studio C++ 2010` ([Express](http://go.microsoft.com/?linkid=9709949) version works well)
-                    - For 64-bit builds of node and native modules you will _**also**_ need the [Windows 7 64-bit SDK](http://www.microsoft.com/en-us/download/details.aspx?id=8279)
-                    - If you get errors that the 64-bit compilers are not installed you may also need the [compiler update for the Windows SDK 7.1](http://www.microsoft.com/en-us/download/details.aspx?id=4422)
-            - Windows 8:
-                - `Microsoft Visual Studio C++ 2012 for Windows Desktop` ([Express](http://go.microsoft.com/?linkid=9816758) version works well)
-
+  - OpenSSL must be installed in the a specific install directory (`C:\OpenSSL-Win32` or `C:\OpenSSL-Win64`)
+  - If you get `Error: The specified module could not be found.`, copy `libeay32.dll` from the OpenSSL bin directory to this module's bin directory, or to Windows\System32.
+ - [node-gyp](https://github.com/nodejs/node-gyp) (`npm install -g node-gyp`)
+   - You will need [python 2.7](http://www.python.org/download/releases/2.7.3#download) and a compatible version 
+  Visual Studio installed first.  Even with that, `node-gyp` installation or use can have 
+  issues on Windows.  The `node-gyp` [README file](https://github.com/nodejs/node-gyp) has detailed instructions 
+  if you have difficulties.  [This post](https://www.robertkehoe.com/2015/03/fix-node-gyp-rebuild-error-on-windows/) 
+  is also a good reference.
 
 Usage
 -----
