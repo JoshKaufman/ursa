@@ -1,6 +1,6 @@
 {
   "name": "ursa",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "keywords": [
     "crypto",
     "key",
@@ -35,7 +35,7 @@
     }
   ],
   "main": "lib/ursa.js",
-  "engine": {
+  "engines": {
     "node": ">=0.10.0"
   },
   "scripts": {
