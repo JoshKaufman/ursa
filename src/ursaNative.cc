@@ -26,14 +26,6 @@ Nan::Persistent<Function> constructor;
 /*
  * Initialization and binding
  */
-
-/**
- * Helper for prototype binding.
- */
-#define BIND(proto, highName, lowName) \
-    (proto)->Set(Nan::New(#highName).ToLocalChecked(), \
-        Nan::New<FunctionTemplate>(lowName)->GetFunction())
-
 #define NanThrowError(err) Nan::ThrowError(err);
 #define NanNewBufferHandle(length) Nan::NewBuffer(length).ToLocalChecked()
 #define args info
@@ -58,7 +50,7 @@ void init(Local<Object> target) {
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_SALT_LEN_HLEN);
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_SALT_LEN_MAX);
     NODE_DEFINE_CONSTANT(target, RSA_PKCS1_SALT_LEN_RECOVER);
-    BIND(target, textToNid, TextToNid);
+
     RsaWrap::InitClass(target);
 
 #ifdef _WIN32
@@ -326,32 +318,31 @@ void RsaWrap::InitClass(Local<Object> target) {
     tpl->SetClassName(className);
     tpl->InstanceTemplate()->SetInternalFieldCount(1); // req'd by ObjectWrap
 
-    // Prototype method bindings
-    Local<ObjectTemplate> proto = tpl->PrototypeTemplate();
-
-    BIND(proto, generatePrivateKey, GeneratePrivateKey);
-    BIND(proto, getExponent,        GetExponent);
-    BIND(proto, getPrivateExponent, GetPrivateExponent);
-    BIND(proto, getModulus,         GetModulus);
-    BIND(proto, getPrivateKeyPem,   GetPrivateKeyPem);
-    BIND(proto, getPublicKeyPem,    GetPublicKeyPem);
-    BIND(proto, privateDecrypt,     PrivateDecrypt);
-    BIND(proto, privateEncrypt,     PrivateEncrypt);
-    BIND(proto, publicDecrypt,      PublicDecrypt);
-    BIND(proto, publicEncrypt,      PublicEncrypt);
-    BIND(proto, setPrivateKeyPem,   SetPrivateKeyPem);
-    BIND(proto, setPublicKeyPem,    SetPublicKeyPem);
-    BIND(proto, sign,               Sign);
-    BIND(proto, verify,             Verify);
-    BIND(proto, createPrivateKeyFromComponents, CreatePrivateKeyFromComponents);
-    BIND(proto, createPublicKeyFromComponents,  CreatePublicKeyFromComponents);
-    BIND(proto, openPublicSshKey,   OpenPublicSshKey);
-    BIND(proto, addPSSPadding,      AddPSSPadding);
-    BIND(proto, verifyPSSPadding,   VerifyPSSPadding);
+    Nan::SetPrototypeMethod(tpl, "generatePrivateKey", GeneratePrivateKey);
+    Nan::SetPrototypeMethod(tpl, "getExponent",        GetExponent);
+    Nan::SetPrototypeMethod(tpl, "getPrivateExponent", GetPrivateExponent);
+    Nan::SetPrototypeMethod(tpl, "getModulus",         GetModulus);
+    Nan::SetPrototypeMethod(tpl, "getPrivateKeyPem",   GetPrivateKeyPem);
+    Nan::SetPrototypeMethod(tpl, "getPublicKeyPem",    GetPublicKeyPem);
+    Nan::SetPrototypeMethod(tpl, "privateDecrypt",     PrivateDecrypt);
+    Nan::SetPrototypeMethod(tpl, "privateEncrypt",     PrivateEncrypt);
+    Nan::SetPrototypeMethod(tpl, "publicDecrypt",      PublicDecrypt);
+    Nan::SetPrototypeMethod(tpl, "publicEncrypt",      PublicEncrypt);
+    Nan::SetPrototypeMethod(tpl, "setPrivateKeyPem",   SetPrivateKeyPem);
+    Nan::SetPrototypeMethod(tpl, "setPublicKeyPem",    SetPublicKeyPem);
+    Nan::SetPrototypeMethod(tpl, "sign",               Sign);
+    Nan::SetPrototypeMethod(tpl, "verify",             Verify);
+    Nan::SetPrototypeMethod(tpl, "createPrivateKeyFromComponents", CreatePrivateKeyFromComponents);
+    Nan::SetPrototypeMethod(tpl, "createPublicKeyFromComponents",  CreatePublicKeyFromComponents);
+    Nan::SetPrototypeMethod(tpl, "openPublicSshKey",   OpenPublicSshKey);
+    Nan::SetPrototypeMethod(tpl, "addPSSPadding",      AddPSSPadding);
+    Nan::SetPrototypeMethod(tpl, "verifyPSSPadding",   VerifyPSSPadding);
 
     // Store the constructor in the target bindings.
     target->Set(NanNew("RsaWrap").ToLocalChecked(), tpl->GetFunction());
     constructor.Reset(tpl->GetFunction());
+
+    target->Set(NanNew("textToNid").ToLocalChecked(), Nan::New<FunctionTemplate>(TextToNid)->GetFunction());
 }
 
 /**
