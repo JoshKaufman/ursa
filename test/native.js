@@ -595,11 +595,11 @@ function test_textToNid() {
 
     function verifyInt(value) {
         if (typeof value !== "number") {
-            throw new Exception("Not a number: " + value);
+            throw new Error("Not a number: " + value);
         }
 
         if (value !== Math.floor(value)) {
-            throw new Exception("Not an integer: " + value);
+            throw new Error("Not an integer: " + value);
         }
     }
 
