@@ -29,9 +29,7 @@
           ],
         }, { # OS!="win"
           'include_dirs': [
-            # use node's bundled openssl headers on Unix platforms
-            '<(node_root_dir)/deps/openssl/openssl/include',
-                        "<!(node -e \"require('nan')\")"
+            "<!(node -e \"require('nan')\")"
           ],
         }],
       ],
