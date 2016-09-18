@@ -12,8 +12,9 @@
 
 var fs = require("fs");
 
-var ursa       = require("../lib/ursa");
-var ursaNative = require("bindings")("ursaNative");
+var ursa         = require("../lib/ursa");
+var ursaNativeJS = require("../lib/ursa_native");
+var ursaNative   = require("bindings")("ursaNative");
 
 
 /*
@@ -178,7 +179,7 @@ module.exports = {
     SHA256: SHA256,
     UTF8:   UTF8,
     DES_EDE3_CBC: DES_EDE3_CBC,
-    
+
     EXPONENT_HEX:               EXPONENT_HEX,
     FAKE_SHA256_TO_SIGN:        FAKE_SHA256_TO_SIGN,
     FAKE_SHA256_SIGNATURE:      FAKE_SHA256_SIGNATURE,
@@ -208,8 +209,7 @@ module.exports = {
     PSS_S_HEX:                  PSS_S_HEX,
     PSS_PUBLIC_KEY:             PSS_PUBLIC_KEY,
 
-    RsaWrap: ursaNative.RsaWrap,
-
-    ursa:       ursa,
-    ursaNative: ursaNative
+    ursa:         ursa,
+    ursaNative:   ursaNative,
+    ursaNativeJS: ursaNativeJS
 };

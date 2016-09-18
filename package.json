@@ -39,10 +39,13 @@
     "node": ">=0.10.0"
   },
   "scripts": {
+    "install": "node-gyp rebuild; exit 0",
     "test": "node test/test.js"
   },
   "dependencies": {
     "bindings": "^1.2.1",
-    "nan": "^2.3.3"
+    "nan": "^2.3.3",
+    "node-rsa": "^0.3.2",
+    "ssh-key-decrypt": "^0.1.2"
   }
 }
