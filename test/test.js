@@ -258,12 +258,8 @@ function testPrivateKeyMethods(key) {
     test_sign(key);
 }
 
-
-/*
- * Test functions
- */
-
-function testBasics() {
+describe('main', function() {
+  it('Basics', function() {
     ursa.createPublicKey(fixture.PUBLIC_KEY);
     ursa.createPrivateKey(fixture.PRIVATE_KEY);
     ursa.createPrivateKey(fixture.PASS_PRIVATE_KEY, fixture.PASSWORD);
@@ -272,9 +268,9 @@ function testBasics() {
     ursa.createPublicKey(fixture.PUBLIC_KEY.toString(fixture.UTF8));
     ursa.createPrivateKey(fixture.PRIVATE_KEY.toString(fixture.BASE64),
                           undefined, fixture.BASE64);
-}
+  });
 
-function testTypes() {
+  it('Types', function() {
     var pub = ursa.createPublicKey(fixture.PUBLIC_KEY);
     var priv = ursa.createPrivateKey(fixture.PRIVATE_KEY);
     var msg;
@@ -311,9 +307,9 @@ function testTypes() {
     assert.doesNotThrow(function () { ursa.assertPrivateKey(priv); });
     assert.throws(function () { ursa.assertPrivateKey(undefined); });
     assert.throws(function () { ursa.assertPrivateKey("x"); });
-}
+  });
 
-function test_createKey() {
+  it('createKey', function() {
     var priv = ursa.createKey(fixture.PRIVATE_KEY);
     assert(ursa.isPrivateKey(priv), true);
 
@@ -324,9 +320,9 @@ function test_createKey() {
         ursa.createKey("yo there");
     }
     assert.throws(f1, /Not a key\./);
-}
+  });
 
-function test_createPrivateKeyFromComponents() {
+  it('createPrivateKeyFromComponents', function() {
     var privFromComponents = ursa.createPrivateKeyFromComponents(
             fixture.PRIVATE_KEY_COMPONENTS.modulus,
             fixture.PRIVATE_KEY_COMPONENTS.exponent,
@@ -342,9 +338,9 @@ function test_createPrivateKeyFromComponents() {
     var privFromPem = ursa.createPrivateKey(fixture.PRIVATE_KEY_3);
 
     assert.equal(privFromComponents.toPrivatePem('utf8'), privFromPem.toPrivatePem('utf8'));
-}
+  });
 
-function test_createPublicKeyFromComponents() {
+  it('createPublicKeyFromComponents', function() {
     var pubFromComponents = ursa.createPublicKeyFromComponents(
             new Buffer(fixture.PSS_MODULUS_HEX, fixture.HEX),
             new Buffer(fixture.EXPONENT_HEX, fixture.HEX));
@@ -355,27 +351,27 @@ function test_createPublicKeyFromComponents() {
 
     assert.equal(pubFromComponents.toPublicPem('utf8'),
                  pubFromPem.toPublicPem('utf8'));
-}
+  });
 
-function test_fail_createPublicKey() {
+  it('fail_createPublicKey', function() {
     // This is mostly tested at the native level. This just tests the
     // extra failures added at the high level.
     function f1() {
         ursa.createPublicKey(fixture.PRIVATE_KEY);
     }
     assert.throws(f1, /Not a public key\./);
-}
+  });
 
-function test_fail_createPrivateKey() {
+  it('fail_createPrivateKey', function() {
     // This is mostly tested at the native level. This just tests the
     // extra failures added at the high level.
     function f1() {
         ursa.createPrivateKey(fixture.PUBLIC_KEY);
     }
     assert.throws(f1, /Not a private key\./);
-}
+  });
 
-function test_coerceKey() {
+  it('coerceKey', function() {
     var priv = ursa.coerceKey(fixture.PRIVATE_KEY);
     assert(ursa.isPrivateKey(priv), true);
 
@@ -390,9 +386,9 @@ function test_coerceKey() {
 
     assert.equal(ursa.coerceKey(priv), priv);
     assert.equal(ursa.coerceKey(pub), pub);
-}
+  });
 
-function test_coercePrivateKey() {
+  it('coercePrivateKey', function() {
     var priv = ursa.coercePrivateKey(fixture.PRIVATE_KEY);
     assert(ursa.isPrivateKey(priv), true);
 
@@ -400,9 +396,9 @@ function test_coercePrivateKey() {
     assert(ursa.isPrivateKey(priv), true);
 
     assert.equal(ursa.coercePrivateKey(priv), priv);
-}
+  });
 
-function test_coercePublicKey() {
+  it('coercePublicKey', function() {
     var pub = ursa.coercePublicKey(fixture.PUBLIC_KEY);
     assert(ursa.isPublicKey(pub), true);
 
@@ -410,9 +406,9 @@ function test_coercePublicKey() {
     assert(ursa.isPublicKey(pub), true);
 
     assert.equal(ursa.coercePublicKey(pub), pub);
-}
+  });
 
-function test_fail_coerceKey() {
+  it('fail_coerceKey', function() {
     function f1() {
         ursa.coerceKey("foo");
     }
@@ -427,9 +423,9 @@ function test_fail_coerceKey() {
         ursa.coerceKey([]);
     }
     assert.throws(f3, /Not a key/);
-}
+  });
 
-function test_fail_coercePrivateKey() {
+  it('fail_coercePrivateKey', function() {
     function f1() {
         ursa.coercePrivateKey("foo");
     }
@@ -454,9 +450,9 @@ function test_fail_coercePrivateKey() {
         ursa.coercePrivateKey(fixture.PUBLIC_KEY.toString());
     }
     assert.throws(f5, /Not a private key/);
-}
+  });
 
-function test_fail_coercePublicKey() {
+  it('fail_coercePublicKey', function() {
     function f1() {
         ursa.coercePublicKey("foo");
     }
@@ -481,29 +477,29 @@ function test_fail_coercePublicKey() {
         ursa.coercePublicKey(fixture.PRIVATE_KEY.toString());
     }
     assert.throws(f5, /Not a public key/);
-}
+  });
 
-function testPublicKey() {
+  it('PublicKey', function() {
     var key = ursa.createPublicKey(fixture.PUBLIC_KEY);
     testPublicKeyMethods(key);
-}
+  });
 
-function testPrivateKey() {
+  it('PrivateKey', function() {
     var key = ursa.createPrivateKey(fixture.PRIVATE_KEY);
     testPublicKeyMethods(key);
     testPrivateKeyMethods(key);
-}
+  });
 
-function testGeneratedKey() {
+  it('GeneratedKey', function() {
     // Just do a round trip. If that works, then it's safe to believe
     // the native tests (which are more comprehensive).
     var key = ursa.generatePrivateKey();
     var encoded = key.encrypt(fixture.PLAINTEXT, fixture.UTF8);
     var decoded = key.decrypt(encoded, undefined, fixture.UTF8);
     assert.equal(decoded, fixture.PLAINTEXT);
-}
+  });
 
-function test_sshFingerprint() {
+  it('sshFingerprint', function() {
     var key = fixture.SSH_PUBLIC_KEY;
     var finger = ursa.sshFingerprint(fixture.SSH_PUBLIC_KEY);
     assert.equal(finger.toString(fixture.HEX),
@@ -517,9 +513,9 @@ function test_sshFingerprint() {
         fixture.SSH_PUBLIC_KEY.toString(fixture.BASE64),
         fixture.BASE64, fixture.HEX);
     assert.equal(finger, fixture.SSH_PUBLIC_KEY_FINGERPRINT_HEX);
-}
+  });
 
-function test_equalKeys() {
+  it('equalKeys', function() {
     var pub = ursa.createPublicKey(fixture.PUBLIC_KEY);
     var priv = ursa.createPrivateKey(fixture.PRIVATE_KEY);
     var samePub = ursa.createPublicKey(fixture.PUBLIC_KEY);
@@ -542,9 +538,9 @@ function test_equalKeys() {
 
     assert.equal(ursa.equalKeys(pub, diffPub), false);
     assert.equal(ursa.equalKeys(priv, diffPriv), false);
-}
+  });
 
-function test_matchingPublicKeys() {
+  it('matchingPublicKeys', function() {
     var pub = ursa.createPublicKey(fixture.PUBLIC_KEY);
     var priv = ursa.createPrivateKey(fixture.PRIVATE_KEY);
     var samePub = ursa.createPublicKey(fixture.PUBLIC_KEY);
@@ -571,9 +567,9 @@ function test_matchingPublicKeys() {
     assert.equal(ursa.matchingPublicKeys(pub, diffPriv), false);
     assert.equal(ursa.matchingPublicKeys(priv, diffPriv), false);
     assert.equal(ursa.matchingPublicKeys(priv, diffPub), false);
-}
+  });
 
-function testSigner() {
+  it('Signer', function() {
     var key = ursa.createPrivateKey(fixture.PRIVATE_KEY);
     var signer = ursa.createSigner(fixture.SHA256);
 
@@ -583,9 +579,9 @@ function testSigner() {
     var sig = signer.sign(key, fixture.HEX);
 
     assert.equal(sig, fixture.PLAINTEXT_SHA256_SIGNATURE);
-}
+  });
 
-function testVerifier() {
+  it('Verifier', function() {
     var key = ursa.createPublicKey(fixture.PUBLIC_KEY);
     var verifier = ursa.createVerifier(fixture.SHA256);
 
@@ -601,45 +597,12 @@ function testVerifier() {
     verifier.update(new Buffer(fixture.PLAINTEXT, fixture.UTF8));
     var sigBuf = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
     assert.equal(verifier.verify(key, sigBuf), true);
-}
+  });
 
-function test_openSshPublicKey() {
+  it('openSshPublicKey', function() {
     var sshKey = ursa.openSshPublicKey(fixture.SSH_PUBLIC_KEY),
         pubKey = ursa.createPublicKey(fixture.PUBLIC_KEY);
 
     assert.equal(ursa.equalKeys(sshKey, pubKey), true);
-}
-
-/*
- * Main test script
- */
-
-// Test the native code (reasonably) directly.
-require("./native").test();
-
-testBasics();
-testTypes();
-
-test_createKey();
-test_createPrivateKeyFromComponents();
-test_createPublicKeyFromComponents();
-test_fail_createPublicKey();
-test_fail_createPrivateKey();
-test_coerceKey();
-test_coercePrivateKey();
-test_coercePublicKey();
-test_fail_coerceKey();
-test_fail_coercePrivateKey();
-test_fail_coercePublicKey();
-
-testPublicKey();
-testPrivateKey();
-testGeneratedKey();
-test_sshFingerprint();
-test_equalKeys();
-test_matchingPublicKeys();
-testSigner();
-testVerifier();
-test_openSshPublicKey();
-
-console.log("All tests pass!");
+  });
+})

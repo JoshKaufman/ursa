@@ -39,10 +39,14 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "node test/test.js"
+    "test": "mocha --recursive --reporter spec",
+    "test-watch": "npm test -- -w --reporter min"
   },
   "dependencies": {
     "bindings": "^1.2.1",
     "nan": "^2.3.3"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0"
   }
 }
