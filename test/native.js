@@ -576,7 +576,11 @@ describe('native', function() {
         var sig = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
         rsa.verify(textToNid(fixture.SHA1), hash, sig);
     }
-    assert.throws(f7, nodeVersion < 10 ? /algorithm mismatch/ : /unknown algorithm type/);
+    if (nodeVersion < 10) {
+        assert.throws(f7, /algorithm mismatch/);
+    } else {
+        assert.ifError(f7(), true);
+    }
 
     function f8() {
         var hash = new Buffer(fixture.PLAINTEXT_SHA256, fixture.HEX);
