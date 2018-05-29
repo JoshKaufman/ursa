@@ -16,6 +16,7 @@ var fixture    = require("./fixture");
 var RsaWrap    = fixture.RsaWrap;
 var ursaNative = fixture.ursaNative;
 var textToNid  = ursaNative.textToNid;
+var nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
 
 /**
  * Asserts that two strings are equal, ignoring Windows newline differences
@@ -575,14 +576,18 @@ describe('native', function() {
         var sig = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
         rsa.verify(textToNid(fixture.SHA1), hash, sig);
     }
-    assert.throws(f7, /algorithm mismatch/);
+    if (nodeVersion < 10) {
+        assert.throws(f7, /algorithm mismatch/);
+    } else {
+        assert.ifError(f7(), true);
+    }
 
     function f8() {
         var hash = new Buffer(fixture.PLAINTEXT_SHA256, fixture.HEX);
         var sig = new Buffer(fixture.PLAINTEXT_SHA256_SIGNATURE, fixture.HEX);
         rsa.verify(1234567, hash, sig);
     }
-    assert.throws(f8, /algorithm mismatch/);
+    assert.throws(f8, nodeVersion < 10 ? /algorithm mismatch/ : /unknown algorithm type/);
   });
 
   it('textToNid', function() {
