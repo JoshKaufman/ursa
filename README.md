@@ -588,6 +588,7 @@ Other Repos that may be of Interest:
 
 * https://github.com/mal/forsake
 * https://github.com/rzcoder/node-rsa
+* https://github.com/roblabla/ursa-purejs
 * https://github.com/coolaj86/nodejs-self-signed-certificate-example
 * https://github.com/coolaj86/node-ssl-root-cas/wiki/Painless-Self-Signed-Certificates-in-node.js
 * https://github.com/coolaj86/node-ssl-root-cas
