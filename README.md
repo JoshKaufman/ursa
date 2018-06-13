@@ -105,7 +105,7 @@ On Windows, you'll need to install some dependencies first:
  - [OpenSSL](http://slproweb.com/products/Win32OpenSSL.html) (normal, not light)
 in the same bitness as your Node.js installation.
   - OpenSSL must be installed in the a specific install directory (`C:\OpenSSL-Win32` or `C:\OpenSSL-Win64`)
-  - If you get `Error: The specified module could not be found.`, copy `libeay32.dll` from the OpenSSL bin directory to this module's bin directory, or to Windows\System32.
+  - If you get `Error: The specified module could not be found.`, copy `libeay32.dll` from the OpenSSL bin directory to this module's bin directory, or to Windows\System32. If you don't have `libeay32.dll`, you may have to install OpenSSL v1.0.2, not v1.1.x.
  - [node-gyp](https://github.com/nodejs/node-gyp) (`npm install -g node-gyp`)
    - You will need [python 2.7](http://www.python.org/download/releases/2.7.3#download) and a compatible version 
   Visual Studio installed first.  Even with that, `node-gyp` installation or use can have 
