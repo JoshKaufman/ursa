@@ -33,6 +33,10 @@
             '<(node_root_dir)/deps/openssl/openssl/include',
                         "<!(node -e \"require('nan')\")"
           ],
+          "libraries": [
+            "-lssl",
+            "-lcrypto"
+          ]
         }],
       ],
     }
