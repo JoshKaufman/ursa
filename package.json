@@ -1,5 +1,5 @@
 {
-  "name": "ursa",
+  "name": "@rfeng/ursa",
   "version": "0.9.4",
   "keywords": [
     "crypto",
@@ -47,6 +47,6 @@
     "nan": "^2.3.3"
   },
   "devDependencies": {
-    "mocha": "^3.2.0"
+    "mocha": "^5.2.0"
   }
 }
