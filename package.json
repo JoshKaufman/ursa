@@ -27,16 +27,14 @@
 		"email": "danfuzz@milk.com",
 		"url": "http://www.milk.com/"
 	},
-	"maintainers": [
-		{
-			"name": "Jeremie Miller",
-			"email": "jeremie@jabber.org",
-			"url": "http://jeremie.com/"
-		}
-	],
+	"maintainers": [{
+		"name": "Jeremie Miller",
+		"email": "jeremie@jabber.org",
+		"url": "http://jeremie.com/"
+	}],
 	"main": "lib/ursa.js",
 	"engines": {
-		"node": ">=0.10.0"
+		"node": ">=4.0.0"
 	},
 	"scripts": {
 		"test": "mocha --recursive --reporter spec",
