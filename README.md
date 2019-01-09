@@ -11,7 +11,7 @@ URSA - RSA public/private key OpenSSL bindings for Node.js
 This Node module provides a fairly complete set of wrappers for the
 RSA public/private key crypto functionality of OpenSSL.
 
-It is being actively developed for node.js 0.8.* through 0.12.* and io.js. If you find it doesn't work for you, please file a bug (see below).
+It requires Node.js version 4.0 or above. If you find it doesn't work for you, please file a bug (see below).
 
 It has been tested on Windows by [SLaks](https://github.com/SLaks).  (see [additional installation requirements](#windows-install))
 
