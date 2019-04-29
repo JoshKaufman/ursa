@@ -36,15 +36,15 @@
   ],
   "main": "lib/ursa.js",
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=4"
   },
   "scripts": {
     "test": "mocha --recursive --reporter spec",
     "test-watch": "npm test -- -w --reporter min"
   },
   "dependencies": {
-    "bindings": "^1.2.1",
-    "nan": "^2.3.3"
+    "bindings": "^1.5.0",
+    "nan": "^2.13.2"
   },
   "devDependencies": {
     "mocha": "^5.2.0"
