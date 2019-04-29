@@ -539,8 +539,9 @@ static char *copyBufferToCharStar(const Local<Object> buf)
  */
 static char *copyBufferToUtf8String(const Local<String> str)
 {
+  Nan::Utf8String val(str);
   // static char *getArgString(const Arguments& args, int index) {
-  int length = str->Utf8Length();
+  int length = val.length();
   char *result = (char *)malloc(length + 1);
 
   if (result == NULL)
@@ -550,7 +551,11 @@ static char *copyBufferToUtf8String(const Local<String> str)
   }
 
   result[length] = 'x'; // Set up a small sanity check (see below).
+#if NODE_MAJOR_VERSION >= 11  
+  str->WriteUtf8(v8::Isolate::GetCurrent(), result, length + 1);
+#else
   str->WriteUtf8(result, length + 1);
+#endif  
 
   if (result[length] != '\0')
   {
@@ -687,10 +692,12 @@ void RsaWrap::InitClass(Local<Object> target)
   Nan::SetPrototypeMethod(tpl, "verifyPSSPadding", VerifyPSSPadding);
 
   // Store the constructor in the target bindings.
-  target->Set(NanNew("RsaWrap").ToLocalChecked(), tpl->GetFunction());
-  constructor.Reset(tpl->GetFunction());
+  Nan::Set(target, NanNew("RsaWrap").ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
+  constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
 
-  target->Set(NanNew("textToNid").ToLocalChecked(), Nan::New<FunctionTemplate>(TextToNid)->GetFunction());
+  Nan::Set(target,
+           NanNew("textToNid").ToLocalChecked(),
+           Nan::GetFunction(Nan::New<FunctionTemplate>(TextToNid)).ToLocalChecked());
 }
 
 /**
@@ -863,8 +870,8 @@ NAN_METHOD(RsaWrap::GeneratePrivateKey)
     NanReturnUndefined();
   }
 
-  int modulusBits = args[0]->Uint32Value();
-  int exponent = args[1]->Uint32Value();
+  int modulusBits = args[0]->Uint32Value(Nan::GetCurrentContext()).FromJust();
+  int exponent = args[1]->Uint32Value(Nan::GetCurrentContext()).FromJust();
 
   // Sanity-check the arguments, since (as of this writing) OpenSSL
   // either doesn't check, or at least doesn't consistently check:
@@ -1100,7 +1107,7 @@ NAN_METHOD(RsaWrap::PrivateDecrypt)
     NanThrowError("Expected a 32-bit integer in args[1].");
     NanReturnUndefined();
   }
-  int padding = args[1]->Uint32Value();
+  int padding = args[1]->Uint32Value(Nan::GetCurrentContext()).FromJust();
 
   int bufLength = RSA_private_decrypt(length, (unsigned char *)data,
                                       buf, obj->rsa, padding);
@@ -1158,7 +1165,7 @@ NAN_METHOD(RsaWrap::PrivateEncrypt)
     NanThrowError("Expected a 32-bit integer in args[1].");
     NanReturnUndefined();
   }
-  int padding = args[1]->Uint32Value();
+  int padding = args[1]->Uint32Value(Nan::GetCurrentContext()).FromJust();
 
   int ret = RSA_private_encrypt(length, (unsigned char *)data,
                                 (unsigned char *)node::Buffer::Data(result),
@@ -1215,7 +1222,7 @@ NAN_METHOD(RsaWrap::PublicDecrypt)
     NanThrowError("Expected a 32-bit integer in args[1].");
     NanReturnUndefined();
   }
-  int padding = args[1]->Uint32Value();
+  int padding = args[1]->Uint32Value(Nan::GetCurrentContext()).FromJust();
 
   int bufLength = RSA_public_decrypt(length, (unsigned char *)data,
                                      buf, obj->rsa, padding);
@@ -1269,7 +1276,7 @@ NAN_METHOD(RsaWrap::PublicEncrypt)
     NanThrowError("Expected a 32-bit integer in args[1].");
     NanReturnUndefined();
   }
-  int padding = args[1]->Uint32Value();
+  int padding = args[1]->Uint32Value(Nan::GetCurrentContext()).FromJust();
 
   int ret = RSA_public_encrypt(length, (unsigned char *)data,
                                (unsigned char *)node::Buffer::Data(result),
@@ -1408,7 +1415,7 @@ NAN_METHOD(RsaWrap::Sign)
     NanThrowError("Expected a 32-bit integer in args[0].");
     NanReturnUndefined();
   }
-  int nid = args[0]->Uint32Value();
+  int nid = args[0]->Uint32Value(Nan::GetCurrentContext()).FromJust();
 
   Local<Object> buffer = args[1].As<Object>();
   if (!node::Buffer::HasInstance(buffer))
@@ -1474,7 +1481,7 @@ NAN_METHOD(RsaWrap::Verify)
     NanThrowError("Expected a 32-bit integer in args[0].");
     NanReturnUndefined();
   }
-  int nid = args[0]->Uint32Value();
+  int nid = args[0]->Uint32Value(Nan::GetCurrentContext()).FromJust();
 
   Local<Object> buffer = args[1].As<Object>();
   if (!node::Buffer::HasInstance(buffer))
@@ -1551,7 +1558,7 @@ NAN_METHOD(RsaWrap::AddPSSPadding)
     NanThrowError("Expected a 32-bit integer in args[0].");
     NanReturnUndefined();
   }
-  int nid = args[0]->Uint32Value();
+  int nid = args[0]->Uint32Value(Nan::GetCurrentContext()).FromJust();
   const EVP_MD *Hash = EVP_get_digestbynid(nid);
   if (Hash == NULL)
   {
@@ -1581,7 +1588,7 @@ NAN_METHOD(RsaWrap::AddPSSPadding)
     NanThrowError("Expected a 32-bit integer in args[2].");
     NanReturnUndefined();
   }
-  int sLen = args[2]->Uint32Value();
+  int sLen = args[2]->Uint32Value(Nan::GetCurrentContext()).FromJust();
 
   unsigned int emLength = (unsigned int)RSA_size(obj->rsa);
   Local<Object> EM = NanNewBufferHandle(emLength);
@@ -1624,7 +1631,7 @@ NAN_METHOD(RsaWrap::VerifyPSSPadding)
     NanThrowError("Expected a 32-bit integer in args[0].");
     NanReturnUndefined();
   }
-  int nid = args[0]->Uint32Value();
+  int nid = args[0]->Uint32Value(Nan::GetCurrentContext()).FromJust();
   const EVP_MD *Hash = EVP_get_digestbynid(nid);
   if (Hash == NULL)
   {
@@ -1671,7 +1678,7 @@ NAN_METHOD(RsaWrap::VerifyPSSPadding)
     NanThrowError("Expected a 32-bit integer in args[3].");
     NanReturnUndefined();
   }
-  int sLen = args[3]->Uint32Value();
+  int sLen = args[3]->Uint32Value(Nan::GetCurrentContext()).FromJust();
 
   int ret = RSA_verify_PKCS1_PSS(obj->rsa,
                                  (unsigned char *)mHash, Hash, (unsigned char *)EM, sLen);

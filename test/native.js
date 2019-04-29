@@ -685,7 +685,15 @@ describe('native', function() {
     assert.throws(f5, /data too large for key size/);
 
     function f6() {
-        rsa.addPSSPadding(nid, hash, -3);
+        // https://github.com/openssl/openssl/blob/master/crypto/rsa/rsa_pss.c
+        /*-
+         * Negative sLen has special meanings:
+         *      -1      sLen == hLen
+         *      -2      salt length is autorecovered from signature
+         *      -3      salt length is maximized
+         *      -N      reserved
+         */
+        rsa.addPSSPadding(nid, hash, -4);
     }
     assert.throws(f6, /salt length check failed/);
 
